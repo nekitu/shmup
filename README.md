@@ -9,7 +9,7 @@ A custom 2D sprite engine is used, instead of Unity and UnrealEngine4, for learn
 If you want to help with the development, donations are welcomed:
 
 Donations on Patreon:
-<br>[![Patreon]](http://www.patreon.com/7thfactor)
+<br>[Patreon](http://www.patreon.com/7thfactor)
 
 Donations on PayPal:
 <br>[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D2J3J2A766KXY)
