@@ -230,13 +230,15 @@ end
 function link_sdl2()
 	filter {}
 	includedirs {scriptRoot.."/libs/sdl2/include"}
+	includedirs {scriptRoot.."/libs/sdl_mixer/include"}
+  libdirs { scriptRoot.."/libs/sdl_mixer/lib/x64" }
 
 	filter { "configurations:Debug" }
-		links { "sdl2" }
+		links { "sdl2", "SDL2_mixer" }
 	filter {}
 
 	filter { "configurations:Release" }
-		links { "sdl2" }
+		links { "sdl2", "SDL2_mixer" }
 	filter {}
 end
 

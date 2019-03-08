@@ -1,0 +1,79 @@
+{
+    "name": "UltraBoss9000",
+    "team": "enemy",
+    "controller": "boss1",
+    "animations":
+    {
+        "default":
+        {
+            "totalTime": 5,
+            "tracks":
+            {
+                "PositionX": 
+                {
+                    "value": [ 100, 200, 300, 150 ],
+                    "time": [0, 2, 3, 5]
+                },
+                "PositionY":
+                {
+                    "value": [ 150, 210, 240, 150 ],
+                    "time": [0, 2, 3, 5]
+                }
+            }
+        }
+    },
+    "spriteInstances":
+    [
+        {
+            "name": "body",
+            "sprite": "sample_sprite",
+            "positionX": 0.0,
+            "positionY": 0.0,
+            "scale": 1.0,
+            "rotation": 0,
+            "horizontalFlip": false,
+            "verticalFlip": false,
+            "animation": "default",
+            "animations":
+            {
+                "default":
+                {
+                    "totalTime": 5,
+                    "tracks":
+                    {
+                        "PositionX": 
+                        {
+                            "value": [ 100, 200, 300, 150 ],
+                            "time": [0, 2, 3, 5]
+                        },
+                        "PositionY":
+                        {
+                            "value": [ 150, 210, 240, 150 ],
+                            "time": [0, 2, 3, 5]
+                        }
+                    }
+                }
+            }
+        }
+    ]
+    "children":
+    [
+        {
+            "name": "weaponLeft",
+            "unitTemplate": "weapon",
+            "positionX": 20.0,
+            "positionY": 0.0,
+            "scale": 1.0,
+            "rotation": 0,
+        },
+        {
+            "name": "weaponRight",
+            "unitTemplate": "weapon",
+            "positionX": -20.0,
+            "positionY": 0.0,
+            "scale": 1.0,
+            "horizontalFlip": true,
+            "rotation": 0,
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "frameWidth": 240,
+    "frameHeight": 347,
+    "animations":
+    {
+        "default":
+        {
+            "start": 0,
+            "frames": 0,
+            "type": "normal",
+            "fps": 3,
+            "repeat": 0
+        }
+    }
+}
