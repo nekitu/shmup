@@ -5,14 +5,14 @@
 #include "color.h"
 #include "texture_array.h"
 #include "utils.h"
-#include "data_loader.h"
+#include "resource_loader.h"
 #include "image_atlas.h"
-#include "sprite.h"
 #include "SDL_mixer.h"
-#include "sound.h"
-#include "unit.h"
-#include "sprite.h"
+#include "resources/sound_resource.h"
+#include "resources/unit_resource.h"
+#include "resources/sprite_resource.h"
 #include "sprite_instance.h"
+#include "animation.h"
 #include <iostream>
 
 namespace engine
@@ -75,14 +75,14 @@ bool Game::initialize()
 
 	initializeAudio();
 
-	music = new Music();
-	music->load("../data/music/Retribution.ogg");
+	music = new MusicInstance();
+	music->musicResource = resourceLoader->loadMusic("../data/music/Retribution.ogg");
 	music->play();
 
 
 	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
-	dataLoader = new DataLoader();
+	resourceLoader = new ResourceLoader();
 	createPlayers();
 
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
@@ -121,7 +121,7 @@ void Game::createPlayers()
 	enemy->controller = ctrler;
 
 	SpriteInstance* inst = new SpriteInstance();
-	inst->sprite = dataLoader->loadSprite("sprites/clouds2", graphics->atlas);
+	inst->sprite = resourceLoader->loadSprite("sprites/clouds2", graphics->atlas);
 
 	enemy->transform.position.x = graphics->videoWidth / 2;
 	enemy->transform.position.y = -(f32)inst->sprite->image->height / 2.0f;
@@ -147,7 +147,7 @@ void Game::createPlayers()
 		enemy->controller = ctrler;
 
 		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = dataLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
+		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
 		inst->setAnimation("default");
 		enemy->spriteInstances.push_back(inst);
 
@@ -166,7 +166,7 @@ void Game::createPlayers()
 		players[i]->shadowOffset.set(40, 40);
 		players[i]->shadowScale = 0.4f;
 		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = dataLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
+		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
 		inst->setAnimation("default");
 		players[i]->spriteInstances.push_back(inst);
 
@@ -345,10 +345,11 @@ SpriteInstance* Game::createSpriteInstance(Sprite* sprite)
 	return inst;
 }
 
-UnitInstance* Game::createUnitInstance(Unit* unit)
+UnitInstance* Game::createUnitInstance(UnitResource* unit)
 {
 	auto unitInst = new UnitInstance();
 	unitInstances.push_back(unitInst);
+	unitInst->unit = unit;
 	unitInst->team = unit->team;
 	unitInst->name = unit->name;
 	unitInst->speed = unit->speed;
@@ -357,20 +358,20 @@ UnitInstance* Game::createUnitInstance(Unit* unit)
 	for (u32 i = 0; i < unit->spriteInstanceCount; i++)
 	{
 		SpriteInstance* sprInst = new SpriteInstance();
-		sprInst->sprite = unit->spriteInstances[i]->sprite;
-		sprInst->setAnimation(unit->spriteInstances[i]->spriteAnimationInstance.spriteAnimation->name);
+		sprInst->sprite = unit->spriteInstances[i].sprite;
+		sprInst->setAnimation(unit->spriteInstances[i].spriteAnimationInstance.spriteAnimation->name);
 		unitInst->spriteInstances.push_back(sprInst);
 	}
 
 	for (u32 i = 0; i < unit->spriteInstanceAnimationCount; i++)
 	{
-		unitInst->spriteInstanceAnimations[unit->spriteInstanceAnimations[i].animation]
+		unitInst->spriteInstanceAnimations[unit->spriteInstanceAnimations[i].animation->name] = unit->spriteInstanceAnimations[i].animation;
 	}
 
 	return unitInst;
 }
 
-ProjectileInstance* Game::createProjectileInstance(Projectile* projectile)
+ProjectileInstance* Game::createProjectileInstance(ProjectileResource* projectile)
 {
 	
 }

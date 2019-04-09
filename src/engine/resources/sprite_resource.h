@@ -2,6 +2,7 @@
 #include "types.h"
 #include <string>
 #include "rect.h"
+#include "resource.h"
 #include <unordered_map>
 
 namespace engine
@@ -40,7 +41,7 @@ struct SpriteAnimationInstance
 	}
 };
 
-struct Sprite
+struct SpriteResource : Resource
 {
 	struct AtlasImage* image = nullptr;
 	u32 frameCount = 0;
@@ -52,6 +53,7 @@ struct Sprite
 
 	struct AtlasImage* loadImage(const char* filename, struct ImageAtlas* atlas);
 	Rect getFrameUvRect(u32 frame);
+	bool load(const std::string& filename) override;
 };
 
 }

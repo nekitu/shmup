@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include <SDL_version.h>
 #include <SDL_audio.h>
-#include "unit.h"
+#include "unit_instance.h"
 #include <string>
 
 namespace engine
@@ -41,14 +41,14 @@ struct Game
 	SDL_Window* window = nullptr;
 	SDL_GLContext glContext = 0;
 	struct Graphics* graphics = nullptr;
-	struct DataLoader* dataLoader = nullptr;
+	struct ResourceLoader* resourceLoader = nullptr;
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
 	std::vector<UnitInstance*> unitInstances;
 	UnitInstance* players[2];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
-	struct Music* music = nullptr;
+	struct MusicInstance* music = nullptr;
 	
 	bool initialize();
 	void shutdown();
@@ -65,9 +65,9 @@ struct Game
 	bool isPlayerFire1(u32 playerIndex);
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
-	struct SpriteInstance* createSpriteInstance(struct Sprite* sprite);
-	struct UnitInstance* createUnitInstance(struct Unit* unit);
-	struct ProjectileInstance* createProjectileInstance(struct Projectile* projectile);
+	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
+	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
+	struct WeaponInstance* createWeaponInstance(struct WeaponResource* weaponRes);
 	struct UnitController* createUnitController(const std::string& name);
 };
 

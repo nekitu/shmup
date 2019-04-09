@@ -36,6 +36,7 @@ struct AnimationTrack
 
 struct Animation
 {
+	std::string name;
 	std::unordered_map<AnimationTrack::Type, AnimationTrack*> tracks;
 	f32 totalTimeSeconds = 0;
 };

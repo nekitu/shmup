@@ -1,61 +1,45 @@
-#include "data_loader.h"
-#include "sprite.h"
-#include "sound.h"
-#include "unit.h"
-#include "level.h"
+#include "sprite_resource.h"
+#include <stb_image.h>
 #include "image_atlas.h"
-#include <json/json.h>
 
 namespace engine
 {
-static std::string readTextFile(const char* path)
+AtlasImage* SpriteResource::loadImage(const char* filename, ImageAtlas* atlas)
 {
-	FILE* file = fopen(path, "rb");
+	int width = 0;
+	int height = 0;
+	int comp;
+	stbi_uc* data = stbi_load(filename, &width, &height, &comp, 4);
 
-	if (!file)
-		return std::string("");
+	if (!data)
+		return nullptr;
 
-	fseek(file, 0, SEEK_END);
-	long size = ftell(file);
-	std::string text;
+	auto img = atlas->addImage((Rgba32*)data, width, height);
+	delete[] data;
+	atlas->pack();
 
-	if (size != -1)
-	{
-		fseek(file, 0, SEEK_SET);
-
-		char* buffer = new char[size + 1];
-		buffer[size] = 0;
-
-		if (fread(buffer, 1, size, file) == (unsigned long)size)
-			text = buffer;
-
-		delete[] buffer;
-	}
-
-	fclose(file);
-
-	return text;
+	return img;
 }
 
-
-Sprite* DataLoader::loadSprite(const char* filename, ImageAtlas* atlas)
+Rect SpriteResource::getFrameUvRect(u32 frame)
 {
-	std::string fullFilename = root + filename;
+	Rect rc;
 
-	if (sprites[filename]) return sprites[filename];
+	u32 cols = (f32)image->width / (f32)frameWidth;
+	u32 rows = (f32)image->height / (f32)frameHeight;
+	u32 col = frame % cols;
+	u32 row = frame / cols;
 
-	Sprite* sprite = new Sprite();
-	Json::Reader reader;
-	Json::Value root;
-	auto json = readTextFile((fullFilename + ".json").c_str());
-	bool ok = reader.parse(json, root);
+	rc.x = image->uvRect.x + uvFrameWidth * (f32)col;
+	rc.y = image->uvRect.y + uvFrameHeight * (f32)row;
+	rc.width = uvFrameWidth;
+	rc.height = uvFrameHeight;
 
-	if (!ok)
-	{
-		printf(reader.getFormatedErrorMessages().c_str());
-		delete sprite;
-		return nullptr;
-	}
+	return rc;
+}
+
+bool SpriteResource::load(const std::string& filename)
+{
 
 	sprite->frameWidth = root.get("frameWidth", Json::Value(0)).asInt();
 	sprite->frameHeight = root.get("frameHeight", Json::Value(0)).asInt();
@@ -85,29 +69,7 @@ Sprite* DataLoader::loadSprite(const char* filename, ImageAtlas* atlas)
 	sprite->uvFrameWidth = sprite->image->uvRect.width / (f32)(sprite->image->width / sprite->frameWidth);
 	sprite->uvFrameHeight = sprite->image->uvRect.height / (f32)(sprite->image->height / sprite->frameHeight);
 	sprites[filename] = sprite;
-
-	return sprite;
-}
-
-Sound* DataLoader::loadSound(const char* filename)
-{
-	Sound* sound = new Sound();
-
-	return sound;
-}
-
-Unit* DataLoader::loadUnit(const char* filename)
-{
-	Unit* unit = new Unit();
-
-	return unit;
-}
-
-Level* DataLoader::loadLevel(const char* filename)
-{
-	Level* level = new Level();
-
-	return level;
+	return true;
 }
 
 }
