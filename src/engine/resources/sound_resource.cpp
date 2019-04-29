@@ -7,10 +7,9 @@ SoundResource::~SoundResource()
 	if (wave) Mix_FreeChunk(wave);
 }
 
-bool SoundResource::load(const std::string& filename)
+bool SoundResource::load(Json::Value& json)
 {
-	fileName = filename;
-	wave = Mix_LoadWAV(filename.c_str());
+	wave = Mix_LoadWAV(fileName.c_str());
 
 	if (wave == NULL)
 		return false;
@@ -23,16 +22,14 @@ MusicResource::~MusicResource()
 	if (music) Mix_FreeMusic(music);
 }
 
-bool MusicResource::load(const std::string& filename)
+bool MusicResource::load(Json::Value& json)
 {
-	fileName = filename;
-	music = Mix_LoadMUS(filename.c_str());
+	music = Mix_LoadMUS(fileName.c_str());
 
 	if (music == NULL)
 		return false;
 
 	return true;
 }
-
 
 }

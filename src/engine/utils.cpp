@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "libs/utf8/source/utf8.h"
+#include "json/reader.h"
 
 namespace engine
 {
@@ -73,6 +74,50 @@ bool utf8ToUtf32(const char* text, UnicodeString& outText)
 	}
 
 	return true;
+}
+
+bool loadJson(const std::string& fullFilename, Json::Value& root)
+{
+	Json::Reader reader;
+	auto json = readTextFile(fullFilename);
+	bool ok = reader.parse(json, root);
+
+	if (!ok)
+	{
+		printf("ERROR: in '%s' %s", fullFilename.c_str(),reader.getFormatedErrorMessages().c_str());
+		return false;
+	}
+
+	return true;
+}
+
+std::string readTextFile(const std::string& path)
+{
+	FILE* file = fopen(path.c_str(), "rb");
+
+	if (!file)
+		return std::string("");
+
+	fseek(file, 0, SEEK_END);
+	long size = ftell(file);
+	std::string text;
+
+	if (size != -1)
+	{
+		fseek(file, 0, SEEK_SET);
+
+		char* buffer = new char[size + 1];
+		buffer[size] = 0;
+
+		if (fread(buffer, 1, size, file) == (unsigned long)size)
+			text = buffer;
+
+		delete[] buffer;
+	}
+
+	fclose(file);
+
+	return text;
 }
 
 }

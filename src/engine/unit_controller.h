@@ -4,7 +4,7 @@ namespace engine
 {
 struct UnitController
 {
-	UnitInstance* unitInstance = nullptr;
+	struct UnitInstance* unitInstance = nullptr;
 
 	virtual void update(struct Game* game) = 0;
 };
@@ -19,14 +19,20 @@ struct SimpleEnemyController : UnitController
 	void update(struct Game* game) override;
 };
 
+struct ProjectileController : UnitController
+{
+	void update(struct Game* game) override;
+};
+
 struct PlayerController : UnitController
 {
 	u32 playerIndex = 0;
-	struct Sound* fireSound = nullptr;
+	struct SoundResource* fireSoundRes = nullptr;
+	struct SoundInstance* fireSound = nullptr;
 	f32 fire1Rate = 15;
 	f32 fire1PlayingTime = FLT_MAX;
 
-	PlayerController();
+	PlayerController(struct Game* game);
 	void update(struct Game* game) override;
 };
 

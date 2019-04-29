@@ -2,21 +2,44 @@
 #include "graphics.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
+#include <iostream>
 #include "color.h"
 #include "texture_array.h"
 #include "utils.h"
 #include "resource_loader.h"
 #include "image_atlas.h"
 #include "SDL_mixer.h"
+#include "animation.h"
+#include "unit_controller.h"
 #include "resources/sound_resource.h"
 #include "resources/unit_resource.h"
 #include "resources/sprite_resource.h"
+#include "resources/weapon_resource.h"
+#include "resources/level_resource.h"
+#include "unit_instance.h"
 #include "sprite_instance.h"
-#include "animation.h"
-#include <iostream>
+#include "music_instance.h"
+#include "sound_instance.h"
+#include "weapon_instance.h"
 
 namespace engine
 {
+Game* Game::instance = nullptr;
+
+Game::Game()
+{
+	instance = this;
+}
+
+Game::~Game()
+{
+}
+
+std::string Game::makeFullDataPath(const std::string relativeDataFilename)
+{
+	return instance->resourceLoader->root + relativeDataFilename;
+}
+
 bool Game::initialize()
 {
 	SDL_SetMainReady();
@@ -74,15 +97,13 @@ bool Game::initialize()
 	//}
 
 	initializeAudio();
-
-	music = new MusicInstance();
-	music->musicResource = resourceLoader->loadMusic("../data/music/Retribution.ogg");
-	music->play();
-
-
 	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
 	resourceLoader = new ResourceLoader();
+	resourceLoader->atlas = graphics->atlas;
+
+	loadLevels();
+	changeLevel(0);
 	createPlayers();
 
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
@@ -102,6 +123,11 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_b] = InputControl::Player2_Fire1;
 	mapSdlToControl[SDLK_g] = InputControl::Player2_Fire2;
 	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
+
+	//TODO: remove
+	music = new MusicInstance();
+	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
+	music->play();
 }
 
 void Game::shutdown()
@@ -113,7 +139,7 @@ void Game::createPlayers()
 {
 	UnitInstance* enemy = new UnitInstance();
 
-	enemy->team = Team::Neutral;
+	enemy->team = Team::Neutrals;
 	enemy->color = Color::white;
 	enemy->speed = 10;
 	auto ctrler = new BackgroundController();
@@ -121,7 +147,7 @@ void Game::createPlayers()
 	enemy->controller = ctrler;
 
 	SpriteInstance* inst = new SpriteInstance();
-	inst->sprite = resourceLoader->loadSprite("sprites/clouds2", graphics->atlas);
+	inst->sprite = resourceLoader->loadSprite("sprites/clouds2");
 
 	enemy->transform.position.x = graphics->videoWidth / 2;
 	enemy->transform.position.y = -(f32)inst->sprite->image->height / 2.0f;
@@ -135,7 +161,7 @@ void Game::createPlayers()
 	{
 		UnitInstance* enemy = new UnitInstance();
 		
-		enemy->team = Team::Enemy;
+		enemy->team = Team::Enemies;
 		enemy->color = Color::green;
 		enemy->speed = randomFloat(4, 20);
 		enemy->transform.scale = 2.0f;
@@ -147,7 +173,7 @@ void Game::createPlayers()
 		enemy->controller = ctrler;
 
 		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
+		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite");
 		inst->setAnimation("default");
 		enemy->spriteInstances.push_back(inst);
 
@@ -158,7 +184,7 @@ void Game::createPlayers()
 	{
 		players[i] = new UnitInstance();
 		unitInstances.push_back(players[i]);
-		players[i]->team = Team::Player;
+		players[i]->team = Team::Players;
 		players[i]->name = "Player" + std::to_string(i + 1);
 		players[i]->speed = 120;
 		//players[i]->transform.verticalFlip = true;
@@ -166,15 +192,18 @@ void Game::createPlayers()
 		players[i]->shadowOffset.set(40, 40);
 		players[i]->shadowScale = 0.4f;
 		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite", graphics->atlas);
+		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite");
 		inst->setAnimation("default");
 		players[i]->spriteInstances.push_back(inst);
 
 		players[i]->transform.position.x = graphics->videoWidth / 2;
 		players[i]->transform.position.y = graphics->videoHeight - 64;
 		players[i]->color = Color::white;
-		players[i]->controller = new PlayerController();
+		players[i]->controller = new PlayerController(this);
 		players[i]->controller->unitInstance = players[i];
+	
+		auto wp = createWeaponInstance("weapons/fire", players[i], nullptr);
+		players[i]->weapons.push_back(wp);
 		((PlayerController*)players[i]->controller)->playerIndex = i;
 	}
 
@@ -275,10 +304,10 @@ void Game::mainLoop()
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
-		
-		for (auto inst : unitInstances)
+
+		for (u32 i = 0; i < unitInstances.size(); i++)
 		{
-			inst->update(this);
+			unitInstances[i]->update(this);
 		}
 
 		for (auto inst : unitInstances)
@@ -336,7 +365,72 @@ bool Game::isPlayerFire3(u32 playerIndex)
 	return controls[(u32)(playerIndex ? InputControl::Player2_Fire3 : InputControl::Player1_Fire3)];
 }
 
-SpriteInstance* Game::createSpriteInstance(Sprite* sprite)
+bool Game::loadLevels()
+{
+	Json::Value listJson;
+
+	if (!loadJson(makeFullDataPath("levels/list.json"), listJson))
+	{
+		return false;
+	}
+
+	for (u32 i = 0; i < listJson.size(); i++)
+	{
+		Json::Value& lvlInfoJson = listJson[i];
+		printf("Level: %s in %s\n", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
+		auto lvl = resourceLoader->loadLevel(lvlInfoJson["file"].asString());
+		
+		if (lvl)
+		{
+			levels.push_back(lvl);
+		}
+	}
+
+	return true;
+}
+
+void Game::deleteNonPersistentUnitInstances()
+{
+	auto iter = unitInstances.begin();
+
+	while (iter != unitInstances.end())
+	{
+		if ((*iter)->type == UnitResource::Type::Enemy
+			|| (*iter)->type == UnitResource::Type::Item
+			|| (*iter)->type == UnitResource::Type::Projectile)
+		{
+			delete *iter;
+			iter = unitInstances.erase(iter);
+		}
+		else
+		{
+			++iter;
+		}
+	}
+}
+
+bool Game::changeLevel(u32 index)
+{
+	deleteNonPersistentUnitInstances();
+
+	if (index >= levels.size())
+	{
+		printf("ERROR: Level index out of range %d\n", index);
+		return false;
+	}
+
+	LevelResource* lev = levels[index];
+
+	for (u32 i = 0; i < lev->unitInstances.size(); i++)
+	{
+
+	}
+
+	currentLevelIndex = index;
+	return true;
+}
+
+SpriteInstance* Game::createSpriteInstance(SpriteResource* sprite)
 {
 	SpriteInstance* inst = new SpriteInstance();
 	inst->sprite = sprite;
@@ -345,42 +439,63 @@ SpriteInstance* Game::createSpriteInstance(Sprite* sprite)
 	return inst;
 }
 
-UnitInstance* Game::createUnitInstance(UnitResource* unit)
+void Game::copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInstance* unitInst)
 {
-	auto unitInst = new UnitInstance();
-	unitInstances.push_back(unitInst);
-	unitInst->unit = unit;
-	unitInst->team = unit->team;
-	unitInst->name = unit->name;
-	unitInst->speed = unit->speed;
-	unitInst->transform = unit->transform;
+	unitInst->unit = unitRes;
+	unitInst->team = unitRes->team;
+	unitInst->name = unitRes->name;
+	unitInst->speed = unitRes->speed;
+	unitInst->type = unitRes->type;
+	unitInst->visible = unitRes->visible;
 	
-	for (u32 i = 0; i < unit->spriteInstanceCount; i++)
+	//TODO: add script resource also
+
+	// create the sprite instances for this unit instance
+	for (u32 i = 0; i < unitRes->spriteInstances.size(); i++)
 	{
 		SpriteInstance* sprInst = new SpriteInstance();
-		sprInst->sprite = unit->spriteInstances[i].sprite;
-		sprInst->setAnimation(unit->spriteInstances[i].spriteAnimationInstance.spriteAnimation->name);
+		sprInst->sprite = unitRes->spriteInstances[i]->sprite;
+		sprInst->setAnimation("default");
 		unitInst->spriteInstances.push_back(sprInst);
 	}
 
-	for (u32 i = 0; i < unit->spriteInstanceAnimationCount; i++)
+	// copy over sprite instance animations ? or just use the resource
+	for (u32 i = 0; i < unitRes->spriteInstanceAnimations.size(); i++)
 	{
-		unitInst->spriteInstanceAnimations[unit->spriteInstanceAnimations[i].animation->name] = unit->spriteInstanceAnimations[i].animation;
+		//unitInst->spriteInstanceAnimations[unit->spriteInstanceAnimations[i].animation->name] =
+		//	unit->spriteInstanceAnimations[i].animation;
+
 	}
+}
+
+UnitInstance* Game::createUnitInstance(UnitResource* unit)
+{
+	auto unitInst = new UnitInstance();
+
+	copyUnitToUnitInstance(unit, unitInst);
+	unitInstances.push_back(unitInst);
 
 	return unitInst;
 }
 
-ProjectileInstance* Game::createProjectileInstance(ProjectileResource* projectile)
+WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst)
 {
-	
+	WeaponInstance* weaponInst = new WeaponInstance();
+	auto weaponRes = resourceLoader->loadWeapon(weaponResFilename);
+
+	weaponInst->parentUnitInstance = unitInst;
+	weaponInst->attachTo = spriteInst;
+	weaponInst->setWeaponResource(weaponRes);
+
+	return weaponInst;
 }
+
 
 UnitController* Game::createUnitController(const std::string& name)
 {
 	if (name == "player")
 	{
-		return new PlayerController();
+		return new PlayerController(this);
 	}
 
 	std::cout << "Unknown unit controller type: " << name << std::endl;

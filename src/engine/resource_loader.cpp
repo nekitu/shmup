@@ -1,58 +1,17 @@
 #include "resource_loader.h"
+#include "resource.h"
 #include "resources/sprite_resource.h"
 #include "resources/sound_resource.h"
 #include "resources/unit_resource.h"
 #include "resources/level_resource.h"
+#include "resources/weapon_resource.h"
 #include "image_atlas.h"
 #include <json/json.h>
+#include "utils.h"
 
 namespace engine
 {
-static std::string readTextFile(const char* path)
-{
-	FILE* file = fopen(path, "rb");
-
-	if (!file)
-		return std::string("");
-
-	fseek(file, 0, SEEK_END);
-	long size = ftell(file);
-	std::string text;
-
-	if (size != -1)
-	{
-		fseek(file, 0, SEEK_SET);
-
-		char* buffer = new char[size + 1];
-		buffer[size] = 0;
-
-		if (fread(buffer, 1, size, file) == (unsigned long)size)
-			text = buffer;
-
-		delete[] buffer;
-	}
-
-	fclose(file);
-
-	return text;
-}
-
-bool loadJson(const std::string& fullFilename, Json::Value& root)
-{
-	Json::Reader reader;
-	auto json = readTextFile((fullFilename + ".json").c_str());
-	bool ok = reader.parse(json, root);
-
-	if (!ok)
-	{
-		printf(reader.getFormatedErrorMessages().c_str());
-		return nullptr;
-	}
-
-	return true;
-}
-
-SpriteResource* ResourceLoader::loadSprite(const char* filename, ImageAtlas* atlas)
+SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 {
 	std::string fullFilename = root + filename;
 
@@ -62,84 +21,158 @@ SpriteResource* ResourceLoader::loadSprite(const char* filename, ImageAtlas* atl
 		return dynamic_cast<SpriteResource*>(resources[filename]);
 	}
 
-	Json::Value root;
+	Json::Value json;
 
-	if (!loadJson(fullFilename, ))
-	
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
 	SpriteResource* sprite = new SpriteResource();
 
-
+	sprite->loader = this;
+	sprite->atlas = atlas;
+	sprite->fileName = filename;
+	sprite->load(json);
+	resources[filename] = sprite;
 
 	return sprite;
 }
 
-SoundResource* ResourceLoader::loadSound(const char* filename)
+SoundResource* ResourceLoader::loadSound(const std::string& filename)
 {
 	std::string fullFilename = root + filename;
 
-	if (sounds[filename])
+	if (resources[filename])
 	{
-		sounds[filename]->usageCount++;
-		return sounds[filename];
+		resources[filename]->usageCount++;
+		return (SoundResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
 	}
 
 	SoundResource* sound = new SoundResource();
 
-	sound->load(filename);
+	sound->loader = this;
+	sound->fileName = filename;
+	sound->load(json);
+	resources[filename] = sound;
 
 	return sound;
 }
 
-
-MusicResource* ResourceLoader::loadMusic(const char* filename)
+MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 {
 	std::string fullFilename = root + filename;
 
-	if (musics[filename])
+	if (resources[filename])
 	{
-		musics[filename]->usageCount++;
-		return musics[filename];
+		resources[filename]->usageCount++;
+		return (MusicResource*)resources[filename];
+	}
+
+	Json::Value json;
+	
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
 	}
 
 	MusicResource* music = new MusicResource();
 
-	music->load(filename);
+	music->loader = this;
+	music->fileName = filename;
+	music->load(json);
+	resources[filename] = music;
 
 	return music;
 }
 
-UnitResource* ResourceLoader::loadUnit(const char* filename)
+UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 {
 	std::string fullFilename = root + filename;
 
-	if (units[filename])
+	if (resources[filename])
 	{
-		units[filename]->usageCount++;
-		return units[filename];
+		resources[filename]->usageCount++;
+		return (UnitResource*)resources[filename];
+	}
+
+	Json::Value json;
+	
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
 	}
 
 	UnitResource* unit = new UnitResource();
 
-	unit->load(filename);
+	unit->loader = this;
+	unit->fileName = filename;
+	unit->load(json);
+	resources[filename] = unit;
 
 	return unit;
 }
 
-LevelResource* ResourceLoader::loadLevel(const char* filename)
+LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 {
 	std::string fullFilename = root + filename;
 
-	if (levels[filename])
+	if (resources[filename])
 	{
-		levels[filename]->usageCount++;
-		return levels[filename];
+		resources[filename]->usageCount++;
+		return (LevelResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
 	}
 
 	LevelResource* level = new LevelResource();
 
-	level->load(filename);
+	level->loader = this;
+	level->fileName = filename;
+	level->load(json);
+	resources[filename] = level;
 
 	return level;
+}
+
+WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
+{
+	std::string fullFilename = root + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (WeaponResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
+	WeaponResource* res = new WeaponResource();
+
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	res->projectileUnit = loadUnit(json.get("projectileUnit", "").asString());
+	resources[filename] = res;
+
+	return res;
 }
 
 }

@@ -4,11 +4,13 @@
 #include <SDL.h>
 #include <SDL_version.h>
 #include <SDL_audio.h>
-#include "unit_instance.h"
 #include <string>
+#include <unordered_map>
 
 namespace engine
 {
+struct UnitInstance;
+
 enum class InputControl
 {
 	Exit = 0,
@@ -49,7 +51,12 @@ struct Game
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct MusicInstance* music = nullptr;
-	
+	std::vector<struct LevelResource*> levels;
+	u32 currentLevelIndex = 0;
+	static Game* instance;
+
+	Game();
+	~Game();
 	bool initialize();
 	void shutdown();
 	void createPlayers();
@@ -65,9 +72,14 @@ struct Game
 	bool isPlayerFire1(u32 playerIndex);
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
+	void deleteNonPersistentUnitInstances();
+	bool loadLevels();
+	bool changeLevel(u32 index);
+	static std::string makeFullDataPath(const std::string relativeDataFilename);
 	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
 	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
-	struct WeaponInstance* createWeaponInstance(struct WeaponResource* weaponRes);
+	void copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInstance* unitInst);
+	struct WeaponInstance* createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst);
 	struct UnitController* createUnitController(const std::string& name);
 };
 

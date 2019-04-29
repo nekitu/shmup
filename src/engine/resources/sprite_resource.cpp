@@ -1,15 +1,17 @@
 #include "sprite_resource.h"
 #include <stb_image.h>
 #include "image_atlas.h"
+#include "game.h"
 
 namespace engine
 {
-AtlasImage* SpriteResource::loadImage(const char* filename, ImageAtlas* atlas)
+AtlasImage* SpriteResource::loadImage(const std::string& filename)
 {
 	int width = 0;
 	int height = 0;
-	int comp;
-	stbi_uc* data = stbi_load(filename, &width, &height, &comp, 4);
+	int comp = 0;
+
+	stbi_uc* data = stbi_load(filename.c_str(), &width, &height, &comp, 4);
 
 	if (!data)
 		return nullptr;
@@ -38,25 +40,27 @@ Rect SpriteResource::getFrameUvRect(u32 frame)
 	return rc;
 }
 
-bool SpriteResource::load(const std::string& filename)
+bool SpriteResource::load(Json::Value& json)
 {
+	auto imageFilename = fileName + ".png";
+	
+	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
+	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
 
-	sprite->frameWidth = root.get("frameWidth", Json::Value(0)).asInt();
-	sprite->frameHeight = root.get("frameHeight", Json::Value(0)).asInt();
-
-	Json::Value animations = root.get("animations", Json::Value());
-	auto animNames = animations.getMemberNames();
+	Json::Value animationsJson = json.get("animations", Json::Value());
+	auto animNames = animationsJson.getMemberNames();
 
 	for (auto& animName : animNames)
 	{
-		auto& animJson = animations.get(animName, Json::Value());
+		auto& animJson = animationsJson.get(animName, Json::Value());
 		SpriteAnimation* anim = new SpriteAnimation();
 
+		anim->name = animName;
 		anim->startFrame = animJson.get("start", Json::Value(0)).asInt();
 		anim->frameCount = animJson.get("frames", Json::Value(0)).asInt();
 		anim->framesPerSecond = animJson.get("fps", Json::Value(0)).asInt();
 		anim->repeatCount = animJson.get("repeat", Json::Value(0)).asInt();
-		sprite->animations[animName] = anim;
+		animations[animName] = anim;
 
 		std::string type = animJson.get("type", Json::Value("normal")).asString();
 		if (type == "normal") anim->type = SpriteAnimation::Type::Normal;
@@ -64,11 +68,11 @@ bool SpriteResource::load(const std::string& filename)
 		if (type == "pingpong") anim->type = SpriteAnimation::Type::PingPong;
 	}
 
-	sprite->image = sprite->loadImage((fullFilename + ".png").c_str(), atlas);
+	image = loadImage(Game::makeFullDataPath(imageFilename));
 	//TODO: put this after the global atlas packing
-	sprite->uvFrameWidth = sprite->image->uvRect.width / (f32)(sprite->image->width / sprite->frameWidth);
-	sprite->uvFrameHeight = sprite->image->uvRect.height / (f32)(sprite->image->height / sprite->frameHeight);
-	sprites[filename] = sprite;
+	uvFrameWidth = image->uvRect.width / (f32)(image->width / frameWidth);
+	uvFrameHeight = image->uvRect.height / (f32)(image->height / frameHeight);
+
 	return true;
 }
 

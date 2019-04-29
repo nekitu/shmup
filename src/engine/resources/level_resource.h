@@ -4,7 +4,10 @@
 
 namespace engine
 {
+
 struct LevelResource : Resource
 {
+	std::vector<struct UnitInstance*> unitInstances;
+	bool load(Json::Value& json);
 };
 }

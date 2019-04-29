@@ -1,4 +1,7 @@
+#pragma once
 #include "types.h"
+#include <unordered_map>
+#include "resources/unit_resource.h"
 
 namespace engine
 {
@@ -6,7 +9,7 @@ struct UnitInstance
 {
 	struct SpriteInstanceAnimation
 	{
-		SpriteInstance* spriteInstance = nullptr;
+		struct SpriteInstance* spriteInstance = nullptr;
 		struct AnimationInstance* animationInstance = nullptr;
 	};
 
@@ -19,7 +22,7 @@ struct UnitInstance
 	std::string name;
 	UnitResource::Type type = UnitResource::Type::Enemy;
 	Team team = Team::Enemies;
-	Color color;
+	Color color = Color::white;
 	Transform transform;
 	Rect boundingBox;
 	bool hasShadows = false;
@@ -31,7 +34,9 @@ struct UnitInstance
 	bool isHit = false;
 	Color hitColor;
 	struct UnitController* controller = nullptr;
+	std::vector<struct WeaponInstance*> weapons;
 
+	void cloneTo(UnitInstance* clone);
 	void update(struct Game* game);
 	void render(struct Graphics* gfx);
 	void computeBoundingBox();

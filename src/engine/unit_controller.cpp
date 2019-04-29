@@ -1,4 +1,13 @@
 #include "unit_controller.h"
+#include "unit_instance.h"
+#include "weapon_instance.h"
+#include "game.h"
+#include "utils.h"
+#include "resource_loader.h"
+#include "graphics.h"
+#include "sound_instance.h"
+#include "projectile_instance.h"
+#include "resources/sound_resource.h"
 
 namespace engine
 {
@@ -20,22 +29,37 @@ void SimpleEnemyController::update(struct Game* game)
 		unitInstance->transform.position.y = -32;
 }
 
-PlayerController::PlayerController()
+void ProjectileController::update(struct Game* game)
 {
-	fireSound = new Sound();
-	fireSound->load("..\\data\\sounds\\Laser01.wav");
+	if (!unitInstance) return;
+	
+	auto projInst = (ProjectileInstance*)unitInstance;
+
+	unitInstance->transform.position += projInst->velocity * unitInstance->speed * game->deltaTime;
+}
+
+PlayerController::PlayerController(Game* game)
+{
+	fireSoundRes = game->resourceLoader->loadSound("sounds/Laser01.wav");
+	fireSound = new SoundInstance();
+	fireSound->soundResource = fireSoundRes;
 }
 
 void PlayerController::update(struct Game* game)
 {
 	if (!unitInstance) return;
 
-	fire1PlayingTime += game->deltaTime;
-
-	if (game->isPlayerFire1(playerIndex) && fire1PlayingTime > 1.0f / fire1Rate)
+	if (game->isPlayerFire1(playerIndex))
 	{
-		fire1PlayingTime = 0;
-		fireSound->play();
+		for (auto& wp: unitInstance->weapons)
+		{
+			wp->fire();
+		}
+	}
+
+	for (auto& wp : unitInstance->weapons)
+	{
+		wp->update(game);
 	}
 
 	if (game->isPlayerMoveLeft(playerIndex))

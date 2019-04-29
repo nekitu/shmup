@@ -34,6 +34,8 @@ struct UnitResource : Resource
 	{
 		struct SpriteResource* sprite = nullptr;
 		Transform transform;
+		std::string name;
+		std::string animationName;
 	};
 
 	struct SpriteInstanceAnimation
@@ -48,12 +50,10 @@ struct UnitResource : Resource
 	f32 speed = 10.0f;
 	bool visible = true;
 	struct ScriptResource* scriptResource = nullptr;
-	SpriteInstanceResource* spriteInstances = nullptr;
-	u32 spriteInstanceCount = 0;
-	SpriteInstanceAnimation* spriteInstanceAnimations;
-	u32 spriteInstanceAnimationCount = 0;
+	std::vector<SpriteInstanceResource*> spriteInstances;
+	std::vector<SpriteInstanceAnimation*> spriteInstanceAnimations;
 
-	virtual bool load(const std::string& filename) override;
+	virtual bool load(Json::Value& json) override;
 };
 
 }

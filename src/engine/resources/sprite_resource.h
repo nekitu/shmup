@@ -44,6 +44,7 @@ struct SpriteAnimationInstance
 struct SpriteResource : Resource
 {
 	struct AtlasImage* image = nullptr;
+	struct ImageAtlas* atlas = nullptr;
 	u32 frameCount = 0;
 	u32 frameWidth = 0;
 	u32 frameHeight = 0;
@@ -51,9 +52,9 @@ struct SpriteResource : Resource
 	f32 uvFrameHeight = 0;
 	std::unordered_map<std::string, SpriteAnimation*> animations;
 
-	struct AtlasImage* loadImage(const char* filename, struct ImageAtlas* atlas);
+	struct AtlasImage* loadImage(const std::string& filename);
 	Rect getFrameUvRect(u32 frame);
-	bool load(const std::string& filename) override;
+	bool load(Json::Value& json) override;
 };
 
 }

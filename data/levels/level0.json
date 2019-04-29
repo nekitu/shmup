@@ -1,0 +1,10 @@
+{
+"unitInstances":
+[
+	{
+		"name": "Some1",
+		"position.x": 10.0,
+		"position.y": 10.0
+	}
+]
+}

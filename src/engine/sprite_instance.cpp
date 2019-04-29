@@ -1,6 +1,6 @@
 #include "sprite_instance.h"
 #include "game.h"
-#include "sprite.h"
+#include "resources/sprite_resource.h"
 #include "sprite_instance.h"
 
 namespace engine

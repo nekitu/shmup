@@ -1,0 +1,11 @@
+{
+    "name": "Fire",
+    "team": "player",
+    "spriteInstances":
+    [
+        {
+            "name": "body",
+            "sprite": "sprites/fire"
+        }
+    ]
+}

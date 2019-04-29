@@ -9,12 +9,14 @@ struct ResourceLoader
 {
 	std::string root = "../data/";
 	std::unordered_map<std::string/*filename*/, struct Resource*> resources;
+	struct ImageAtlas* atlas = nullptr;
 
 	// example: "sprites/sample_sprite"
-	SpriteResource* loadSprite(const char* filename, struct ImageAtlas* atlas);
-	SoundResource* loadSound(const char* filename);
-	MusicResource* loadMusic(const char* filename);
-	UnitResource* loadUnit(const char* filename);
-	LevelResource* loadLevel(const char* filename);
+	struct SpriteResource* loadSprite(const std::string& filename);
+	struct SoundResource* loadSound(const std::string& filename);
+	struct MusicResource* loadMusic(const std::string& filename);
+	struct UnitResource* loadUnit(const std::string& filename);
+	struct LevelResource* loadLevel(const std::string& filename);
+	struct WeaponResource* loadWeapon(const std::string& filename);
 };
 }

@@ -1,11 +1,39 @@
 #include "unit_instance.h"
+#include "unit_controller.h"
+#include "sprite_instance.h"
+#include "resources/sprite_resource.h"
+#include "graphics.h"
+#include "image_atlas.h"
 
 namespace engine
 {
+void UnitInstance::cloneTo(UnitInstance* clone)
+{
+	clone->boundingBox = boundingBox;
+	clone->collide = collide;
+	clone->color = color;
+	clone->currentSpriteInstanceAnimation = currentSpriteInstanceAnimation;
+	clone->hasShadows = hasShadows;
+	clone->hitColor = hitColor;
+	clone->isHit = isHit;
+	clone->name = name;
+	clone->shadowOffset = shadowOffset;
+	clone->shadowScale = shadowScale;
+	clone->shadowToggle = shadowToggle;
+	clone->speed = speed;
+	clone->team = team;
+	clone->transform = transform;
+	clone->type = type;
+	clone->unit = unit;
+	clone->visible = visible;
+}
+
 void UnitInstance::update(Game* game)
 {
 	if (controller)
+	{
 		controller->update(game);
+	}
 
 	for (auto inst : spriteInstances)
 	{

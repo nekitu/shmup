@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include "json/value.h"
 
 namespace engine
 {
@@ -12,4 +13,6 @@ namespace engine
 	f32 randomFloat(f32 low, f32 high);
 	f32 randomNormalizedFloat(); // 0.0f -> 1.0f range
 	bool utf8ToUtf32(const char* text, UnicodeString& outText);
+	bool loadJson(const std::string& filename, Json::Value& json);
+	std::string readTextFile(const std::string& path);
 }

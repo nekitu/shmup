@@ -1,0 +1,5 @@
+{
+	"fireRate" : 1,
+	"fireRays" : 6,
+	"projectileUnit" : "units/projectile/fire"
+}

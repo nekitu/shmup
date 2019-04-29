@@ -10,7 +10,7 @@ struct SoundResource : Resource
 	Mix_Chunk* wave = nullptr;
 
 	~SoundResource();
-	bool load(const std::string& filename) override;
+	bool load(Json::Value& json) override;
 };
 
 struct MusicResource : Resource
@@ -18,7 +18,7 @@ struct MusicResource : Resource
 	Mix_Music* music = nullptr;
 
 	~MusicResource();
-	bool load(const std::string& filename) override;
+	bool load(Json::Value& json) override;
 };
 
 }
