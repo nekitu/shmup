@@ -1,6 +1,8 @@
 #include "utils.h"
 #include "libs/utf8/source/utf8.h"
 #include "json/reader.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 namespace engine
 {
@@ -119,5 +121,8 @@ std::string readTextFile(const std::string& path)
 
 	return text;
 }
+
+f32 deg2rad(f32 deg) { return deg * M_PI / 180.f; }
+f32 rad2deg(f32 rad) { return rad * 180.f / M_PI; }
 
 }

@@ -27,15 +27,23 @@ Rect SpriteResource::getFrameUvRect(u32 frame)
 {
 	Rect rc;
 
-	u32 cols = (f32)image->width / (f32)frameWidth;
-	u32 rows = (f32)image->height / (f32)frameHeight;
-	u32 col = frame % cols;
-	u32 row = frame / cols;
+	u32 col = frame % columns;
+	u32 row = frame / columns;
 
-	rc.x = image->uvRect.x + uvFrameWidth * (f32)col;
-	rc.y = image->uvRect.y + uvFrameHeight * (f32)row;
-	rc.width = uvFrameWidth;
-	rc.height = uvFrameHeight;
+	if (image->rotated)
+	{
+		rc.x = image->uvRect.x + uvFrameWidth * (f32)row;
+		rc.y = image->uvRect.y + uvFrameHeight * (f32)col;
+		rc.width = uvFrameWidth;
+		rc.height = uvFrameHeight;
+	}
+	else
+	{
+		rc.x = image->uvRect.x + uvFrameWidth * (f32)col;
+		rc.y = image->uvRect.y + uvFrameHeight * (f32)row;
+		rc.width = uvFrameWidth;
+		rc.height = uvFrameHeight;
+	}
 
 	return rc;
 }
@@ -70,8 +78,20 @@ bool SpriteResource::load(Json::Value& json)
 
 	image = loadImage(Game::makeFullDataPath(imageFilename));
 	//TODO: put this after the global atlas packing
-	uvFrameWidth = image->uvRect.width / (f32)(image->width / frameWidth);
-	uvFrameHeight = image->uvRect.height / (f32)(image->height / frameHeight);
+
+	if (image->rotated)
+	{
+		uvFrameWidth = image->uvRect.width / (f32)(image->rect.height / frameHeight);
+		uvFrameHeight = image->uvRect.height / (f32)(image->rect.width / frameWidth);
+	}
+	else
+	{
+		uvFrameWidth = image->uvRect.width / (f32)(image->rect.width / frameWidth);
+		uvFrameHeight = image->uvRect.height / (f32)(image->rect.height / frameHeight);
+	}
+
+	columns = image->width / frameWidth;
+	rows = image->height / frameHeight;
 
 	return true;
 }

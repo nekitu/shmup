@@ -2,6 +2,7 @@
 #include "game.h"
 #include "resources/sprite_resource.h"
 #include "sprite_instance.h"
+#include <assert.h>
 
 namespace engine
 {
@@ -60,6 +61,7 @@ void SpriteInstance::setAnimation(const std::string& name)
 	if (sprite)
 	{
 		spriteAnimationInstance.spriteAnimation = sprite->animations[name];
+		assert(spriteAnimationInstance.spriteAnimation);
 		spriteAnimationInstance.play();
 	}
 }

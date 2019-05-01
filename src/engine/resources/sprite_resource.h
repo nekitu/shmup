@@ -50,6 +50,7 @@ struct SpriteResource : Resource
 	u32 frameHeight = 0;
 	f32 uvFrameWidth = 0;
 	f32 uvFrameHeight = 0;
+	u32 rows = 0, columns = 0;
 	std::unordered_map<std::string, SpriteAnimation*> animations;
 
 	struct AtlasImage* loadImage(const std::string& filename);

@@ -28,6 +28,8 @@ struct UnitInstance
 	bool hasShadows = false;
 	bool visible = true;
 	bool collide = true;
+	bool deleteOnOutOfScreen = false;
+	bool deleteMeNow = false;
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;
 	Vec2 shadowOffset;

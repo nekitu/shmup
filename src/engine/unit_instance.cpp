@@ -3,6 +3,7 @@
 #include "sprite_instance.h"
 #include "resources/sprite_resource.h"
 #include "graphics.h"
+#include "game.h"
 #include "image_atlas.h"
 
 namespace engine
@@ -41,6 +42,17 @@ void UnitInstance::update(Game* game)
 	}
 
 	computeBoundingBox();
+
+	if (deleteOnOutOfScreen)
+	{
+		if (boundingBox.x > game->graphics->videoWidth
+			|| boundingBox.y > game->graphics->videoHeight
+			|| boundingBox.right() < 0
+			|| boundingBox.top() < 0)
+		{
+			deleteMeNow = true;
+		}
+	}
 }
 
 void UnitInstance::computeBoundingBox()

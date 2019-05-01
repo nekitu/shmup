@@ -310,6 +310,21 @@ void Game::mainLoop()
 			unitInstances[i]->update(this);
 		}
 
+		auto iter = unitInstances.begin();
+
+		while (iter != unitInstances.end())
+		{
+			if ((*iter)->deleteMeNow)
+			{
+				delete *iter;
+				iter = unitInstances.erase(iter);
+			}
+			else
+			{
+				iter++;
+			}
+		}
+
 		for (auto inst : unitInstances)
 		{
 			inst->render(graphics);
@@ -455,6 +470,7 @@ void Game::copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInsta
 	{
 		SpriteInstance* sprInst = new SpriteInstance();
 		sprInst->sprite = unitRes->spriteInstances[i]->sprite;
+		sprInst->transform = unitRes->spriteInstances[i]->transform;
 		sprInst->setAnimation("default");
 		unitInst->spriteInstances.push_back(sprInst);
 	}

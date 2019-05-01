@@ -29,8 +29,7 @@ struct PlayerController : UnitController
 	u32 playerIndex = 0;
 	struct SoundResource* fireSoundRes = nullptr;
 	struct SoundInstance* fireSound = nullptr;
-	f32 fire1Rate = 15;
-	f32 fire1PlayingTime = FLT_MAX;
+	bool isFirePressed = false;
 
 	PlayerController(struct Game* game);
 	void update(struct Game* game) override;

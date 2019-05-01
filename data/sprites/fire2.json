@@ -1,14 +1,14 @@
 {
-    "frameWidth": 64,
-    "frameHeight": 64,
+    "frameWidth": 8,
+    "frameHeight": 8,
     "animations":
     {
         "default":
         {
             "start": 0,
-            "frames": 4,
+            "frames": 2,
             "type": "normal",
-            "fps": 24,
+            "fps": 6,
             "repeat": 0
         }
     }

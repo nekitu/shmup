@@ -36,6 +36,8 @@ void ProjectileController::update(struct Game* game)
 	auto projInst = (ProjectileInstance*)unitInstance;
 
 	unitInstance->transform.position += projInst->velocity * unitInstance->speed * game->deltaTime;
+	projInst->speed += projInst->speed * projInst->acceleration * game->deltaTime;
+	clampValue(projInst->speed, projInst->minSpeed, projInst->maxSpeed);
 }
 
 PlayerController::PlayerController(Game* game)
@@ -48,18 +50,34 @@ PlayerController::PlayerController(Game* game)
 void PlayerController::update(struct Game* game)
 {
 	if (!unitInstance) return;
+	static f32 t = 0;
 
-	if (game->isPlayerFire1(playerIndex))
+	if (game->isPlayerFire1(playerIndex) && !isFirePressed)
 	{
+		isFirePressed = true;
 		for (auto& wp: unitInstance->weapons)
 		{
 			wp->fire();
 		}
 	}
-
-	for (auto& wp : unitInstance->weapons)
+	
+	if (!game->isPlayerFire1(playerIndex))
 	{
-		wp->update(game);
+		isFirePressed = false;
+	}
+
+	if (isFirePressed)
+	{
+		for (auto& wpn : unitInstance->weapons)
+		{
+			wpn->params.fireRaysAngle += sinf(t) * 6.0f;
+			t += 1.0f * game->deltaTime;
+		}
+
+		for (auto& wp : unitInstance->weapons)
+		{
+			wp->update(game);
+		}
 	}
 
 	if (game->isPlayerMoveLeft(playerIndex))

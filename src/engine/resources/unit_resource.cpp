@@ -56,7 +56,7 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->transform.position.x = sprJson.get("position.x", 0.0f).asFloat();
 		sprInst->transform.position.y = sprJson.get("position.y", 0.0f).asFloat();
 		sprInst->transform.rotation = sprJson.get("rotation", 0).asInt();
-		sprInst->transform.scale = sprJson.get("scale", 0.0f).asFloat();
+		sprInst->transform.scale = sprJson.get("scale", 1.0f).asFloat();
 		sprInst->transform.horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
 		sprInst->transform.verticalFlip = sprJson.get("verticalFlip", false).asBool();
 	

@@ -5,7 +5,8 @@
     [
         {
             "name": "body",
-            "sprite": "sprites/fire"
+            "scale": 1,
+            "sprite": "sprites/fire2"
         }
     ]
 }
