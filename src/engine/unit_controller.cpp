@@ -68,12 +68,6 @@ void PlayerController::update(struct Game* game)
 
 	if (isFirePressed)
 	{
-		for (auto& wpn : unitInstance->weapons)
-		{
-			wpn->params.fireRaysAngle += sinf(t) * 6.0f;
-			t += 1.0f * game->deltaTime;
-		}
-
 		for (auto& wp : unitInstance->weapons)
 		{
 			wp->update(game);
