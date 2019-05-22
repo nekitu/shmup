@@ -242,6 +242,12 @@ function link_sdl2()
 	filter {}
 end
 
+function link_lua()
+	filter {}
+	includedirs {scriptRoot.."/libs/lua/src"}
+	links { "lua" }
+end
+
 ---
 --- Include the subprojects
 ---

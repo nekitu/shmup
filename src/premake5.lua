@@ -11,6 +11,7 @@ project "seagle"
     link_jsoncpp()
     link_stb_image()
     link_sdl2()
+    link_lua()
 
     filter {"system:linux"}
         linkgroups 'On'

@@ -2,15 +2,19 @@
 #include "types.h"
 #include "resource.h"
 
+struct lua_State;
+
 namespace engine
 {
 struct ScriptResource : Resource
 {
 	std::string code;
+
+	bool load(Json::Value& json) override;
 };
 
 extern bool initializeLua();
 extern void shutdownLua();
-extern struct lua_State* getLuaState();
+extern lua_State* getLuaState();
 
 }
