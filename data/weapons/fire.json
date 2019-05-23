@@ -9,5 +9,6 @@
     "initialProjectileSpeed": 230,
     "minProjectileSpeed": 50,
     "projectileAcceleration": -0.7,
-	"projectileUnit" : "units/projectile/fire"
+	"projectileUnit" : "units/projectile/fire",
+	"fireScript": "scripts/fire.lua"
 }

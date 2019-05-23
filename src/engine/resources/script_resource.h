@@ -11,6 +11,7 @@ struct ScriptResource : Resource
 	std::string code;
 
 	bool load(Json::Value& json) override;
+	void execute();
 };
 
 extern bool initializeLua();

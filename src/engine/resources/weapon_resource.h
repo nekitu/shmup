@@ -34,6 +34,7 @@ struct WeaponResource : Resource
 
 	Parameters params;
 	struct UnitResource* projectileUnit = nullptr;
+	struct ScriptResource* fireScript = nullptr;
 
 	bool load(Json::Value& json) override;
 };

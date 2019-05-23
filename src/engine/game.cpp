@@ -16,6 +16,7 @@
 #include "resources/sprite_resource.h"
 #include "resources/weapon_resource.h"
 #include "resources/level_resource.h"
+#include "resources/script_resource.h"
 #include "unit_instance.h"
 #include "sprite_instance.h"
 #include "music_instance.h"
@@ -101,6 +102,8 @@ bool Game::initialize()
 	graphics = new Graphics(this);
 	resourceLoader = new ResourceLoader();
 	resourceLoader->atlas = graphics->atlas;
+
+	initializeLua();
 
 	loadLevels();
 	changeLevel(0);

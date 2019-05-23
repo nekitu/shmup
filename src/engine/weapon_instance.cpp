@@ -4,6 +4,7 @@
 #include "sprite_instance.h"
 #include "unit_controller.h"
 #include "utils.h"
+#include "resources/script_resource.h"
 
 namespace engine
 {
@@ -17,6 +18,7 @@ void WeaponInstance::fire()
 {
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
+	weaponResource->fireScript->execute();
 }
 
 void WeaponInstance::spawnProjectiles(Game* game)

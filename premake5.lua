@@ -244,7 +244,7 @@ end
 
 function link_lua()
 	filter {}
-	includedirs {scriptRoot.."/libs/lua/src"}
+	includedirs {scriptRoot.."/libs/lua/src", scriptRoot.."/libs/lua/luaintf"}
 	links { "lua" }
 end
 

@@ -18,5 +18,6 @@ struct ResourceLoader
 	struct UnitResource* loadUnit(const std::string& filename);
 	struct LevelResource* loadLevel(const std::string& filename);
 	struct WeaponResource* loadWeapon(const std::string& filename);
+	struct ScriptResource* loadScript(const std::string& filename);
 };
 }

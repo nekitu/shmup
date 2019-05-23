@@ -5,6 +5,7 @@
 #include "resources/unit_resource.h"
 #include "resources/level_resource.h"
 #include "resources/weapon_resource.h"
+#include "resources/script_resource.h"
 #include "image_atlas.h"
 #include <json/json.h>
 #include "utils.h"
@@ -170,9 +171,38 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 	res->fileName = filename;
 	res->load(json);
 	res->projectileUnit = loadUnit(json.get("projectileUnit", "").asString());
+	res->fireScript = loadScript(json.get("fireScript", "").asString());
 	resources[filename] = res;
 
 	return res;
+}
+
+ScriptResource* ResourceLoader::loadScript(const std::string& filename)
+{
+	std::string fullFilename = root + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (ScriptResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+
+	//if (!loadJson(fullFilename + ".json", json))
+	//{
+	//	return nullptr;
+	//}
+
+	ScriptResource* script = new ScriptResource();
+
+	script->loader = this;
+	script->fileName = filename;
+	script->load(json);
+	resources[filename] = script;
+
+	return script;
 }
 
 }
