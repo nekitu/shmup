@@ -465,8 +465,7 @@ void Game::copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInsta
 	unitInst->speed = unitRes->speed;
 	unitInst->type = unitRes->type;
 	unitInst->visible = unitRes->visible;
-	
-	//TODO: add script resource also
+	unitInst->script = unitRes->scriptResource;
 
 	// create the sprite instances for this unit instance
 	for (u32 i = 0; i < unitRes->spriteInstances.size(); i++)
@@ -515,6 +514,18 @@ UnitController* Game::createUnitController(const std::string& name)
 	if (name == "player")
 	{
 		return new PlayerController(this);
+	}
+	else if (name == "simple_enemy")
+	{
+		return new SimpleEnemyController();
+	}
+	else if (name == "projectile")
+	{
+		return new ProjectileController();
+	}
+	else if (name == "background")
+	{
+		return new BackgroundController();
 	}
 
 	std::cout << "Unknown unit controller type: " << name << std::endl;

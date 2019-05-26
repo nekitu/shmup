@@ -37,6 +37,7 @@ struct UnitInstance
 	Color hitColor;
 	struct UnitController* controller = nullptr;
 	std::vector<struct WeaponInstance*> weapons;
+	struct ScriptResource* script = nullptr;
 
 	void cloneTo(UnitInstance* clone);
 	void update(struct Game* game);

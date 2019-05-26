@@ -2,13 +2,21 @@
 #include "types.h"
 #include "resource.h"
 
-struct lua_State;
+extern "C"
+{
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+}
+
+#include "luaintf/LuaIntf.h"
 
 namespace engine
 {
 struct ScriptResource : Resource
 {
 	std::string code;
+	LuaIntf::LuaRef M;
 
 	bool load(Json::Value& json) override;
 	void execute();

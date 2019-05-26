@@ -23,7 +23,7 @@ void SimpleEnemyController::update(struct Game* game)
 	if (!unitInstance) return;
 
 	unitInstance->transform.position.y += unitInstance->speed * game->deltaTime;
-	unitInstance->transform.position.x += sinf(unitInstance->transform.position.y)*0.3f;
+	unitInstance->transform.position.x += sinf(unitInstance->transform.position.y)*50.3f * game->deltaTime;
 
 	if (unitInstance->transform.position.y > game->graphics->videoHeight)
 		unitInstance->transform.position.y = -32;
