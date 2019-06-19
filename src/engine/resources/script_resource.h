@@ -19,7 +19,7 @@ struct ScriptResource : Resource
 	LuaIntf::LuaRef M;
 
 	bool load(Json::Value& json) override;
-	void execute();
+    LuaIntf::LuaRef getFunction(const std::string& funcName);
 };
 
 extern bool initializeLua();

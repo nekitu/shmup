@@ -18,7 +18,15 @@ void WeaponInstance::fire()
 {
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
-	weaponResource->fireScript->execute();
+	if (weaponResource->script)
+	{
+		auto f = weaponResource->script->getFunction("onFire");
+
+		if (f.isFunction())
+		{
+			f(this);
+		}
+	}
 }
 
 void WeaponInstance::spawnProjectiles(Game* game)
@@ -74,6 +82,11 @@ void WeaponInstance::update(struct Game* game)
         fireTimer = 0;
 		spawnProjectiles(game);
     }
+}
+
+void WeaponInstance::debug(const std::string& info)
+{
+	printf("WIDEBUG: %s\n", info.c_str());
 }
 
 }

@@ -2,6 +2,8 @@
 #include "utils.h"
 #include "resource_loader.h"
 
+#include "weapon_instance.h"
+
 namespace engine
 {
 static lua_State* L = nullptr;
@@ -29,11 +31,17 @@ bool ScriptResource::load(Json::Value& json)
 	return true;
 }
 
-void ScriptResource::execute()
+LuaIntf::LuaRef ScriptResource::getFunction(const std::string& funcName)
 {
-	LuaIntf::LuaRef onUpdateFunc = M.get("onUpdate");
+	auto f = M.get(funcName);
 
-	onUpdateFunc(111, "Coco");
+	if (!f.isFunction())
+	{
+		printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), fileName.c_str());
+		return LuaIntf::LuaRef::fromPtr(L, nullptr);
+	}
+
+	return f;
 }
 
 void engine_log(const char* str)
@@ -47,9 +55,16 @@ bool initializeLua()
 	
 	luaL_openlibs(L);
 
-	LuaIntf::LuaBinding(L).beginModule("engine")
+	auto& LUA = LuaIntf::LuaBinding(L);
+
+	LUA.beginModule("engine")
 		.addFunction("log", engine_log)
-		.endModule();
+	.endModule();
+
+	LUA.beginClass<WeaponInstance>("WeaponInstance")
+		.addFunction("fire", &WeaponInstance::fire)
+		.addFunction("debug", &WeaponInstance::debug)
+	.endClass();
 
 	return true;
 }

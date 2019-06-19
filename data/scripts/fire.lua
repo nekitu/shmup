@@ -1,11 +1,9 @@
 local M = {}
 
-engine.log("COCOCANEL Init")
-
-local function onUpdate(nr, str)
-  engine.log(tostring(nr)..str)
+local function onFire(weaponInstance)
+  weaponInstance:debug("COCOA!!!!")
 end
 
-M.onUpdate = onUpdate
+M.onFire = onFire
 
 return M

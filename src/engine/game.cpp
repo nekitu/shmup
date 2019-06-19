@@ -508,7 +508,6 @@ WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename,
 	return weaponInst;
 }
 
-
 UnitController* Game::createUnitController(const std::string& name)
 {
 	if (name == "player")
@@ -523,6 +522,7 @@ UnitController* Game::createUnitController(const std::string& name)
 	{
 		return new ProjectileController();
 	}
+
 	else if (name == "background")
 	{
 		return new BackgroundController();
@@ -532,6 +532,5 @@ UnitController* Game::createUnitController(const std::string& name)
 
 	return nullptr;
 }
-
 
 }

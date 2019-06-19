@@ -171,7 +171,7 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 	res->fileName = filename;
 	res->load(json);
 	res->projectileUnit = loadUnit(json.get("projectileUnit", "").asString());
-	res->fireScript = loadScript(json.get("fireScript", "").asString());
+	res->script = loadScript(json.get("fireScript", "").asString());
 	resources[filename] = res;
 
 	return res;
