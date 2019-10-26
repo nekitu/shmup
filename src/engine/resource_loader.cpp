@@ -29,15 +29,15 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 		return nullptr;
 	}
 
-	SpriteResource* sprite = new SpriteResource();
+	SpriteResource* res = new SpriteResource();
 
-	sprite->loader = this;
-	sprite->atlas = atlas;
-	sprite->fileName = filename;
-	sprite->load(json);
-	resources[filename] = sprite;
+	res->loader = this;
+	res->atlas = atlas;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return sprite;
+	return res;
 }
 
 SoundResource* ResourceLoader::loadSound(const std::string& filename)
@@ -57,14 +57,14 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 		return nullptr;
 	}
 
-	SoundResource* sound = new SoundResource();
+	SoundResource* res = new SoundResource();
 
-	sound->loader = this;
-	sound->fileName = filename;
-	sound->load(json);
-	resources[filename] = sound;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return sound;
+	return res;
 }
 
 MusicResource* ResourceLoader::loadMusic(const std::string& filename)
@@ -84,14 +84,14 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 		return nullptr;
 	}
 
-	MusicResource* music = new MusicResource();
+	MusicResource* res = new MusicResource();
 
-	music->loader = this;
-	music->fileName = filename;
-	music->load(json);
-	resources[filename] = music;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return music;
+	return res;
 }
 
 UnitResource* ResourceLoader::loadUnit(const std::string& filename)
@@ -111,14 +111,14 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 		return nullptr;
 	}
 
-	UnitResource* unit = new UnitResource();
+	UnitResource* res = new UnitResource();
 
-	unit->loader = this;
-	unit->fileName = filename;
-	unit->load(json);
-	resources[filename] = unit;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return unit;
+	return res;
 }
 
 LevelResource* ResourceLoader::loadLevel(const std::string& filename)
@@ -138,14 +138,14 @@ LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 		return nullptr;
 	}
 
-	LevelResource* level = new LevelResource();
+	LevelResource* res = new LevelResource();
 
-	level->loader = this;
-	level->fileName = filename;
-	level->load(json);
-	resources[filename] = level;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return level;
+	return res;
 }
 
 WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
@@ -195,14 +195,14 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 	//	return nullptr;
 	//}
 
-	ScriptResource* script = new ScriptResource();
+	ScriptResource* res = new ScriptResource();
 
-	script->loader = this;
-	script->fileName = filename;
-	script->load(json);
-	resources[filename] = script;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
 
-	return script;
+	return res;
 }
 
 }

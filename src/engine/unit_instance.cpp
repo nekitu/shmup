@@ -5,6 +5,8 @@
 #include "graphics.h"
 #include "game.h"
 #include "image_atlas.h"
+#include "animation.h"
+#include "weapon_instance.h"
 
 namespace engine
 {
@@ -27,6 +29,48 @@ void UnitInstance::cloneTo(UnitInstance* clone)
 	clone->type = type;
 	clone->unit = unit;
 	clone->visible = visible;
+	clone->deleteMeNow = deleteMeNow;
+	clone->deleteOnOutOfScreen = deleteOnOutOfScreen;
+	clone->controller = controller;
+	clone->script = script;
+
+	// clone sprite instances
+	for (auto& spriteInst : spriteInstances)
+	{
+		auto sprInst = new SpriteInstance();
+		sprInst->name = spriteInst->name;
+		sprInst->sprite = spriteInst->sprite;
+		sprInst->transform = spriteInst->transform;
+		sprInst->spriteAnimationInstance = spriteInst->spriteAnimationInstance;
+		sprInst->setAnimation("default");
+		clone->spriteInstances.push_back(sprInst);
+	}
+
+	// clone sprite instance animations
+	for (auto& spriteInstAnim : spriteInstanceAnimations)
+	{
+		auto& arr = clone->spriteInstanceAnimations[spriteInstAnim.first] = SpriteInstanceAnimations();
+
+		for (auto& anim : spriteInstAnim.second)
+		{
+			SpriteInstanceAnimation sia;
+			sia.spriteInstance = clone->spriteInstances[indexOfSpriteInstance(anim.spriteInstance)];
+			sia.animationInstance = new AnimationInstance();
+			*sia.animationInstance = *anim.animationInstance;
+			arr.push_back(sia);
+		}
+	}
+
+	// clone weapon instances
+	for (auto& wi : weapons)
+	{
+		WeaponInstance* wiNew = new WeaponInstance();
+
+		*wiNew = *wi;
+		wiNew->parentUnitInstance = clone;
+		wiNew->attachTo = clone->spriteInstances[indexOfSpriteInstance(wi->attachTo)];
+		clone->weapons.push_back(wiNew);
+	}
 }
 
 void UnitInstance::update(Game* game)
@@ -169,6 +213,16 @@ void UnitInstance::render(Graphics* gfx)
 			}
 		}
 	}
+}
+
+size_t UnitInstance::indexOfSpriteInstance(struct SpriteInstance* spriteInst)
+{
+	auto iter = std::find(spriteInstances.begin(), spriteInstances.end(), spriteInst);
+
+	if (iter == spriteInstances.end())
+		return -1;
+
+	return std::distance(spriteInstances.begin(), iter);
 }
 
 }

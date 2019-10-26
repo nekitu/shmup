@@ -58,10 +58,9 @@ void SpriteInstance::update(struct Game* game)
 
 void SpriteInstance::setAnimation(const std::string& name)
 {
-	if (sprite)
+	if (sprite && sprite->animations.size())
 	{
 		spriteAnimationInstance.spriteAnimation = sprite->animations[name];
-		assert(spriteAnimationInstance.spriteAnimation);
 		spriteAnimationInstance.play();
 	}
 }

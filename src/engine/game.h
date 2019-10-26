@@ -36,6 +36,7 @@ enum class InputControl
 
 struct Game
 {
+	static const int maxPlayerCount = 2;
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
 	bool vSync = true;
@@ -47,7 +48,7 @@ struct Game
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
 	std::vector<UnitInstance*> unitInstances;
-	UnitInstance* players[2];
+	UnitInstance* players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct MusicInstance* music = nullptr;
@@ -74,7 +75,7 @@ struct Game
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnitInstances();
 	bool loadLevels();
-	bool changeLevel(u32 index);
+	bool changeLevel(i32 index);
 	static std::string makeFullDataPath(const std::string relativeDataFilename);
 	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
 	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);

@@ -1,8 +1,8 @@
 #include "resources/script_resource.h"
 #include "utils.h"
 #include "resource_loader.h"
-
 #include "weapon_instance.h"
+#include "game.h"
 
 namespace engine
 {
@@ -59,7 +59,9 @@ bool initializeLua()
 
 	LUA.beginModule("engine")
 		.addFunction("log", engine_log)
-	.endModule();
+		.addFunction("changeLevel", [](int index) { Game::instance->changeLevel(index); })
+		.addFunction("loadNextLevel", []() { Game::instance->changeLevel(~0); })
+		.endModule();
 
 	LUA.beginClass<WeaponInstance>("WeaponInstance")
 		.addFunction("fire", &WeaponInstance::fire)

@@ -98,6 +98,7 @@ bool Game::initialize()
 	//}
 
 	initializeAudio();
+
 	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
 	resourceLoader = new ResourceLoader();
@@ -140,57 +141,13 @@ void Game::shutdown()
 
 void Game::createPlayers()
 {
-	UnitInstance* enemy = new UnitInstance();
-
-	enemy->team = Team::Neutrals;
-	enemy->color = Color::white;
-	enemy->speed = 10;
-	auto ctrler = new BackgroundController();
-	ctrler->unitInstance = enemy;
-	enemy->controller = ctrler;
-
-	SpriteInstance* inst = new SpriteInstance();
-	inst->sprite = resourceLoader->loadSprite("sprites/clouds2");
-
-	enemy->transform.position.x = graphics->videoWidth / 2;
-	enemy->transform.position.y = -(f32)inst->sprite->image->height / 2.0f;
-
-	enemy->spriteInstances.push_back(inst);
-
-	unitInstances.push_back(enemy);
-
-	//TODO: remove when level is made
-	for (u32 i = 0; i < 5; i++)
-	{
-		UnitInstance* enemy = new UnitInstance();
-		
-		enemy->team = Team::Enemies;
-		enemy->color = Color::green;
-		enemy->speed = randomFloat(4, 20);
-		enemy->transform.scale = 2.0f;
-		enemy->transform.position.x = randomFloat(0, graphics->videoWidth);
-		enemy->transform.position.y = randomFloat(0, graphics->videoHeight);
-		enemy->transform.verticalFlip = true;
-		auto ctrler = new SimpleEnemyController();
-		ctrler->unitInstance = enemy;
-		enemy->controller = ctrler;
-
-		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite");
-		inst->setAnimation("default");
-		enemy->spriteInstances.push_back(inst);
-
-		unitInstances.push_back(enemy);
-	}
-
-	for (u32 i = 0; i < 1; i++)
+	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
 		players[i] = new UnitInstance();
 		unitInstances.push_back(players[i]);
 		players[i]->team = Team::Players;
 		players[i]->name = "Player" + std::to_string(i + 1);
 		players[i]->speed = 120;
-		//players[i]->transform.verticalFlip = true;
 		players[i]->hasShadows = true;
 		players[i]->shadowOffset.set(40, 40);
 		players[i]->shadowScale = 0.4f;
@@ -427,9 +384,14 @@ void Game::deleteNonPersistentUnitInstances()
 	}
 }
 
-bool Game::changeLevel(u32 index)
+bool Game::changeLevel(i32 index)
 {
 	deleteNonPersistentUnitInstances();
+
+	if (index == -1)
+	{
+		currentLevelIndex++;
+	}
 
 	if (index >= levels.size())
 	{
@@ -439,9 +401,12 @@ bool Game::changeLevel(u32 index)
 
 	LevelResource* lev = levels[index];
 
+	// clone level unit instances to main game
 	for (u32 i = 0; i < lev->unitInstances.size(); i++)
 	{
-
+		auto uinst = new UnitInstance();
+		lev->unitInstances[i]->cloneTo(uinst);
+		unitInstances.push_back(uinst);
 	}
 
 	currentLevelIndex = index;
@@ -477,6 +442,7 @@ void Game::copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInsta
 		unitInst->spriteInstances.push_back(sprInst);
 	}
 
+	//TODO:
 	// copy over sprite instance animations ? or just use the resource
 	for (u32 i = 0; i < unitRes->spriteInstanceAnimations.size(); i++)
 	{

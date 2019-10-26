@@ -18,6 +18,7 @@ struct UnitInstance
 	struct UnitResource* unit = nullptr;
 	std::vector<SpriteInstance*> spriteInstances;
 	std::unordered_map<std::string /*animation name*/, SpriteInstanceAnimations> spriteInstanceAnimations;
+	std::vector<struct WeaponInstance*> weapons;
 	std::string currentSpriteInstanceAnimation;
 	std::string name;
 	UnitResource::Type type = UnitResource::Type::Enemy;
@@ -36,14 +37,13 @@ struct UnitInstance
 	bool isHit = false;
 	Color hitColor;
 	struct UnitController* controller = nullptr;
-	std::vector<struct WeaponInstance*> weapons;
 	struct ScriptResource* script = nullptr;
 
 	void cloneTo(UnitInstance* clone);
 	void update(struct Game* game);
 	void render(struct Graphics* gfx);
 	void computeBoundingBox();
-
+	size_t indexOfSpriteInstance(struct SpriteInstance* spriteInst);
 private:
 	bool shadowToggle = true;
 };
