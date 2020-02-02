@@ -3,11 +3,19 @@
 #include <string>
 #include "rect.h"
 #include "resource.h"
+#include "color.h"
 #include <unordered_map>
 
 namespace engine
 {
-struct SpriteAnimation
+enum class ColorMode
+{
+	Add,
+	Sub,
+	Mul
+};
+
+struct SpriteFrameAnimation
 {
 	enum class Type
 	{
@@ -24,23 +32,6 @@ struct SpriteAnimation
 	u32 repeatCount = 0; /// zero means infinite
 };
 
-struct SpriteAnimationInstance
-{
-	SpriteAnimation* spriteAnimation = nullptr;
-	f32 currentFrame = 0;
-	u32 currentRepeatCount = 0;
-	f32 direction = 1;
-	bool active = true;
-
-	void play()
-	{
-		direction = 1;
-		if (!spriteAnimation) return;
-		active = true;
-		currentFrame = spriteAnimation->startFrame;
-	}
-};
-
 struct SpriteResource : Resource
 {
 	struct AtlasImage* image = nullptr;
@@ -51,7 +42,9 @@ struct SpriteResource : Resource
 	f32 uvFrameWidth = 0;
 	f32 uvFrameHeight = 0;
 	u32 rows = 0, columns = 0;
-	std::unordered_map<std::string, SpriteAnimation*> animations;
+	Color color = Color::black;
+	ColorMode colorMode = ColorMode::Add;
+	std::unordered_map<std::string, SpriteFrameAnimation*> frameAnimations;
 
 	struct AtlasImage* loadImage(const std::string& filename);
 	Rect getFrameUvRect(u32 frame);

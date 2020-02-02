@@ -80,6 +80,7 @@ bool utf8ToUtf32(const char* text, UnicodeString& outText)
 
 bool loadJson(const std::string& fullFilename, Json::Value& root)
 {
+	printf("Loading %s\n", fullFilename.c_str());
 	Json::Reader reader;
 	auto json = readTextFile(fullFilename);
 	bool ok = reader.parse(json, root);

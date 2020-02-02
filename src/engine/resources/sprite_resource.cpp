@@ -54,6 +54,12 @@ bool SpriteResource::load(Json::Value& json)
 	
 	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
+	color.parse(json.get("color", color.toString()).asString());
+	auto colMode = json.get("colorMode", "Add").asString();
+
+	if (colMode == "Add") colorMode = ColorMode::Add;
+	if (colMode == "Sub") colorMode = ColorMode::Sub;
+	if (colMode == "Mul") colorMode = ColorMode::Mul;
 
 	Json::Value animationsJson = json.get("animations", Json::Value());
 	auto animNames = animationsJson.getMemberNames();
@@ -61,19 +67,19 @@ bool SpriteResource::load(Json::Value& json)
 	for (auto& animName : animNames)
 	{
 		auto& animJson = animationsJson.get(animName, Json::Value());
-		SpriteAnimation* anim = new SpriteAnimation();
+		SpriteFrameAnimation* anim = new SpriteFrameAnimation();
 
 		anim->name = animName;
 		anim->startFrame = animJson.get("start", Json::Value(0)).asInt();
 		anim->frameCount = animJson.get("frames", Json::Value(0)).asInt();
 		anim->framesPerSecond = animJson.get("fps", Json::Value(0)).asInt();
 		anim->repeatCount = animJson.get("repeat", Json::Value(0)).asInt();
-		animations[animName] = anim;
+		frameAnimations[animName] = anim;
 
 		std::string type = animJson.get("type", Json::Value("normal")).asString();
-		if (type == "normal") anim->type = SpriteAnimation::Type::Normal;
-		if (type == "reversed") anim->type = SpriteAnimation::Type::Reversed;
-		if (type == "pingpong") anim->type = SpriteAnimation::Type::PingPong;
+		if (type == "Normal") anim->type = SpriteFrameAnimation::Type::Normal;
+		if (type == "Reversed") anim->type = SpriteFrameAnimation::Type::Reversed;
+		if (type == "PingPong") anim->type = SpriteFrameAnimation::Type::PingPong;
 	}
 
 	image = loadImage(Game::makeFullDataPath(imageFilename));

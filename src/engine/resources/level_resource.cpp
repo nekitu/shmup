@@ -25,8 +25,9 @@ bool LevelResource::load(Json::Value& json)
 		}
 
 		auto unit = loader->loadUnit(unitFilename);
-		auto uinst = Game::instance->createUnitInstance(unit);
-		unitInstances.push_back(uinst);
+		auto unitInst = new UnitInstance();
+		unitInst->instantiateFrom(unit);
+		unitInstances.push_back(unitInst);
 	}
 
 	return true;

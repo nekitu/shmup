@@ -7,21 +7,25 @@ struct UnitController
 	struct UnitInstance* unitInstance = nullptr;
 
 	virtual void update(struct Game* game) = 0;
+	virtual UnitController* createNew() = 0;
 };
 
 struct BackgroundController : UnitController
 {
 	void update(struct Game* game) override;
+	UnitController* createNew() { return new BackgroundController(); }
 };
 
 struct SimpleEnemyController : UnitController
 {
 	void update(struct Game* game) override;
+	UnitController* createNew() { return new SimpleEnemyController(); }
 };
 
 struct ProjectileController : UnitController
 {
 	void update(struct Game* game) override;
+	UnitController* createNew() { return new ProjectileController(); }
 };
 
 struct PlayerController : UnitController
@@ -33,6 +37,7 @@ struct PlayerController : UnitController
 
 	PlayerController(struct Game* game);
 	void update(struct Game* game) override;
+	UnitController* createNew() { return new PlayerController(nullptr); }
 };
 
 }

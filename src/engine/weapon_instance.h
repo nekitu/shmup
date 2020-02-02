@@ -11,6 +11,7 @@ struct WeaponInstance
 	struct UnitInstance* parentUnitInstance = nullptr;
 	struct SpriteInstance* attachTo = nullptr;
 
+	void copyFrom(WeaponInstance* other);
 	void fire();
 	void setWeaponResource(struct WeaponResource* res);
 	void spawnProjectiles(struct Game* game);

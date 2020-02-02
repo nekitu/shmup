@@ -1,0 +1,54 @@
+{
+    "name": "StellarEagle1",
+	"type": "Enemy",
+	"speed": 5.0,
+    "healthPoints": 1000,
+    "script": "scripts/player",
+	"rootSpriteInstance": "body",
+    "stages":
+    [
+        {
+            "healthPercent": 100,
+            "introAnimation": "stage0_intro",
+            "outroAnimation": "stage0_outro",
+			"updateFunction": "stage0Update"
+        },
+        {
+            "healthPercent": 50,
+            "introAnimation": "stage1_intro",
+            "outroAnimation": "stage1_outro",
+			"updateFunction": "stage0Update"
+        },
+        {
+            "healthPercent": 0,
+            "introAnimation": "stage2_intro",
+            "outroAnimation": "stage2_outro",
+			"updateFunction": "stage0Update"
+        }
+    ],
+    "animations":
+    {
+        "stage0_intro":
+        {
+            "body": "anims/body_intro"
+        },
+        "stage0_outro":
+        {
+            "body": "anims/body_outro"
+        }
+    },
+    "spriteInstances":
+    [
+        {
+            "name": "body",
+            "sprite": "sprites/sample_sprite",
+            "position": "0 0",
+            "scale": 1.0,
+            "rotation": 0,
+            "horizontalFlip": false,
+            "verticalFlip": false,
+			"color": "0 0 0 1",
+			"hitColor": "1 0.4 0.4 1"
+        }
+    ]
+}

@@ -8,14 +8,33 @@
 #include "transform.h"
 #include "rect.h"
 #include "resource.h"
+#include "resources/sprite_resource.h"
 
 namespace engine
 {
-enum class Team
+struct SpriteInstanceResource
 {
-	Enemies,
-	Neutrals,
-	Players
+	struct SpriteResource* sprite = nullptr;
+	std::string name;
+	std::string animationName = "default";
+	Transform transform;
+	u32 orderIndex = 0;
+	bool collide = true;
+	f32 damageDamping = 1.0f;
+	Color color = Color::black;
+	ColorMode colorMode = ColorMode::Add;
+	Color hitColor = Color::red;
+	std::map<std::string /*anim name*/, struct AnimationResource*> animations;
+};
+
+struct UnitLifeStage
+{
+	f32 healthPercent = 100;
+	std::string introAnimationName;
+	std::string outroAnimationName;
+	std::string introFunction; // called once
+	std::string outroFunction; // called once
+	std::string updateFunction; // called every frame
 };
 
 struct UnitResource : Resource
@@ -25,33 +44,20 @@ struct UnitResource : Resource
 		Player,
 		Enemy,
 		Item,
-		Projectile,
+		PlayerProjectile,
+		EnemyProjectile,
 
 		Count
 	};
 
-	struct SpriteInstanceResource
-	{
-		struct SpriteResource* sprite = nullptr;
-		Transform transform;
-		std::string name;
-		std::string animationName;
-	};
-
-	struct SpriteInstanceAnimation
-	{
-		SpriteInstanceResource* spriteInstance = nullptr;
-		struct Animation* animation = nullptr;
-	};
-
 	std::string name;
 	Type type = Type::Enemy;
-	Team team = Team::Enemies;
 	f32 speed = 10.0f;
 	bool visible = true;
+	std::string rootSpriteInstanceName;
 	struct ScriptResource* scriptResource = nullptr;
-	std::vector<SpriteInstanceResource*> spriteInstances;
-	std::vector<SpriteInstanceAnimation*> spriteInstanceAnimations;
+	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> spriteInstances;
+	std::vector<UnitLifeStage> stages;
 
 	virtual bool load(Json::Value& json) override;
 };

@@ -79,7 +79,6 @@ struct Game
 	static std::string makeFullDataPath(const std::string relativeDataFilename);
 	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
 	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
-	void copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInstance* unitInst);
 	struct WeaponInstance* createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst);
 	struct UnitController* createUnitController(const std::string& name);
 };

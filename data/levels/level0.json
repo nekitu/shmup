@@ -3,9 +3,9 @@
 [
 	{
 		"name": "Some1",
-		"unit": "units/sample_unit"
-		"position.x": 10.0,
-		"position.y": 10.0
+        "type": "Enemy",
+		"unit": "units/enemy",
+		"position": "10.0 10.0"
 	}
 ]
 }

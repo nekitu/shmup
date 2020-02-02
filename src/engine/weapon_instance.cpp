@@ -8,6 +8,15 @@
 
 namespace engine
 {
+void WeaponInstance::copyFrom(WeaponInstance* other)
+{
+	params = other->params;
+	active = other->active;
+	weaponResource = other->weaponResource;
+	parentUnitInstance = other->parentUnitInstance;
+	attachTo = other->attachTo;
+}
+
 void WeaponInstance::setWeaponResource(struct WeaponResource* res)
 {
 	weaponResource = res;
@@ -45,18 +54,19 @@ void WeaponInstance::spawnProjectiles(Game* game)
 
         newProj->weapon = this;
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
-        newProj->transform.position = parentUnitInstance->transform.position + params.position + params.offset + offRadius;
+		newProj->instantiateFrom(weaponResource->projectileUnit);
+        newProj->rootSpriteInstance->transform.position = parentUnitInstance->rootSpriteInstance->transform.position + params.position + params.offset + offRadius;
         newProj->velocity.x = sinf(deg2rad(angle));
         newProj->velocity.y = cosf(deg2rad(angle));
         newProj->velocity.normalize();
 		newProj->controller = new ProjectileController();
 		newProj->controller->unitInstance = newProj;
-		game->copyUnitToUnitInstance(weaponResource->projectileUnit, newProj);
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
-		newProj->type = UnitResource::Type::Projectile;
+		newProj->type =
+			parentUnitInstance->type == UnitResource::Type::Enemy ? UnitResource::Type::EnemyProjectile : UnitResource::Type::PlayerProjectile;
 		newProj->deleteOnOutOfScreen = true;
 		game->unitInstances.push_back(newProj);
         angle += angleBetweenRays;

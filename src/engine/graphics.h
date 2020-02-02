@@ -31,6 +31,7 @@ struct Graphics
 	u32 drawVertexCount = 0;
 	f32 vertexCountGrowFactor = 1.5f;
 	u32 currentColor = 0;
+	u32 currentColorMode = 0;
 	u32 atlasTextureIndex = 0;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;

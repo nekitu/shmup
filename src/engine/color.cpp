@@ -33,6 +33,18 @@ Color Color::random()
 	return { (f32)rand() / (f32)RAND_MAX, (f32)rand() / (f32)RAND_MAX, (f32)rand() / (f32)RAND_MAX, 1 };
 }
 
+void Color::parse(const std::string& colorStr)
+{
+	sscanf_s(colorStr.c_str(), "%f %f %f %f", &r, &g, &b, &a);
+}
+
+std::string Color::toString() const
+{
+	char buff[300] = { 0 };
+	sprintf(buff, "%f %f %f %f", r, g, b, a);
+	return buff;
+}
+
 const Color Color::transparent(0, 0, 0, 0);
 const Color Color::white(1, 1, 1, 1);
 const Color Color::black(0, 0, 0, 1);

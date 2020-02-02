@@ -5,71 +5,147 @@
 #include "graphics.h"
 #include "game.h"
 #include "image_atlas.h"
-#include "animation.h"
+#include "animation_instance.h"
 #include "weapon_instance.h"
+#include <algorithm>
 
 namespace engine
 {
-void UnitInstance::cloneTo(UnitInstance* clone)
-{
-	clone->boundingBox = boundingBox;
-	clone->collide = collide;
-	clone->color = color;
-	clone->currentSpriteInstanceAnimation = currentSpriteInstanceAnimation;
-	clone->hasShadows = hasShadows;
-	clone->hitColor = hitColor;
-	clone->isHit = isHit;
-	clone->name = name;
-	clone->shadowOffset = shadowOffset;
-	clone->shadowScale = shadowScale;
-	clone->shadowToggle = shadowToggle;
-	clone->speed = speed;
-	clone->team = team;
-	clone->transform = transform;
-	clone->type = type;
-	clone->unit = unit;
-	clone->visible = visible;
-	clone->deleteMeNow = deleteMeNow;
-	clone->deleteOnOutOfScreen = deleteOnOutOfScreen;
-	clone->controller = controller;
-	clone->script = script;
+bool UnitInstance::shadowToggle = true;
 
-	// clone sprite instances
-	for (auto& spriteInst : spriteInstances)
+void UnitInstance::updateShadowToggle()
+{
+	shadowToggle = !shadowToggle;
+}
+
+void UnitInstance::copyFrom(UnitInstance* other)
+{
+	boundingBox = other->boundingBox;
+	currentAnimationName = other->currentAnimationName;
+	hasShadows = other->hasShadows;
+	name = other->name;
+	shadowOffset = other->shadowOffset;
+	shadowScale = other->shadowScale;
+	speed = other->speed;
+	type = other->type;
+	unit = other->unit;
+	visible = other->visible;
+	deleteMeNow = other->deleteMeNow;
+	deleteOnOutOfScreen = other->deleteOnOutOfScreen;
+	controller = other->controller->createNew();
+	controller->unitInstance = this;
+	script = other->script;
+
+	// map from other unit to new sprite instances
+	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
+
+	// copy sprite instances
+	for (auto& otherSprInst : other->spriteInstances)
 	{
 		auto sprInst = new SpriteInstance();
-		sprInst->name = spriteInst->name;
-		sprInst->sprite = spriteInst->sprite;
-		sprInst->transform = spriteInst->transform;
-		sprInst->spriteAnimationInstance = spriteInst->spriteAnimationInstance;
-		sprInst->setAnimation("default");
-		clone->spriteInstances.push_back(sprInst);
+
+		sprInst->copyFrom(otherSprInst);
+		spriteInstances.push_back(sprInst);
+		spriteInstMap[otherSprInst] = sprInst;
 	}
 
-	// clone sprite instance animations
-	for (auto& spriteInstAnim : spriteInstanceAnimations)
-	{
-		auto& arr = clone->spriteInstanceAnimations[spriteInstAnim.first] = SpriteInstanceAnimations();
+	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
 
-		for (auto& anim : spriteInstAnim.second)
+	// if no root specified, use first sprite instance as root
+	if (!rootSpriteInstance && spriteInstances.size())
+	{
+		rootSpriteInstance = spriteInstances[0];
+	}
+
+	// copy sprite instance animations
+	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
+	{
+		auto& animName = spriteInstAnim.first;
+		auto& animMap = spriteInstAnim.second;
+
+		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
+		auto& crtAnimMap = spriteInstanceAnimations[animName];
+
+		for (auto& anim : animMap)
 		{
-			SpriteInstanceAnimation sia;
-			sia.spriteInstance = clone->spriteInstances[indexOfSpriteInstance(anim.spriteInstance)];
-			sia.animationInstance = new AnimationInstance();
-			*sia.animationInstance = *anim.animationInstance;
-			arr.push_back(sia);
+			AnimationInstance* newAnimInst = new AnimationInstance();
+
+			newAnimInst->copyFrom(anim.second);
+			crtAnimMap[spriteInstMap[anim.first]] = newAnimInst;
 		}
 	}
 
-	// clone weapon instances
-	for (auto& wi : weapons)
+	// copy weapon instances
+	for (auto& wi : other->weapons)
 	{
 		WeaponInstance* wiNew = new WeaponInstance();
 
-		*wiNew = *wi;
-		wiNew->parentUnitInstance = clone;
-		wiNew->attachTo = clone->spriteInstances[indexOfSpriteInstance(wi->attachTo)];
-		clone->weapons.push_back(wiNew);
+		wiNew->copyFrom(wi);
+		wiNew->parentUnitInstance = this;
+		wiNew->attachTo = spriteInstMap[wi->attachTo];
+		weapons.push_back(wiNew);
+	}
+
+	setAnimation(currentAnimationName);
+}
+
+void UnitInstance::instantiateFrom(UnitResource* res)
+{
+	unit = res;
+	name = res->name;
+	speed = res->speed;
+	type = res->type;
+	visible = res->visible;
+	script = res->scriptResource;
+
+	// map from other unit to new sprite instances
+	std::map<SpriteInstanceResource*, SpriteInstance*> spriteInstMap;
+
+	// create the sprite instances for this unit instance
+	for (auto& iter : res->spriteInstances)
+	{
+		SpriteInstance* sprInst = new SpriteInstance();
+
+		sprInst->instantiateFrom(iter.second);
+		spriteInstances.push_back(sprInst);
+		spriteInstMap[iter.second] = sprInst;
+	}
+
+	std::sort(spriteInstances.begin(), spriteInstances.end(), [](const SpriteInstance* a, const SpriteInstance* b) { return a->orderIndex > b->orderIndex; });
+
+	if (res->rootSpriteInstanceName.size())
+	{
+		rootSpriteInstance = spriteInstMap[res->spriteInstances[res->rootSpriteInstanceName]];
+	}
+
+	// if no root specified, use first sprite instance as root
+	if (!rootSpriteInstance && spriteInstances.size())
+	{
+		rootSpriteInstance = spriteInstances[0];
+	}
+
+	// copy sprite instance animations
+	for (auto& spriteInstAnim : res->spriteInstances)
+	{
+		auto& animName = spriteInstAnim.first;
+		auto& sprInstRes = spriteInstAnim.second;
+
+		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
+		auto& crtAnimMap = spriteInstanceAnimations[animName];
+
+		for (auto& anim : sprInstRes->animations)
+		{
+			AnimationInstance* newAnimInst = new AnimationInstance();
+
+			newAnimInst->instantiateFrom(anim.second);
+			crtAnimMap[spriteInstMap[sprInstRes]] = newAnimInst;
+		}
+	}
+
+	if (type == UnitResource::Type::Enemy)
+	{
+		controller = new SimpleEnemyController();
+		controller->unitInstance = this;
 	}
 }
 
@@ -80,9 +156,21 @@ void UnitInstance::update(Game* game)
 		controller->update(game);
 	}
 
-	for (auto inst : spriteInstances)
+	if (spriteInstanceAnimationMap)
 	{
-		inst->update(game);
+		for (auto iter : *spriteInstanceAnimationMap)
+		{
+			auto sprInst = iter.first;
+			auto sprAnimInst = iter.second;
+
+			sprAnimInst->update(game->deltaTime);
+			sprAnimInst->animateSpriteInstance(sprInst);
+		}
+	}
+
+	for (auto sprInst : spriteInstances)
+	{
+		sprInst->update(game);
 	}
 
 	computeBoundingBox();
@@ -101,22 +189,27 @@ void UnitInstance::update(Game* game)
 
 void UnitInstance::computeBoundingBox()
 {
-	boundingBox.x = transform.position.x;
-	boundingBox.y = transform.position.y;
-	boundingBox.width = 0;
-	boundingBox.height = 0;
-
-	for (auto inst : spriteInstances)
+	if (rootSpriteInstance)
 	{
-		auto pos = transform.position;
-		f32 mirrorV = inst->transform.verticalFlip ? -1 : 1;
-		f32 mirrorH = inst->transform.horizontalFlip ? -1 : 1;
+		boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
+		boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
+		boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
+		boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+	}
+	
+	for (auto sprInst : spriteInstances)
+	{
+		if (!sprInst->visible || sprInst == rootSpriteInstance) continue;
 
-		pos.x += inst->transform.position.x * mirrorH;
-		pos.y += inst->transform.position.y * mirrorV;
+		auto pos = rootSpriteInstance->transform.position;
+		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
+		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
 
-		f32 renderW = inst->sprite->frameWidth * inst->transform.scale * transform.scale;
-		f32 renderH = inst->sprite->frameHeight * inst->transform.scale * transform.scale;
+		pos.x += sprInst->transform.position.x * mirrorH;
+		pos.y += sprInst->transform.position.y * mirrorV;
+
+		f32 renderW = sprInst->sprite->frameWidth * sprInst->transform.scale * rootSpriteInstance->transform.scale;
+		f32 renderH = sprInst->sprite->frameHeight * sprInst->transform.scale * rootSpriteInstance->transform.scale;
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
@@ -133,28 +226,39 @@ void UnitInstance::computeBoundingBox()
 	}
 }
 
+void UnitInstance::setAnimation(const std::string& animName)
+{
+	if (spriteInstanceAnimations.find(animName) != spriteInstanceAnimations.end())
+	{
+		spriteInstanceAnimationMap = &spriteInstanceAnimations[currentAnimationName];
+	}
+}
+
 void UnitInstance::render(Graphics* gfx)
 {
 	if (!visible)
 		return;
 
-	auto& crtColor = isHit ? hitColor : color;
-	gfx->currentColor = crtColor.getRgba();
-
-	for (auto inst : spriteInstances)
+	for (auto sprInst : spriteInstances)
 	{
-		auto pos = transform.position;
-		f32 mirrorV = inst->transform.verticalFlip ? -1 : 1;
-		f32 mirrorH = inst->transform.horizontalFlip ? -1 : 1;
+		if (!sprInst->visible) continue;
 
-		if (transform.verticalFlip) mirrorV *= -1;
-		if (transform.horizontalFlip) mirrorH *= -1;
+		auto pos = sprInst != rootSpriteInstance ? rootSpriteInstance->transform.position : Vec2();
 
-		pos.x += inst->transform.position.x * mirrorH;
-		pos.y += inst->transform.position.y * mirrorV;
+		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
+		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
 
-		f32 renderW = inst->sprite->frameWidth * inst->transform.scale * transform.scale;
-		f32 renderH = inst->sprite->frameHeight * inst->transform.scale * transform.scale;
+		if (sprInst != rootSpriteInstance)
+		{
+			if (rootSpriteInstance->transform.verticalFlip) mirrorV *= -1;
+			if (rootSpriteInstance->transform.horizontalFlip) mirrorH *= -1;
+		}
+
+		pos.x += sprInst->transform.position.x * mirrorH;
+		pos.y += sprInst->transform.position.y * mirrorV;
+
+		f32 renderW = sprInst->sprite->frameWidth * sprInst->transform.scale * ((sprInst != rootSpriteInstance) ? rootSpriteInstance->transform.scale : 1.0f);
+		f32 renderH = sprInst->sprite->frameHeight * sprInst->transform.scale * ((sprInst != rootSpriteInstance) ? rootSpriteInstance->transform.scale : 1.0f);
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
@@ -167,7 +271,7 @@ void UnitInstance::render(Graphics* gfx)
 				renderH
 		};
 
-		Rect uvRc = inst->sprite->getFrameUvRect(inst->spriteAnimationInstance.currentFrame);
+		Rect uvRc = sprInst->sprite->getFrameUvRect(sprInst->animationFrame);
 
 		if (mirrorV < 0)
 		{
@@ -181,7 +285,10 @@ void UnitInstance::render(Graphics* gfx)
 			uvRc.width *= -1.0f;
 		}
 
-		if (inst->sprite->image->rotated)
+		gfx->currentColor = sprInst->color.getRgba();
+		gfx->currentColorMode = (u32)sprInst->colorMode;
+
+		if (sprInst->sprite->image->rotated)
 		{
 			gfx->drawQuadRot90(spriteRc, uvRc);
 		}
@@ -192,17 +299,16 @@ void UnitInstance::render(Graphics* gfx)
 
 		if (hasShadows)
 		{
-			shadowToggle = !shadowToggle;
-
 			if (shadowToggle)
 			{
 				spriteRc += shadowOffset;
 				spriteRc.width *= shadowScale;
 				spriteRc.height *= shadowScale;
 
-				gfx->currentColor = Color::black.getRgba();
+				gfx->currentColor = 0;
+				gfx->currentColorMode = (u32)ColorMode::Mul;
 
-				if (inst->sprite->image->rotated)
+				if (sprInst->sprite->image->rotated)
 				{
 					gfx->drawQuadRot90(spriteRc, uvRc);
 				}
@@ -213,16 +319,6 @@ void UnitInstance::render(Graphics* gfx)
 			}
 		}
 	}
-}
-
-size_t UnitInstance::indexOfSpriteInstance(struct SpriteInstance* spriteInst)
-{
-	auto iter = std::find(spriteInstances.begin(), spriteInstances.end(), spriteInst);
-
-	if (iter == spriteInstances.end())
-		return -1;
-
-	return std::distance(spriteInstances.begin(), iter);
 }
 
 }

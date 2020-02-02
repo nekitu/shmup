@@ -9,7 +9,7 @@
 #include "resource_loader.h"
 #include "image_atlas.h"
 #include "SDL_mixer.h"
-#include "animation.h"
+#include "animation_instance.h"
 #include "unit_controller.h"
 #include "resources/sound_resource.h"
 #include "resources/unit_resource.h"
@@ -144,25 +144,20 @@ void Game::createPlayers()
 	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
 		players[i] = new UnitInstance();
+		players[i]->instantiateFrom(resourceLoader->loadUnit("units/player"));
 		unitInstances.push_back(players[i]);
-		players[i]->team = Team::Players;
+		players[i]->type = UnitResource::Type::Player;
 		players[i]->name = "Player" + std::to_string(i + 1);
 		players[i]->speed = 120;
 		players[i]->hasShadows = true;
 		players[i]->shadowOffset.set(40, 40);
 		players[i]->shadowScale = 0.4f;
-		SpriteInstance* inst = new SpriteInstance();
-		inst->sprite = resourceLoader->loadSprite("sprites/sample_sprite");
-		inst->setAnimation("default");
-		players[i]->spriteInstances.push_back(inst);
-
-		players[i]->transform.position.x = graphics->videoWidth / 2;
-		players[i]->transform.position.y = graphics->videoHeight - 64;
-		players[i]->color = Color::white;
+		players[i]->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
+		players[i]->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
 		players[i]->controller = new PlayerController(this);
 		players[i]->controller->unitInstance = players[i];
 	
-		auto wp = createWeaponInstance("weapons/fire", players[i], nullptr);
+		auto wp = createWeaponInstance("weapons/default", players[i], nullptr);
 		players[i]->weapons.push_back(wp);
 		((PlayerController*)players[i]->controller)->playerIndex = i;
 	}
@@ -264,6 +259,8 @@ void Game::mainLoop()
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
+
+		UnitInstance::updateShadowToggle();
 
 		for (u32 i = 0; i < unitInstances.size(); i++)
 		{
@@ -372,7 +369,8 @@ void Game::deleteNonPersistentUnitInstances()
 	{
 		if ((*iter)->type == UnitResource::Type::Enemy
 			|| (*iter)->type == UnitResource::Type::Item
-			|| (*iter)->type == UnitResource::Type::Projectile)
+			|| (*iter)->type == UnitResource::Type::EnemyProjectile
+			|| (*iter)->type == UnitResource::Type::PlayerProjectile)
 		{
 			delete *iter;
 			iter = unitInstances.erase(iter);
@@ -405,7 +403,7 @@ bool Game::changeLevel(i32 index)
 	for (u32 i = 0; i < lev->unitInstances.size(); i++)
 	{
 		auto uinst = new UnitInstance();
-		lev->unitInstances[i]->cloneTo(uinst);
+		uinst->copyFrom(lev->unitInstances[i]);
 		unitInstances.push_back(uinst);
 	}
 
@@ -417,46 +415,17 @@ SpriteInstance* Game::createSpriteInstance(SpriteResource* sprite)
 {
 	SpriteInstance* inst = new SpriteInstance();
 	inst->sprite = sprite;
-	inst->setAnimation("default");
+	inst->setFrameAnimation("default");
 
 	return inst;
 }
 
-void Game::copyUnitToUnitInstance(struct UnitResource* unitRes, struct UnitInstance* unitInst)
-{
-	unitInst->unit = unitRes;
-	unitInst->team = unitRes->team;
-	unitInst->name = unitRes->name;
-	unitInst->speed = unitRes->speed;
-	unitInst->type = unitRes->type;
-	unitInst->visible = unitRes->visible;
-	unitInst->script = unitRes->scriptResource;
-
-	// create the sprite instances for this unit instance
-	for (u32 i = 0; i < unitRes->spriteInstances.size(); i++)
-	{
-		SpriteInstance* sprInst = new SpriteInstance();
-		sprInst->sprite = unitRes->spriteInstances[i]->sprite;
-		sprInst->transform = unitRes->spriteInstances[i]->transform;
-		sprInst->setAnimation("default");
-		unitInst->spriteInstances.push_back(sprInst);
-	}
-
-	//TODO:
-	// copy over sprite instance animations ? or just use the resource
-	for (u32 i = 0; i < unitRes->spriteInstanceAnimations.size(); i++)
-	{
-		//unitInst->spriteInstanceAnimations[unit->spriteInstanceAnimations[i].animation->name] =
-		//	unit->spriteInstanceAnimations[i].animation;
-
-	}
-}
 
 UnitInstance* Game::createUnitInstance(UnitResource* unit)
 {
 	auto unitInst = new UnitInstance();
 
-	copyUnitToUnitInstance(unit, unitInst);
+	unitInst->instantiateFrom(unit);
 	unitInstances.push_back(unitInst);
 
 	return unitInst;

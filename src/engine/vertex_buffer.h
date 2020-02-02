@@ -11,6 +11,7 @@ struct Vertex
 	Vec2 position;
 	Vec2 uv;
 	u32 color;
+	u32 colorMode;
 	u32 textureIndex = 0; /// what atlas texture index this vertex is using
 };
 

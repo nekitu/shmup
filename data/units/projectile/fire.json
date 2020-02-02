@@ -1,6 +1,6 @@
 {
     "name": "Fire",
-    "team": "player",
+    "type": "PlayerProjectile",
     "spriteInstances":
     [
         {

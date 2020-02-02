@@ -1,0 +1,17 @@
+{
+    "tracks":
+    {
+        "PositionX": 
+        [
+            { "value": 0, "time": 0 },
+            { "value": 10, "time": 1 },
+            { "value": 40, "time": 3 }
+        ],
+        "PositionY":
+        [
+            { "value": 0, "time": 0 },
+            { "value": 10, "time": 1 },
+            { "value": 110, "time": 3 }
+        ]
+    }
+}

@@ -34,6 +34,18 @@ public:
 		return x * other.x + y * other.y;
 	}
 
+	inline void parse(const std::string& vecStr)
+	{
+		sscanf_s(vecStr.c_str(), "%f %f", &x, &y);
+	}
+
+	inline std::string toString() const
+	{
+		char buff[300] = { 0 };
+		sprintf(buff, "%f %f", x, y);
+		return buff;
+	}
+
 	f32 getDistance(const Vec2& other) const
 	{
 		f32 xx = x - other.x, yy = y - other.y;

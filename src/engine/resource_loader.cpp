@@ -6,14 +6,24 @@
 #include "resources/level_resource.h"
 #include "resources/weapon_resource.h"
 #include "resources/script_resource.h"
+#include "resources/animation_resource.h"
 #include "image_atlas.h"
 #include <json/json.h>
 #include "utils.h"
 
 namespace engine
 {
+void checkEmptyFilename(const std::string& filename)
+{
+	if (filename.size() == 0)
+	{
+		assert(false);
+	}
+}
+
 SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -42,6 +52,7 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 
 SoundResource* ResourceLoader::loadSound(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -69,6 +80,7 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 
 MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -96,6 +108,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 
 UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -123,6 +136,7 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 
 LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -150,6 +164,7 @@ LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 
 WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -170,8 +185,6 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
-	res->projectileUnit = loadUnit(json.get("projectileUnit", "").asString());
-	res->script = loadScript(json.get("fireScript", "").asString());
 	resources[filename] = res;
 
 	return res;
@@ -179,6 +192,7 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 
 ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 {
+	checkEmptyFilename(filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -188,14 +202,35 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 	}
 
 	Json::Value json;
-
-
-	//if (!loadJson(fullFilename + ".json", json))
-	//{
-	//	return nullptr;
-	//}
-
 	ScriptResource* res = new ScriptResource();
+
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
+
+	return res;
+}
+
+AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
+{
+	checkEmptyFilename(filename);
+	std::string fullFilename = root + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (AnimationResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
+	AnimationResource* res = new AnimationResource();
 
 	res->loader = this;
 	res->fileName = filename;

@@ -17,7 +17,8 @@ struct Color
 
 	u32 getRgba() const;
 	u32 getArgb() const;
-
+	void parse(const std::string& colorStr);
+	std::string toString() const;
 	void setFromRgba(u32 value)
 	{
 		u8 *color = (u8*)&value;

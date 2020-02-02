@@ -5,9 +5,10 @@
 namespace engine
 {
 	template <typename T> T sgn(T val) { return (T(0) < val) - (val < T(0)); }
-
+	
 	bool clampValue(f32& value, f32 minVal, f32 maxVal);
 	void setRandomSeed(i32 seed);
+	inline f32 lerp(f32 a, f32 b, f32 t) { return a + t * (b - a); }
 	i32 getRandomSeed();
 	i32 randomInteger(i32 max);
 	f32 randomFloat(f32 low, f32 high);

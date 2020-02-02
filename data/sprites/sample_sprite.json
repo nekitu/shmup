@@ -7,7 +7,7 @@
         {
             "start": 0,
             "frames": 3,
-            "type": "normal",
+            "type": "Normal",
             "fps": 55,
             "repeat": 0
         }

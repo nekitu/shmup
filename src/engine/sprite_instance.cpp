@@ -1,68 +1,160 @@
 #include "sprite_instance.h"
 #include "game.h"
 #include "resources/sprite_resource.h"
+#include "resources/unit_resource.h"
 #include "sprite_instance.h"
 #include <assert.h>
 
 namespace engine
 {
+void SpriteInstance::copyFrom(SpriteInstance* other)
+{
+	name = other->name;
+	sprite = other->sprite;
+	transform = other->transform;
+	orderIndex = other->orderIndex;
+	visible = other->visible;
+	collide = other->collide;
+	health = other->health;
+	defaultColor = other->defaultColor;
+	color = other->color;
+	colorMode = other->colorMode;
+		
+	hitColor = other->hitColor;
+	hitOldColorMode = other->hitOldColorMode;
+	hitColorFlashSpeed = other->hitColorFlashSpeed;
+	hitFlashCount = other->hitFlashCount;
+	hitFlashActive = other->hitFlashActive;
+	hitColorTimer = other->hitColorTimer;
+	currentHitFlashCount = other->currentHitFlashCount;
+
+	frameAnimation = other->frameAnimation;
+	animationFrame = other->animationFrame;
+	animationRepeatCount = other->animationRepeatCount;
+	animationDirection = other->animationDirection;
+	animationIsActive = other->animationIsActive;
+
+	play();
+}
+
+void SpriteInstance::instantiateFrom(SpriteInstanceResource* res)
+{
+	name = res->name;
+	sprite = res->sprite;
+	transform = res->transform;
+	orderIndex = res->orderIndex;
+	defaultColor = color = res->color;
+	colorMode = res->colorMode;
+	hitColor = res->hitColor;
+	animationFrame = 0;
+	animationRepeatCount = 0;
+	animationDirection = 1;
+	animationIsActive = true;
+	std::string animName = res->animationName;
+
+	if (animName.empty() && res->animations.size())
+	{
+		animName = res->animations.begin()->first;
+	}
+
+	setFrameAnimation(animName);
+}
+
 void SpriteInstance::update(struct Game* game)
 {
-	if (spriteAnimationInstance.spriteAnimation && spriteAnimationInstance.active)
+	// update the sprite frame animation
+	if (frameAnimation && animationIsActive)
 	{
-		auto spriteAnim = spriteAnimationInstance.spriteAnimation;
-		
-		spriteAnimationInstance.currentFrame += (f32)spriteAnim->framesPerSecond * game->deltaTime * spriteAnimationInstance.direction;
+		animationFrame += (f32)frameAnimation->framesPerSecond * game->deltaTime * animationDirection;
 
-		if (spriteAnim->repeatCount)
+		if (frameAnimation->repeatCount)
 		{
-			spriteAnimationInstance.currentRepeatCount++;
+			animationRepeatCount++;
 
-			if (spriteAnimationInstance.currentRepeatCount >= spriteAnim->repeatCount)
+			if (animationRepeatCount >= frameAnimation->repeatCount)
 			{
-				spriteAnimationInstance.active = false;
+				animationIsActive = false;
 			}
 		}
 
-		f32 frame = (u32)spriteAnimationInstance.currentFrame;
+		f32 frame = (u32)animationFrame;
 
-		if (spriteAnim->type == SpriteAnimation::Type::Normal)
+		if (frameAnimation->type == SpriteFrameAnimation::Type::Normal)
 		{
-			if (frame > spriteAnim->startFrame + spriteAnim->frameCount - 1)
+			if (frame > frameAnimation->startFrame + frameAnimation->frameCount - 1)
 			{
-				spriteAnimationInstance.currentFrame = spriteAnim->startFrame;
+				animationFrame = frameAnimation->startFrame;
 			}
 		}
-		else if (spriteAnim->type == SpriteAnimation::Type::Reversed)
+		else if (frameAnimation->type == SpriteFrameAnimation::Type::Reversed)
 		{
-			if (frame < spriteAnim->startFrame)
+			if (frame < frameAnimation->startFrame)
 			{
-				spriteAnimationInstance.currentFrame = spriteAnim->startFrame + spriteAnim->frameCount - 1;
+				animationFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
 			}
 		}
-		else if (spriteAnim->type == SpriteAnimation::Type::PingPong)
+		else if (frameAnimation->type == SpriteFrameAnimation::Type::PingPong)
 		{
-			if (spriteAnimationInstance.direction > 0 && frame > spriteAnim->startFrame + spriteAnim->frameCount - 1)
+			if (animationDirection > 0 && frame > frameAnimation->startFrame + frameAnimation->frameCount - 1)
 			{
-				spriteAnimationInstance.currentFrame = spriteAnim->startFrame + spriteAnim->frameCount - 1;
-				spriteAnimationInstance.direction = -1;
+				animationFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
+				animationDirection = -1;
 			}
-			else if (spriteAnimationInstance.direction < 0 && frame < spriteAnim->startFrame)
+			else if (animationDirection < 0 && frame < frameAnimation->startFrame)
 			{
-				spriteAnimationInstance.currentFrame = spriteAnim->startFrame;
-				spriteAnimationInstance.direction = 1;
+				animationFrame = frameAnimation->startFrame;
+				animationDirection = 1;
+			}
+		}
+	}
+
+	// update hit color
+	if (hitFlashActive)
+	{
+		color = defaultColor + (hitColor - defaultColor) * hitColorTimer;
+		hitColorTimer += hitColorFlashSpeed * game->deltaTime;
+
+		if (hitColorTimer > 1.0f)
+		{
+			hitColorTimer = 0.0;
+			currentHitFlashCount++;
+
+			if (currentHitFlashCount >= hitFlashCount)
+			{
+				hitFlashActive = false;
+				colorMode = hitOldColorMode;
+				color = defaultColor;
 			}
 		}
 	}
 }
 
-void SpriteInstance::setAnimation(const std::string& name)
+void SpriteInstance::setFrameAnimation(const std::string& name)
 {
-	if (sprite && sprite->animations.size())
+	if (sprite && sprite->frameAnimations.size())
 	{
-		spriteAnimationInstance.spriteAnimation = sprite->animations[name];
-		spriteAnimationInstance.play();
+		frameAnimation = sprite->frameAnimations[name];
+		play();
 	}
+}
+
+void SpriteInstance::play()
+{
+	if (!frameAnimation) return;
+	animationDirection = 1;
+	animationIsActive = true;
+	animationFrame = frameAnimation->startFrame;
+}
+
+void SpriteInstance::hit(f32 hitDamage)
+{
+	health -= hitDamage;
+	if (hitFlashActive) return;
+	hitFlashActive = true;
+	hitOldColorMode = colorMode;
+	colorMode = ColorMode::Add;
+	hitColorTimer = 0.0f;
+	currentHitFlashCount = 0;
 }
 
 }
