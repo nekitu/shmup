@@ -7,32 +7,36 @@ namespace engine
 {
 struct UnitInstance
 {
+	// members related to unit resource instantiation
 	typedef std::map<struct SpriteInstance*, struct AnimationInstance*> SpriteInstanceAnimationMap;
-	struct UnitResource* unit = nullptr;
 	std::vector<struct SpriteInstance*> spriteInstances;
 	std::map<std::string /*animation name*/, SpriteInstanceAnimationMap> spriteInstanceAnimations;
-	std::vector<struct WeaponInstance*> weapons;
+	std::map<std::string /*weapon instance name*/, struct WeaponInstance*> weapons;
 	SpriteInstanceAnimationMap* spriteInstanceAnimationMap = nullptr;
-	std::string currentAnimationName;
+
+	// unit instance general members
 	std::string name;
-	UnitResource::Type type = UnitResource::Type::Enemy;
-	struct SpriteInstance* rootSpriteInstance = nullptr;
+	std::string currentAnimationName;
 	Rect boundingBox;
-	bool hasShadows = false;
 	bool visible = true;
-	bool deleteOnOutOfScreen = false;
-	bool deleteMeNow = false;
 	f32 speed = 10.0f;
-	f32 shadowScale = 1.0f;
-	Vec2 shadowOffset;
+	f32 health = 100.0f;
+	u32 stageIndex = 0;
+	bool collide = true;
+	struct UnitResource* unit = nullptr;
 	struct UnitController* controller = nullptr;
 	struct ScriptResource* script = nullptr;
+	struct SpriteInstance* rootSpriteInstance = nullptr;
 
-	void copyFrom(UnitInstance* other);
-	void instantiateFrom(UnitResource* res);
+	bool deleteMeNow = false;
+
+	//void copyFrom(UnitInstance* other);
+	void initializeFrom(UnitResource* res);
+	void load(struct ResourceLoader* loader, const Json::Value& json);
 	void update(struct Game* game);
 	void render(struct Graphics* gfx);
 	void computeBoundingBox();
+	void computeHealth();
 	void setAnimation(const std::string& animName);
 
 	static void updateShadowToggle();

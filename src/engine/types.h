@@ -64,6 +64,8 @@ namespace engine
 
 #endif
 
+#define BIT(n) (1<<n)
+
 typedef u32 Rgba32;
 typedef std::vector<u32> UnicodeString;
 

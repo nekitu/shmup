@@ -12,6 +12,32 @@
 
 namespace engine
 {
+UnitController* UnitController::create(const std::string& ctrlerName, UnitInstance* unitInst)
+{
+	if (ctrlerName == "SimpleEnemy")
+	{
+		auto controller = new SimpleEnemyController();
+		controller->unitInstance = unitInst;
+		return controller;
+	}
+
+	if (ctrlerName == "Background")
+	{
+		auto controller = new BackgroundController();
+		controller->unitInstance = unitInst;
+		return controller;
+	}
+
+	if (ctrlerName == "Player")
+	{
+		auto controller = new PlayerController(0);
+		controller->unitInstance = unitInst;
+		return controller;
+	}
+
+	return nullptr;
+}
+
 void BackgroundController::update(struct Game* game)
 {
 	if (!unitInstance || !unitInstance->rootSpriteInstance) return;
@@ -22,6 +48,16 @@ void BackgroundController::update(struct Game* game)
 void SimpleEnemyController::update(struct Game* game)
 {
 	if (!unitInstance || !unitInstance->rootSpriteInstance) return;
+
+	if (game->isPlayerMoveLeft(0))
+	{
+		unitInstance->rootSpriteInstance->transform.position.x += game->deltaTime * 20;
+	}
+
+	if (game->isPlayerMoveRight(0))
+	{
+		unitInstance->rootSpriteInstance->transform.position.x -= game->deltaTime * 20;
+	}
 
 	unitInstance->rootSpriteInstance->transform.position.y += unitInstance->speed * game->deltaTime;
 	unitInstance->rootSpriteInstance->transform.position.x -= sinf(unitInstance->rootSpriteInstance->transform.position.y)*10.3f * game->deltaTime;
@@ -43,6 +79,7 @@ void ProjectileController::update(struct Game* game)
 
 PlayerController::PlayerController(Game* game)
 {
+	//TODO
 	if (game)
 	{
 		fireSoundRes = game->resourceLoader->loadSound("sounds/Laser01.wav");
@@ -61,7 +98,8 @@ void PlayerController::update(struct Game* game)
 		isFirePressed = true;
 		for (auto& wp: unitInstance->weapons)
 		{
-			wp->fire();
+			wp.second->fire();
+			//fireSound->play();
 		}
 	}
 	
@@ -74,7 +112,7 @@ void PlayerController::update(struct Game* game)
 	{
 		for (auto& wp : unitInstance->weapons)
 		{
-			wp->update(game);
+			wp.second->update(game);
 		}
 	}
 

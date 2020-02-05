@@ -1,0 +1,23 @@
+{
+    "name": "bg",
+	"type": "Item",
+	"speed": 30.0,
+    "controller": "Background",
+    "healthPoints": 1000,
+	"rootSpriteInstance": "body",
+    "collide": false,
+    "spriteInstances":
+    [
+        {
+            "name": "body",
+            "sprite": "sprites/bg1",
+            "position": "0 0",
+            "scale": 1.0,
+            "rotation": 0,
+            "horizontalFlip": false,
+            "verticalFlip": false,
+			"color": "0 0 0 1",
+			"hitColor": "1 0.4 0.4 1"
+        }
+    ]
+}

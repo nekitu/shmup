@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "resources/sprite_resource.h"
 #include "resources/sound_resource.h"
+#include "resources/music_resource.h"
 #include "resources/unit_resource.h"
 #include "resources/level_resource.h"
 #include "resources/weapon_resource.h"
@@ -13,17 +14,36 @@
 
 namespace engine
 {
-void checkEmptyFilename(const std::string& filename)
+#define checkEmptyFilename(where, filename)\
+{\
+	if (filename.size() == 0)\
+	{\
+		printf("%s: Empty filename\n", where);\
+	}\
+}
+
+void ResourceLoader::unload(struct Resource* res)
 {
-	if (filename.size() == 0)
+	res->usageCount--;
+
+	if (res->usageCount <= 0)
 	{
-		assert(false);
+		auto iter = resources.find(res->fileName);
+
+		if (iter != resources.end())
+		{
+			resources.erase(iter);
+			delete res;
+		}
 	}
 }
 
 SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadSprite", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -52,7 +72,10 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 
 SoundResource* ResourceLoader::loadSound(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadSound", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -71,7 +94,7 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 	SoundResource* res = new SoundResource();
 
 	res->loader = this;
-	res->fileName = filename;
+	res->fileName = fullFilename;
 	res->load(json);
 	resources[filename] = res;
 
@@ -80,7 +103,10 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 
 MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadMusic", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -99,7 +125,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 	MusicResource* res = new MusicResource();
 
 	res->loader = this;
-	res->fileName = filename;
+	res->fileName = fullFilename;
 	res->load(json);
 	resources[filename] = res;
 
@@ -108,7 +134,10 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 
 UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadUnit", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -136,7 +165,10 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 
 LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadLevel", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -164,7 +196,10 @@ LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 
 WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadWeapon", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -192,7 +227,10 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 
 ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadScript", filename);
+
+	if (filename.empty()) return nullptr;
+
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])
@@ -214,7 +252,7 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 
 AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 {
-	checkEmptyFilename(filename);
+	checkEmptyFilename("loadAnimation", filename);
 	std::string fullFilename = root + filename;
 
 	if (resources[filename])

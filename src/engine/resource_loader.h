@@ -11,6 +11,7 @@ struct ResourceLoader
 	std::unordered_map<std::string/*filename*/, struct Resource*> resources;
 	struct ImageAtlas* atlas = nullptr;
 
+	void unload(struct Resource* res);
 	// example: "sprites/sample_sprite"
 	struct SpriteResource* loadSprite(const std::string& filename);
 	struct SoundResource* loadSound(const std::string& filename);

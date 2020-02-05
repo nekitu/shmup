@@ -13,8 +13,8 @@ end
 
 filter {}
 -- Location of the solutions
-if _ACTION == "vs2017" then
-	location "./build_vs2017"
+if string.find(_ACTION, "vs") then
+	location "./build_win"
 	-- We're on Windows, this will be used in code for ifdef
 	defines {"_WINDOWS", "_WIN32"}
 	system ("windows")

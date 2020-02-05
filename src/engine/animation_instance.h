@@ -19,7 +19,7 @@ struct AnimationInstance
 	std::string keyEventScriptCallback;
 
 	void copyFrom(AnimationInstance* other);
-	void instantiateFrom(AnimationResource* res);
+	void initializeFrom(AnimationResource* res);
 	void reset();
 	void triggerKeyEvent(AnimationKey* key);
 	void update(f32 deltaTime);

@@ -1,4 +1,5 @@
 #include "types.h"
+#include <string>
 
 namespace engine
 {
@@ -8,6 +9,8 @@ struct UnitController
 
 	virtual void update(struct Game* game) = 0;
 	virtual UnitController* createNew() = 0;
+
+	static UnitController* create(const std::string& ctrlerName, struct UnitInstance* unitInst);
 };
 
 struct BackgroundController : UnitController

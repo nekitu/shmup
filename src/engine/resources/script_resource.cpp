@@ -1,7 +1,10 @@
 #include "resources/script_resource.h"
+#include "resources/unit_resource.h"
 #include "utils.h"
 #include "resource_loader.h"
 #include "weapon_instance.h"
+#include "unit_instance.h"
+#include "sprite_instance.h"
 #include "game.h"
 
 namespace engine
@@ -33,15 +36,20 @@ bool ScriptResource::load(Json::Value& json)
 
 LuaIntf::LuaRef ScriptResource::getFunction(const std::string& funcName)
 {
-	auto f = M.get(funcName);
-
-	if (!f.isFunction())
+	if (M.has(funcName))
 	{
-		printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), fileName.c_str());
-		return LuaIntf::LuaRef::fromPtr(L, nullptr);
+		auto f = M.get(funcName);
+
+		if (!f.isFunction())
+		{
+			printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), fileName.c_str());
+			return LuaIntf::LuaRef::fromPtr(L, nullptr);
+		}
+
+		return f;
 	}
 
-	return f;
+	return LuaIntf::LuaRef();
 }
 
 void engine_log(const char* str)
@@ -66,7 +74,22 @@ bool initializeLua()
 	LUA.beginClass<WeaponInstance>("WeaponInstance")
 		.addFunction("fire", &WeaponInstance::fire)
 		.addFunction("debug", &WeaponInstance::debug)
-	.endClass();
+		.endClass();
+
+	LUA.beginClass<UnitResource>("UnitResource")
+		.addVariable("type", &UnitResource::type)
+		.endClass();
+
+	LUA.beginClass<UnitInstance>("UnitInstance")
+		.addVariable("name", &UnitInstance::name, true)
+		.addVariable("unit", &UnitInstance::unit, true)
+		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow, true)
+		.addVariable("rootSpriteInstance", &UnitInstance::rootSpriteInstance, false)
+		.endClass();
+
+	LUA.beginClass<SpriteInstance>("SpriteInstance")
+		.addFunction("hit", &SpriteInstance::hit)
+		.endClass();
 
 	return true;
 }

@@ -17,7 +17,7 @@ void WeaponInstance::copyFrom(WeaponInstance* other)
 	attachTo = other->attachTo;
 }
 
-void WeaponInstance::setWeaponResource(struct WeaponResource* res)
+void WeaponInstance::initializeFrom(struct WeaponResource* res)
 {
 	weaponResource = res;
 	params = res->params;
@@ -41,21 +41,32 @@ void WeaponInstance::fire()
 void WeaponInstance::spawnProjectiles(Game* game)
 {
     f32 angle = rad2deg(acosf(params.direction.getCos(Vec2(0, 1))));
-	f32 angleBetweenRays = params.fireRaysAngle / (f32)(params.fireRays - 1);
+	f32 angleBetweenRays = params.fireRaysAngle / (f32)(params.fireRays);
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
 
 	if (params.fireRays > 1)
 		angle = angle1;
 
+	fireDirectionAngle += params.fireRaysRotationSpeed * game->deltaTime;
+
+	if (fireDirectionAngle > 360) fireDirectionAngle = 0;
+
+	angle += fireDirectionAngle;
+
     for (u32 i = 0; i < params.fireRays; i++)
     {
         ProjectileInstance* newProj = new ProjectileInstance();
 
-        newProj->weapon = this;
+		newProj->initializeFrom(weaponResource->projectileUnit);
+		newProj->weapon = this;
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
-		newProj->instantiateFrom(weaponResource->projectileUnit);
-        newProj->rootSpriteInstance->transform.position = parentUnitInstance->rootSpriteInstance->transform.position + params.position + params.offset + offRadius;
+		Vec2 pos = attachTo->transform.position;
+
+		if (attachTo != parentUnitInstance->rootSpriteInstance)
+			pos += parentUnitInstance->rootSpriteInstance->transform.position;
+
+		newProj->rootSpriteInstance->transform.position = pos + params.position + params.offset + offRadius;
         newProj->velocity.x = sinf(deg2rad(angle));
         newProj->velocity.y = cosf(deg2rad(angle));
         newProj->velocity.normalize();
@@ -65,9 +76,6 @@ void WeaponInstance::spawnProjectiles(Game* game)
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
-		newProj->type =
-			parentUnitInstance->type == UnitResource::Type::Enemy ? UnitResource::Type::EnemyProjectile : UnitResource::Type::PlayerProjectile;
-		newProj->deleteOnOutOfScreen = true;
 		game->unitInstances.push_back(newProj);
         angle += angleBetweenRays;
     }
@@ -77,12 +85,6 @@ void WeaponInstance::update(struct Game* game)
 {
 	if (!active)
 		return;
-
-    if (attachTo)
-    {
-		params.position = attachTo->transform.position;
-		params.position += params.offset;
-    }
 
     fireInterval = 1.0f / params.fireRate;
     fireTimer += game->deltaTime;
@@ -96,7 +98,6 @@ void WeaponInstance::update(struct Game* game)
 
 void WeaponInstance::debug(const std::string& info)
 {
-	printf("WIDEBUG: %s\n", info.c_str());
 }
 
 }

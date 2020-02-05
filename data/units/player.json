@@ -1,9 +1,12 @@
 {
     "name": "StellarEagle1",
-	"type": "Enemy",
-	"speed": 5.0,
-    "healthPoints": 1000,
-    "script": "scripts/player",
+	"type": "Player",
+	"speed": 120.0,
+    "script": "scripts/player.lua",
+    "hasShadows": true,
+    "shadowOffset": "40 40",
+    "shadowScale": 0.4,
+    "controller": "Player",
 	"rootSpriteInstance": "body",
     "stages":
     [
@@ -30,25 +33,49 @@
     {
         "stage0_intro":
         {
-            "body": "anims/body_intro"
         },
         "stage0_outro":
         {
-            "body": "anims/body_outro"
         }
     },
     "spriteInstances":
     [
         {
             "name": "body",
-            "sprite": "sprites/sample_sprite",
+            "sprite": "sprites/player",
             "position": "0 0",
             "scale": 1.0,
             "rotation": 0,
             "horizontalFlip": false,
             "verticalFlip": false,
 			"color": "0 0 0 1",
-			"hitColor": "1 0.4 0.4 1"
+			"hitColor": "1 1 0.4 1",
+            "weapons":
+            {
+                "gun1":
+                {
+                    "position": "-8 0",
+                    "weapon": "weapons/player_primary",
+                    "active": true
+                },
+                "gun2":
+                {
+                    "position": "8 0",
+                    "weapon": "weapons/player_primary",
+                    "active": true
+                },
+                "gun3":
+                {
+                    "position": "-15 15",
+                    "weapon": "weapons/player_secondary",
+                    "active": true
+                },
+                "gun4":
+                {
+                    "position": "15 15",
+                    "weapon": "weapons/player_secondary"
+                }
+            }
         }
     ]
 }

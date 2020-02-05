@@ -11,11 +11,4 @@ struct SoundInstance
 	bool play();
 };
 
-struct MusicInstance
-{
-	struct MusicResource* musicResource = nullptr;
-
-	bool play();
-};
-
 }

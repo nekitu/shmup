@@ -11,16 +11,5 @@ bool SoundInstance::play()
 
 	return true;
 }
-	
-bool MusicInstance::play()
-{
-	if (Mix_PlayingMusic())
-		return false;
-
-	if (Mix_PlayMusic(musicResource->music, -1) == -1)
-		return false;
-
-	return true;
-}
 
 }

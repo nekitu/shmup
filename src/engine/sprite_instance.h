@@ -8,11 +8,6 @@
 
 namespace engine
 {
-struct SpriteFrameAnimationInstance
-{
-
-};
-
 struct SpriteInstance
 {
 	std::string name;
@@ -41,7 +36,7 @@ struct SpriteInstance
 	bool animationIsActive = true;
 
 	void copyFrom(SpriteInstance* other);
-	void instantiateFrom(struct SpriteInstanceResource* res);
+	void initializeFrom(struct SpriteInstanceResource* res);
 	void update(struct Game* game);
 	void setFrameAnimation(const std::string& name);
 	void play();

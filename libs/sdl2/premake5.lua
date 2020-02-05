@@ -32,7 +32,7 @@ project "sdl2"
 			"_CRT_SECURE_NO_WARNINGS",
 		}
 
-		links { "user32", "gdi32", "winmm", "imm32", "ole32", "oleaut32", "version", "uuid" }
+		links { "user32", "gdi32", "winmm", "imm32", "ole32", "oleaut32", "version", "uuid", "vcruntime" }
 
 	filter { "system:linux" }
 		excludes {

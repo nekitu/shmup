@@ -5,11 +5,11 @@
 
 namespace engine
 {
-struct SoundResource : Resource
+struct MusicResource : Resource
 {
-	Mix_Chunk* wave = nullptr;
+	Mix_Music* music = nullptr;
 
-	~SoundResource();
+	~MusicResource();
 	bool load(Json::Value& json) override;
 };
 

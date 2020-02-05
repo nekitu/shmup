@@ -2,10 +2,14 @@
 "unitInstances":
 [
 	{
+		"name": "bg",
+		"unit": "units/bg",
+		"position": "120 -1672.0"
+	},
+	{
 		"name": "Some1",
-        "type": "Enemy",
-		"unit": "units/enemy",
-		"position": "10.0 10.0"
+		"unit": "units/boss",
+		"position": "120.0 0.0"
 	}
 ]
 }

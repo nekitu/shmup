@@ -18,7 +18,7 @@ void AnimationInstance::copyFrom(AnimationInstance* other)
 	keyEventScriptCallback = other->keyEventScriptCallback;
 }
 
-void AnimationInstance::instantiateFrom(AnimationResource* res)
+void AnimationInstance::initializeFrom(AnimationResource* res)
 {
 	animation = res;
 	currentTime = 0;

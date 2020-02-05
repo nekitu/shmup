@@ -52,7 +52,7 @@ struct Game
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct MusicInstance* music = nullptr;
-	std::vector<struct LevelResource*> levels;
+	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
 	u32 currentLevelIndex = 0;
 	static Game* instance;
 
@@ -63,6 +63,7 @@ struct Game
 	void createPlayers();
 	bool initializeAudio();
 	void handleInputEvents();
+	void checkCollisions();
 	void mainLoop();
 	void computeDeltaTime();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }

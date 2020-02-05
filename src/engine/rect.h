@@ -8,6 +8,15 @@ struct Rect
 {
     f32 x = 0, y = 0, width = 0, height = 0;
 
+	enum class ClipType
+	{
+		Outside = BIT(0),
+		IsEqual = BIT(1),
+		IsContained = BIT(2),
+		Contains = BIT(3),
+		Clips = BIT(4)
+	};
+
     Rect()
         : x(0)
         , y(0)
@@ -35,6 +44,18 @@ struct Rect
     {
         return x == 0.0f && y == 0.0f && width == 0.0f && height == 0.0f;
     }
+
+	void parse(const std::string& str)
+	{
+		sscanf_s(str.c_str(), "%f %f %f %f", &x, &y, &width, &height);
+	}
+
+	std::string toString() const
+	{
+		char buff[300] = { 0 };
+		sprintf(buff, "%f %f %f %f", x, y, width, height);
+		return buff;
+	}
 
     inline f32 left() const { return x; }
     inline f32 top() const { return y; }
@@ -98,6 +119,59 @@ struct Rect
 
         return newRect;
     }
+
+	ClipType getBoxLineTest(f32 v0, f32 v1, f32 w0, f32 w1)
+	{
+		if ((v1 < w0) || (v0 > w1))
+			return ClipType::Outside;
+		else if ((v0 == w0) && (v1 == w1))
+			return ClipType::IsEqual;
+		else if ((v0 >= w0) && (v1 <= w1))
+			return ClipType::IsContained;
+		else if ((v0 <= w0) && (v1 >= w1))
+			return ClipType::Contains;
+		else
+			return ClipType::Clips;
+	}
+
+	bool overlaps(const Rect& b)
+	{
+		return (x <= b.right() &&
+			b.x <= right() &&
+			y <= b.bottom() &&
+			b.y <= bottom());
+	}
+
+	ClipType intersect2(const Rect& rc)
+	{
+		u32 andCode = 0xFFFF;
+		u32 orCode = 0;
+		u32 cx, cy;
+
+		cx = (u32)getBoxLineTest(x, right(), rc.x, rc.right());
+		andCode &= cx;
+		orCode |= cx;
+
+		cy = (u32)getBoxLineTest(y, bottom(), rc.y, rc.bottom());
+		andCode &= cy;
+		orCode |= cy;
+
+		if (orCode == 0)
+		{
+			return ClipType::Outside;
+		}
+		else if (andCode != 0)
+		{
+			return (ClipType)andCode;
+		}
+		else
+		{
+			if (cx && cy)
+				return ClipType::Clips;
+			else
+				return ClipType::Outside;
+		}
+	}
 
     inline Rect expand(f32 amount)
     {

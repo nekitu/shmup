@@ -37,7 +37,7 @@ void SpriteInstance::copyFrom(SpriteInstance* other)
 	play();
 }
 
-void SpriteInstance::instantiateFrom(SpriteInstanceResource* res)
+void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 {
 	name = res->name;
 	sprite = res->sprite;

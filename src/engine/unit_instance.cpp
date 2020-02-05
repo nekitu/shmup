@@ -8,6 +8,9 @@
 #include "animation_instance.h"
 #include "weapon_instance.h"
 #include <algorithm>
+#include "resources/script_resource.h"
+#include "resource_loader.h"
+#include "resources/weapon_resource.h"
 
 namespace engine
 {
@@ -18,85 +21,93 @@ void UnitInstance::updateShadowToggle()
 	shadowToggle = !shadowToggle;
 }
 
-void UnitInstance::copyFrom(UnitInstance* other)
-{
-	boundingBox = other->boundingBox;
-	currentAnimationName = other->currentAnimationName;
-	hasShadows = other->hasShadows;
-	name = other->name;
-	shadowOffset = other->shadowOffset;
-	shadowScale = other->shadowScale;
-	speed = other->speed;
-	type = other->type;
-	unit = other->unit;
-	visible = other->visible;
-	deleteMeNow = other->deleteMeNow;
-	deleteOnOutOfScreen = other->deleteOnOutOfScreen;
-	controller = other->controller->createNew();
-	controller->unitInstance = this;
-	script = other->script;
+//void UnitInstance::copyFrom(UnitInstance* other)
+//{
+//	boundingBox = other->boundingBox;
+//	currentAnimationName = other->currentAnimationName;
+//	hasShadows = other->hasShadows;
+//	name = other->name;
+//	shadowOffset = other->shadowOffset;
+//	shadowScale = other->shadowScale;
+//	speed = other->speed;
+//	type = other->type;
+//	unit = other->unit;
+//	visible = other->visible;
+//	deleteMeNow = other->deleteMeNow;
+//	deleteOnOutOfScreen = other->deleteOnOutOfScreen;
+//
+//	if (other->controller)
+//	{
+//		controller = other->controller->createNew();
+//		controller->unitInstance = this;
+//	}
+//
+//	script = other->script;
+//
+//	// map from other unit to new sprite instances
+//	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
+//
+//	// copy sprite instances
+//	for (auto& otherSprInst : other->spriteInstances)
+//	{
+//		auto sprInst = new SpriteInstance();
+//
+//		sprInst->copyFrom(otherSprInst);
+//		spriteInstances.push_back(sprInst);
+//		spriteInstMap[otherSprInst] = sprInst;
+//	}
+//
+//	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
+//
+//	// if no root specified, use first sprite instance as root
+//	if (!rootSpriteInstance && spriteInstances.size())
+//	{
+//		rootSpriteInstance = spriteInstances[0];
+//	}
+//
+//	if (other->rootSpriteInstance)
+//		rootSpriteInstance->transform = other->rootSpriteInstance->transform;
+//
+//	// copy sprite instance animations
+//	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
+//	{
+//		auto& animName = spriteInstAnim.first;
+//		auto& animMap = spriteInstAnim.second;
+//
+//		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
+//		auto& crtAnimMap = spriteInstanceAnimations[animName];
+//
+//		for (auto& anim : animMap)
+//		{
+//			AnimationInstance* newAnimInst = new AnimationInstance();
+//
+//			newAnimInst->copyFrom(anim.second);
+//			crtAnimMap[spriteInstMap[anim.first]] = newAnimInst;
+//		}
+//	}
+//
+//	// copy weapon instances
+//	for (auto& wi : other->weapons)
+//	{
+//		WeaponInstance* wiNew = new WeaponInstance();
+//
+//		wiNew->copyFrom(wi);
+//		wiNew->parentUnitInstance = this;
+//		wiNew->attachTo = spriteInstMap[wi->attachTo];
+//		weapons.push_back(wiNew);
+//	}
+//
+//	setAnimation(currentAnimationName);
+//}
 
-	// map from other unit to new sprite instances
-	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
-
-	// copy sprite instances
-	for (auto& otherSprInst : other->spriteInstances)
-	{
-		auto sprInst = new SpriteInstance();
-
-		sprInst->copyFrom(otherSprInst);
-		spriteInstances.push_back(sprInst);
-		spriteInstMap[otherSprInst] = sprInst;
-	}
-
-	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
-
-	// if no root specified, use first sprite instance as root
-	if (!rootSpriteInstance && spriteInstances.size())
-	{
-		rootSpriteInstance = spriteInstances[0];
-	}
-
-	// copy sprite instance animations
-	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
-	{
-		auto& animName = spriteInstAnim.first;
-		auto& animMap = spriteInstAnim.second;
-
-		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
-		auto& crtAnimMap = spriteInstanceAnimations[animName];
-
-		for (auto& anim : animMap)
-		{
-			AnimationInstance* newAnimInst = new AnimationInstance();
-
-			newAnimInst->copyFrom(anim.second);
-			crtAnimMap[spriteInstMap[anim.first]] = newAnimInst;
-		}
-	}
-
-	// copy weapon instances
-	for (auto& wi : other->weapons)
-	{
-		WeaponInstance* wiNew = new WeaponInstance();
-
-		wiNew->copyFrom(wi);
-		wiNew->parentUnitInstance = this;
-		wiNew->attachTo = spriteInstMap[wi->attachTo];
-		weapons.push_back(wiNew);
-	}
-
-	setAnimation(currentAnimationName);
-}
-
-void UnitInstance::instantiateFrom(UnitResource* res)
+void UnitInstance::initializeFrom(UnitResource* res)
 {
 	unit = res;
 	name = res->name;
 	speed = res->speed;
-	type = res->type;
 	visible = res->visible;
-	script = res->scriptResource;
+	script = res->script;
+	collide = res->collide;
 
 	// map from other unit to new sprite instances
 	std::map<SpriteInstanceResource*, SpriteInstance*> spriteInstMap;
@@ -106,7 +117,7 @@ void UnitInstance::instantiateFrom(UnitResource* res)
 	{
 		SpriteInstance* sprInst = new SpriteInstance();
 
-		sprInst->instantiateFrom(iter.second);
+		sprInst->initializeFrom(iter.second);
 		spriteInstances.push_back(sprInst);
 		spriteInstMap[iter.second] = sprInst;
 	}
@@ -137,16 +148,47 @@ void UnitInstance::instantiateFrom(UnitResource* res)
 		{
 			AnimationInstance* newAnimInst = new AnimationInstance();
 
-			newAnimInst->instantiateFrom(anim.second);
+			newAnimInst->initializeFrom(anim.second);
 			crtAnimMap[spriteInstMap[sprInstRes]] = newAnimInst;
 		}
 	}
 
-	if (type == UnitResource::Type::Enemy)
+	// create weapon instances
+	for (auto& weaponInstRes : res->weapons)
 	{
-		controller = new SimpleEnemyController();
-		controller->unitInstance = this;
+		WeaponInstance* weaponInst = new WeaponInstance();
+		weaponInst->initializeFrom(weaponInstRes.second->weapon);
+		weaponInst->parentUnitInstance = this;
+		weaponInst->attachTo = spriteInstMap[weaponInstRes.second->attachTo];
+		weaponInst->active = weaponInstRes.second->active;
+		weaponInst->params.position = weaponInstRes.second->localPosition;
+		weapons[weaponInstRes.first] = weaponInst;
 	}
+
+	controller = UnitController::create(res->controllerName, this);
+}
+
+void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
+{
+	name = json.get("name", name).asCString();
+	auto unitFilename = json["unit"].asString();
+
+	if (unitFilename == "")
+	{
+		printf("No unit filename specified for unit instance (%s)\n", name.c_str());
+		return;
+	}
+
+	auto unit = loader->loadUnit(unitFilename);
+	initializeFrom(unit);
+	name = json.get("name", name).asCString();
+	currentAnimationName = json.get("animationName", "").asString();
+	boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
+	visible = json.get("visible", visible).asBool();
+	speed = json.get("speed", speed).asFloat();
+	health = json.get("health", health).asFloat();
+	rootSpriteInstance->transform.position.parse(json.get("position", "0 0").asString());
+	stageIndex = 0;
 }
 
 void UnitInstance::update(Game* game)
@@ -175,7 +217,7 @@ void UnitInstance::update(Game* game)
 
 	computeBoundingBox();
 
-	if (deleteOnOutOfScreen)
+	if (unit->deleteOnOutOfScreen)
 	{
 		if (boundingBox.x > game->graphics->videoWidth
 			|| boundingBox.y > game->graphics->videoHeight
@@ -184,6 +226,12 @@ void UnitInstance::update(Game* game)
 		{
 			deleteMeNow = true;
 		}
+	}
+
+	if (script)
+	{
+		auto func = script->getFunction("onUpdate");
+		if (func.isFunction()) func.call(this);
 	}
 }
 
@@ -224,6 +272,18 @@ void UnitInstance::computeBoundingBox()
 
 		boundingBox.add(spriteRc);
 	}
+}
+
+void UnitInstance::computeHealth()
+{
+	health = 0.0f;
+
+	for (auto sprInst : spriteInstances)
+	{
+		health += sprInst->health;
+	}
+
+	health /= spriteInstances.size();
 }
 
 void UnitInstance::setAnimation(const std::string& animName)
@@ -297,13 +357,13 @@ void UnitInstance::render(Graphics* gfx)
 			gfx->drawQuad(spriteRc, uvRc);
 		}
 
-		if (hasShadows)
+		if (unit->hasShadows)
 		{
 			if (shadowToggle)
 			{
-				spriteRc += shadowOffset;
-				spriteRc.width *= shadowScale;
-				spriteRc.height *= shadowScale;
+				spriteRc += unit->shadowOffset;
+				spriteRc.width *= unit->shadowScale;
+				spriteRc.height *= unit->shadowScale;
 
 				gfx->currentColor = 0;
 				gfx->currentColorMode = (u32)ColorMode::Mul;

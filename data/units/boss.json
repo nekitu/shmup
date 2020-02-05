@@ -2,8 +2,9 @@
     "name": "UltraBoss9000",
 	"type": "Enemy",
 	"speed": 5.0,
+    "controller": "SimpleEnemy",
     "healthPoints": 1000,
-    "script": "scripts/boss1",
+    "script": "scripts/boss.lua",
 	"rootSpriteInstance": "body",
     "stages":
     [
@@ -30,11 +31,15 @@
     {
         "stage0_intro":
         {
-            "body": "anims/body_intro"
+            "body": "anims/boss_body_intro"
         },
         "stage0_outro":
         {
-            "body": "anims/body_outro"
+            "body": "anims/boss_body_outro"
+        },
+        "stage0_idle":
+        {
+            "body": "anims/boss_body_idle"
         }
     },
     "spriteInstances":
@@ -42,7 +47,7 @@
         {
             "name": "body",
             "sprite": "sprites/enemy",
-            "position": "120 0",
+            "position": "0 0",
             "scale": 1.0,
             "rotation": 0,
             "horizontalFlip": false,

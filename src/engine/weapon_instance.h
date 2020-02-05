@@ -13,13 +13,14 @@ struct WeaponInstance
 
 	void copyFrom(WeaponInstance* other);
 	void fire();
-	void setWeaponResource(struct WeaponResource* res);
+	void initializeFrom(struct WeaponResource* res);
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);
 	void debug(const std::string& info);
 private:
 	f32 fireTimer = 0.0f;
 	f32 fireInterval = 0;
+	f32 fireDirectionAngle = 0.0f;
 };
 
 }

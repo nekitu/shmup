@@ -12,6 +12,7 @@
 #include "animation_instance.h"
 #include "unit_controller.h"
 #include "resources/sound_resource.h"
+#include "resources/music_resource.h"
 #include "resources/unit_resource.h"
 #include "resources/sprite_resource.h"
 #include "resources/weapon_resource.h"
@@ -131,7 +132,7 @@ bool Game::initialize()
 	//TODO: remove
 	music = new MusicInstance();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
-	music->play();
+	//music->play();
 }
 
 void Game::shutdown()
@@ -144,21 +145,11 @@ void Game::createPlayers()
 	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
 		players[i] = new UnitInstance();
-		players[i]->instantiateFrom(resourceLoader->loadUnit("units/player"));
+		players[i]->initializeFrom(resourceLoader->loadUnit("units/player"));
 		unitInstances.push_back(players[i]);
-		players[i]->type = UnitResource::Type::Player;
 		players[i]->name = "Player" + std::to_string(i + 1);
-		players[i]->speed = 120;
-		players[i]->hasShadows = true;
-		players[i]->shadowOffset.set(40, 40);
-		players[i]->shadowScale = 0.4f;
 		players[i]->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
 		players[i]->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
-		players[i]->controller = new PlayerController(this);
-		players[i]->controller->unitInstance = players[i];
-	
-		auto wp = createWeaponInstance("weapons/default", players[i], nullptr);
-		players[i]->weapons.push_back(wp);
 		((PlayerController*)players[i]->controller)->playerIndex = i;
 	}
 
@@ -267,6 +258,8 @@ void Game::mainLoop()
 			unitInstances[i]->update(this);
 		}
 
+		checkCollisions();
+
 		auto iter = unitInstances.begin();
 
 		while (iter != unitInstances.end())
@@ -292,6 +285,84 @@ void Game::mainLoop()
 		// display the render target contents in the main backbuffer
 		graphics->blitRenderTarget();
 		SDL_GL_SwapWindow(window);
+	}
+}
+
+void Game::checkCollisions()
+{
+	std::unordered_map<UnitInstance*, UnitInstance*> collisionPairs;
+
+	for (auto unitInst : unitInstances)
+	{
+		if (!unitInst->collide) continue;
+
+		for (auto unitInst2 : unitInstances)
+		{
+			if (!unitInst2->collide) continue;
+
+			if (unitInst == unitInst2
+				|| unitInst->unit->type == unitInst2->unit->type) continue;
+
+			if ((unitInst->unit->type == UnitResource::Type::Enemy &&
+				unitInst2->unit->type == UnitResource::Type::EnemyProjectile)
+				|| (unitInst2->unit->type == UnitResource::Type::Enemy &&
+					unitInst->unit->type == UnitResource::Type::EnemyProjectile))
+			{
+				continue;
+			}
+
+			if ((unitInst->unit->type == UnitResource::Type::Player &&
+				unitInst2->unit->type == UnitResource::Type::PlayerProjectile)
+				|| (unitInst2->unit->type == UnitResource::Type::Player &&
+					unitInst->unit->type == UnitResource::Type::PlayerProjectile))
+			{
+				continue;
+			}
+
+			if (unitInst->boundingBox.overlaps(unitInst2->boundingBox))
+			{
+				auto iter1 = collisionPairs.find(unitInst);
+				auto iter2 = collisionPairs.find(unitInst2);
+				bool exists1 = false;
+				bool exists2 = false;
+
+				if (iter1 != collisionPairs.end() && iter1->second == unitInst2)
+				{
+					exists1 = true;
+				}
+				if (iter2 != collisionPairs.end() && iter2->second == unitInst)
+				{
+					exists2 = true;
+				}
+
+				if (!exists1 && !exists2)
+				{
+					collisionPairs[unitInst] = unitInst2;
+				}
+			}
+		}
+	}
+
+	for (auto& cp : collisionPairs)
+	{
+		//printf("COL: %s %s\n", cp.first->name.c_str(), cp.second->name.c_str());
+		if (cp.first->script)
+		{
+			auto func = cp.first->script->getFunction("onCollide");
+			if (func.isFunction())
+			{
+				func.call(cp.first, cp.second);
+			}
+		}
+
+		if (cp.second->script)
+		{
+			auto func2 = cp.second->script->getFunction("onCollide");
+			if (func2.isFunction())
+			{
+				func2.call(cp.second, cp.first);
+			}
+		}
 	}
 }
 
@@ -350,12 +421,7 @@ bool Game::loadLevels()
 	{
 		Json::Value& lvlInfoJson = listJson[i];
 		printf("Level: %s in %s\n", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
-		auto lvl = resourceLoader->loadLevel(lvlInfoJson["file"].asString());
-		
-		if (lvl)
-		{
-			levels.push_back(lvl);
-		}
+		levels.push_back(std::make_pair(lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asString()));
 	}
 
 	return true;
@@ -367,10 +433,7 @@ void Game::deleteNonPersistentUnitInstances()
 
 	while (iter != unitInstances.end())
 	{
-		if ((*iter)->type == UnitResource::Type::Enemy
-			|| (*iter)->type == UnitResource::Type::Item
-			|| (*iter)->type == UnitResource::Type::EnemyProjectile
-			|| (*iter)->type == UnitResource::Type::PlayerProjectile)
+		if ((*iter)->unit->type != UnitResource::Type::Player)
 		{
 			delete *iter;
 			iter = unitInstances.erase(iter);
@@ -397,17 +460,16 @@ bool Game::changeLevel(i32 index)
 		return false;
 	}
 
-	LevelResource* lev = levels[index];
+	currentLevelIndex = index;
+	auto level = resourceLoader->loadLevel(levels[currentLevelIndex].second);
 
-	// clone level unit instances to main game
-	for (u32 i = 0; i < lev->unitInstances.size(); i++)
+	for (auto& inst : level->unitInstances)
 	{
-		auto uinst = new UnitInstance();
-		uinst->copyFrom(lev->unitInstances[i]);
-		unitInstances.push_back(uinst);
+		unitInstances.push_back(inst);
 	}
 
-	currentLevelIndex = index;
+	resourceLoader->unload(level);
+
 	return true;
 }
 
@@ -425,7 +487,7 @@ UnitInstance* Game::createUnitInstance(UnitResource* unit)
 {
 	auto unitInst = new UnitInstance();
 
-	unitInst->instantiateFrom(unit);
+	unitInst->initializeFrom(unit);
 	unitInstances.push_back(unitInst);
 
 	return unitInst;
@@ -438,7 +500,7 @@ WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename,
 
 	weaponInst->parentUnitInstance = unitInst;
 	weaponInst->attachTo = spriteInst;
-	weaponInst->setWeaponResource(weaponRes);
+	weaponInst->initializeFrom(weaponRes);
 
 	return weaponInst;
 }
