@@ -3,7 +3,7 @@
 ## OVERVIEW
 This is a game development project intended to pay an homage to the old school shmup arcade games of the past.
 It utilizes/simulates techniques of old to get that nice pixelated look.
-A custom 2D sprite engine is used, instead of Unity and UnrealEngine4, for learning and fun purposes.
+A custom 2D sprite engine is used, instead of Unity or UnrealEngine 4, for learning and fun purposes.
 
 
 If you want to help with the development, donations are welcomed:
