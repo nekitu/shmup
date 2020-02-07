@@ -16,7 +16,7 @@ Donations on PayPal:
 
 ## PREREQUISITES
 **Windows:**
-	Microsoft Visual Studio 2017
+	Microsoft Visual Studio 2019+
 
 **Linux:**
 g++
@@ -27,7 +27,7 @@ GLU/GLUT dev, needed by GLEW, use:
 ## BUILDING
 **Windows:**
 - Execute: ```generate.bat```
-- Open and compile: ```build_vs2017/game.sln```
+- Open and compile: ```build_win/game.sln```
 - Run generated files from ```./bin``` folder
 
 **Linux:**
