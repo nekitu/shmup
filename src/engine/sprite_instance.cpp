@@ -4,6 +4,7 @@
 #include "resources/unit_resource.h"
 #include "sprite_instance.h"
 #include <assert.h>
+#include "image_atlas.h"
 
 namespace engine
 {
@@ -65,6 +66,11 @@ void SpriteInstance::update(struct Game* game)
 	// update the sprite frame animation
 	if (frameAnimation && animationIsActive)
 	{
+		if (frameAnimation->type == SpriteFrameAnimation::Type::Reversed)
+		{
+			animationDirection = -1;
+		}
+
 		animationFrame += (f32)frameAnimation->framesPerSecond * game->deltaTime * animationDirection;
 
 		if (frameAnimation->repeatCount)
@@ -77,7 +83,7 @@ void SpriteInstance::update(struct Game* game)
 			}
 		}
 
-		f32 frame = (u32)animationFrame;
+		f32 frame = (i32)animationFrame;
 
 		if (frameAnimation->type == SpriteFrameAnimation::Type::Normal)
 		{
@@ -155,6 +161,55 @@ void SpriteInstance::hit(f32 hitDamage)
 	colorMode = ColorMode::Add;
 	hitColorTimer = 0.0f;
 	currentHitFlashCount = 0;
+}
+
+bool SpriteInstance::checkPixelCollision(SpriteInstance* other)
+{
+	Rect partRc;
+
+	partRc.x = std::fmaxf(rect.x, other->rect.x);
+	partRc.y = std::fmaxf(rect.y, other->rect.y);
+	partRc.width  = floorf(fminf(rect.x + rect.width,  other->rect.x + other->rect.width) - partRc.x);
+	partRc.height = floorf(fminf(rect.y + rect.height, other->rect.y + other->rect.height)- partRc.y);
+
+	if (partRc.width < 1 || partRc.height < 1) return false;
+
+	auto getRectPixels = [](SpriteInstance* spr, const Rect& rc)
+	{
+		std::vector<u8> pixels;
+
+		auto frmRc = spr->sprite->getSheetFramePixelRect(spr->animationFrame);
+		pixels.resize(rc.width * rc.height);
+		int i = 0;
+		for (int y = 0; y < rc.height; y++)
+		{
+			for (int x = 0; x < rc.width; x++)
+			{
+				u8* px = (u8*)&spr->sprite->image->imageData[((u32)frmRc.y + y + (u32)rc.y) * spr->sprite->image->width + (u32)frmRc.x + x + (u32)rc.x];
+				pixels[i++] = px[3];
+				//printf("%s ", px[3] != 0 ? " " : "#");
+			}
+			//printf("\n");
+		}
+		//printf("---------------------------------------------------------------------------------------------\n");
+
+		return pixels;
+	};
+
+	//printf("-SPR1 -\n");
+	std::vector<u8> pixels1 = getRectPixels(this, Rect(partRc.x - rect.x, partRc.y - rect.y, partRc.width, partRc.height));
+	//printf("-SPR2 -\n");
+	std::vector<u8> pixels2 = getRectPixels(other, Rect(partRc.x - other->rect.x, partRc.y - other->rect.y, partRc.width, partRc.height));
+
+	for (int i = 0; i < pixels1.size(); i++)
+	{
+		if (pixels1[i] != 0 && pixels2[i] != 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 }

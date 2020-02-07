@@ -1,5 +1,6 @@
 #include "unit_instance.h"
 #include "unit_controller.h"
+#include "utils.h"
 #include "sprite_instance.h"
 #include "resources/sprite_resource.h"
 #include "graphics.h"
@@ -15,6 +16,13 @@
 namespace engine
 {
 bool UnitInstance::shadowToggle = true;
+u64 UnitInstance::lastId = 1;
+
+UnitInstance::UnitInstance()
+{
+	id = lastId++;
+	//printf("CRT UID %lld\n", id);
+}
 
 void UnitInstance::updateShadowToggle()
 {
@@ -228,6 +236,8 @@ void UnitInstance::update(Game* game)
 		}
 	}
 
+	age += game->deltaTime;
+
 	if (script)
 	{
 		auto func = script->getFunction("onUpdate");
@@ -239,10 +249,41 @@ void UnitInstance::computeBoundingBox()
 {
 	if (rootSpriteInstance)
 	{
-		boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
-		boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
-		boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
-		boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+		if (rootSpriteInstance->transform.rotation != 0)
+		{
+			boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
+			boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
+			boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
+			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+
+			Vec2 v0(boundingBox.topLeft());
+			Vec2 v1(boundingBox.topRight());
+			Vec2 v2(boundingBox.bottomRight());
+			Vec2 v3(boundingBox.bottomLeft());
+
+			Vec2 center = boundingBox.center();
+			auto angle = deg2rad(rootSpriteInstance->transform.rotation);
+
+			v0.rotateAround(center, angle);
+			v1.rotateAround(center, angle);
+			v2.rotateAround(center, angle);
+			v3.rotateAround(center, angle);
+
+			boundingBox.set(center.x, center.y, 0, 0);
+			boundingBox.add(v0);
+			boundingBox.add(v1);
+			boundingBox.add(v2);
+			boundingBox.add(v3);
+		}
+		else
+		{
+			boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
+			boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
+			boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
+			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+		}
+
+		rootSpriteInstance->rect = boundingBox;
 	}
 	
 	for (auto sprInst : spriteInstances)
@@ -270,7 +311,37 @@ void UnitInstance::computeBoundingBox()
 			renderH
 		};
 
-		boundingBox.add(spriteRc);
+		if (sprInst->transform.rotation != 0)
+		{
+			Vec2 v0(spriteRc.topLeft());
+			Vec2 v1(spriteRc.topRight());
+			Vec2 v2(spriteRc.bottomRight());
+			Vec2 v3(spriteRc.bottomLeft());
+
+			Vec2 center = spriteRc.center();
+			auto angle = deg2rad(sprInst->transform.rotation);
+
+			v0.rotateAround(center, angle);
+			v1.rotateAround(center, angle);
+			v2.rotateAround(center, angle);
+			v3.rotateAround(center, angle);
+
+			sprInst->rect = Rect(center.x, center.y, 0, 0);
+			sprInst->rect.add(v0);
+			sprInst->rect.add(v1);
+			sprInst->rect.add(v2);
+			sprInst->rect.add(v3);
+
+			boundingBox.add(v0);
+			boundingBox.add(v1);
+			boundingBox.add(v2);
+			boundingBox.add(v3);
+		}
+		else
+		{
+			boundingBox.add(spriteRc);
+			sprInst->rect = spriteRc;
+		}
 	}
 }
 
@@ -345,37 +416,49 @@ void UnitInstance::render(Graphics* gfx)
 			uvRc.width *= -1.0f;
 		}
 
+		if (unit->hasShadows && shadowToggle)
+		{
+			auto shadowRc = spriteRc;
+			shadowRc += unit->shadowOffset;
+			shadowRc.width *= unit->shadowScale;
+			shadowRc.height *= unit->shadowScale;
+
+			gfx->currentColor = 0;
+			gfx->currentColorMode = (u32)ColorMode::Mul;
+			//TODO: handle shadow rotation
+			if (sprInst->sprite->image->rotated)
+			{
+				gfx->drawQuadWithTexCoordRotated90(shadowRc, uvRc);
+			}
+			else
+			{
+				gfx->drawQuad(shadowRc, uvRc);
+			}
+		}
+
 		gfx->currentColor = sprInst->color.getRgba();
 		gfx->currentColorMode = (u32)sprInst->colorMode;
 
-		if (sprInst->sprite->image->rotated)
+		if (sprInst->transform.rotation > 0)
 		{
-			gfx->drawQuadRot90(spriteRc, uvRc);
+			if (sprInst->sprite->image->rotated)
+			{
+				gfx->drawRotatedQuadWithTexCoordRotated90(spriteRc, uvRc, sprInst->transform.rotation);
+			}
+			else
+			{
+				gfx->drawRotatedQuad(spriteRc, uvRc, sprInst->transform.rotation);
+			}
 		}
 		else
 		{
-			gfx->drawQuad(spriteRc, uvRc);
-		}
-
-		if (unit->hasShadows)
-		{
-			if (shadowToggle)
+			if (sprInst->sprite->image->rotated)
 			{
-				spriteRc += unit->shadowOffset;
-				spriteRc.width *= unit->shadowScale;
-				spriteRc.height *= unit->shadowScale;
-
-				gfx->currentColor = 0;
-				gfx->currentColorMode = (u32)ColorMode::Mul;
-
-				if (sprInst->sprite->image->rotated)
-				{
-					gfx->drawQuadRot90(spriteRc, uvRc);
-				}
-				else
-				{
-					gfx->drawQuad(spriteRc, uvRc);
-				}
+				gfx->drawQuadWithTexCoordRotated90(spriteRc, uvRc);
+			}
+			else
+			{
+				gfx->drawQuad(spriteRc, uvRc);
 			}
 		}
 	}

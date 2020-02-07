@@ -12,13 +12,14 @@ AtlasImage* SpriteResource::loadImage(const std::string& filename)
 	int comp = 0;
 
 	stbi_uc* data = stbi_load(filename.c_str(), &width, &height, &comp, 4);
-
+	printf("Loaded image: %s %dx%d\n", filename.c_str(), width, height);
 	if (!data)
 		return nullptr;
 
 	auto img = atlas->addImage((Rgba32*)data, width, height);
-	delete[] data;
+	printf("Added image\n");
 	atlas->pack();
+	printf("Packed image\n");
 
 	return img;
 }
@@ -44,6 +45,46 @@ Rect SpriteResource::getFrameUvRect(u32 frame)
 		rc.width = uvFrameWidth;
 		rc.height = uvFrameHeight;
 	}
+
+	return rc;
+}
+
+Rect SpriteResource::getFramePixelRect(u32 frame)
+{
+	Rect rc;
+
+	u32 col = frame % columns;
+	u32 row = frame / columns;
+
+	if (image->rotated)
+	{
+		rc.x = image->rect.x + frameWidth * row;
+		rc.y = image->rect.y + frameHeight * col;
+		rc.width = frameWidth;
+		rc.height = frameHeight;
+	}
+	else
+	{
+		rc.x = image->rect.x + frameWidth * col;
+		rc.y = image->rect.y + frameHeight * row;
+		rc.width = frameWidth;
+		rc.height = frameHeight;
+	}
+
+	return rc;
+}
+
+Rect SpriteResource::getSheetFramePixelRect(u32 frame)
+{
+	Rect rc;
+
+	u32 col = frame % columns;
+	u32 row = frame / columns;
+
+	rc.x = frameWidth * col;
+	rc.y = frameHeight * row;
+	rc.width = frameWidth;
+	rc.height = frameHeight;
 
 	return rc;
 }

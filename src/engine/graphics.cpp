@@ -4,6 +4,7 @@
 #include "texture_array.h"
 #include "vertex_buffer.h"
 #include "image_atlas.h"
+#include "utils.h"
 
 namespace engine
 {
@@ -118,7 +119,7 @@ Graphics::Graphics(Game* game)
 	this->game = game;
 	createScreenRenderTarget();
 	createGpuPrograms();
-	atlas = new ImageAtlas(2048, 2048);
+	atlas = new ImageAtlas(4092, 4092);
 	vertexBuffer = new VertexBuffer();
 	vertexBuffer->resize(maxVertexCount);
 	vertices.resize(maxVertexCount);
@@ -439,7 +440,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	drawVertexCount = i;
 }
 
-void Graphics::drawQuadRot90(const Rect& rect, const Rect& uvRect)
+void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect)
 {
 	needToAddVertexCount(6);
 
@@ -493,6 +494,158 @@ void Graphics::drawQuadRot90(const Rect& rect, const Rect& uvRect)
 
 	vertices[i].position = rect.bottomLeft();
 	vertices[i].uv = t2;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	drawVertexCount = i;
+}
+
+void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect, f32 rotationAngle)
+{
+	needToAddVertexCount(6);
+
+	u32 i = drawVertexCount;
+
+	// shift the UVs to the right
+	// t3-------t0
+	//  |     /  |
+	//  |  /     |
+	// t2-------t1
+	Vec2 t0(uvRect.topLeft());
+	Vec2 t1(uvRect.topRight());
+	Vec2 t2(uvRect.right(), uvRect.bottom());
+	Vec2 t3(uvRect.bottomLeft());
+
+	// v0------v1
+	//  |    /  |
+	//  |  /    |
+	// v3------v2
+
+	Vec2 v0(rect.topLeft());
+	Vec2 v1(rect.topRight());
+	Vec2 v2(rect.bottomRight());
+	Vec2 v3(rect.bottomLeft());
+
+	Vec2 center = rect.center();
+	auto angle = deg2rad(rotationAngle);
+
+	v0.rotateAround(center, angle);
+	v1.rotateAround(center, angle);
+	v2.rotateAround(center, angle);
+	v3.rotateAround(center, angle);
+
+	vertices[i].position = v0;
+	vertices[i].uv = t3;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v1;
+	vertices[i].uv = t0;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v3;
+	vertices[i].uv = t2;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	// 2nd triangle
+
+	vertices[i].position = v1;
+	vertices[i].uv = t0;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v2;
+	vertices[i].uv = t1;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v3;
+	vertices[i].uv = t2;
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	drawVertexCount = i;
+}
+
+void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotationAngle)
+{
+	needToAddVertexCount(6);
+
+	u32 i = drawVertexCount;
+
+	// t0------t1
+	//  |    /  |
+	//  |  /    |
+	// t3------t2
+
+	Vec2 v0(rect.topLeft());
+	Vec2 v1(rect.topRight());
+	Vec2 v2(rect.bottomRight());
+	Vec2 v3(rect.bottomLeft());
+
+	Vec2 center = rect.center();
+	auto angle = deg2rad(rotationAngle);
+
+	v0.rotateAround(center, angle);
+	v1.rotateAround(center, angle);
+	v2.rotateAround(center, angle);
+	v3.rotateAround(center, angle);
+
+	vertices[i].position = v0;
+	vertices[i].uv = uvRect.topLeft();
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v1;
+	vertices[i].uv = uvRect.topRight();
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v3;
+	vertices[i].uv = uvRect.bottomLeft();
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	// 2nd triangle
+
+	vertices[i].position = v1;
+	vertices[i].uv = uvRect.topRight();
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v2;
+	vertices[i].uv = uvRect.bottomRight();
+	vertices[i].color = currentColor;
+	vertices[i].colorMode = currentColorMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	i++;
+
+	vertices[i].position = v3;
+	vertices[i].uv = uvRect.bottomLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
 	vertices[i].textureIndex = atlasTextureIndex;

@@ -36,6 +36,7 @@ struct SpriteResource : Resource
 {
 	struct AtlasImage* image = nullptr;
 	struct ImageAtlas* atlas = nullptr;
+	
 	u32 frameCount = 0;
 	u32 frameWidth = 0;
 	u32 frameHeight = 0;
@@ -48,6 +49,8 @@ struct SpriteResource : Resource
 
 	struct AtlasImage* loadImage(const std::string& filename);
 	Rect getFrameUvRect(u32 frame);
+	Rect getFramePixelRect(u32 frame);
+	Rect getSheetFramePixelRect(u32 frame);
 	bool load(Json::Value& json) override;
 };
 

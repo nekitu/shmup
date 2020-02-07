@@ -47,6 +47,14 @@ public:
 		return buff;
 	}
 
+	void rotateAround(const Vec2& center, f32 angleRadians)
+	{
+		*this = {
+			cosf(angleRadians) * (x - center.x) - sinf(angleRadians) * (y - center.y) + center.x,
+			sinf(angleRadians) * (x - center.x) + cosf(angleRadians) * (y - center.y) + center.y
+		};
+	}
+
 	f32 getDistance(const Vec2& other) const
 	{
 		f32 xx = x - other.x, yy = y - other.y;

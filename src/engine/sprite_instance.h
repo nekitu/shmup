@@ -20,6 +20,7 @@ struct SpriteInstance
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
+	Rect rect;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;
@@ -41,6 +42,7 @@ struct SpriteInstance
 	void setFrameAnimation(const std::string& name);
 	void play();
 	void hit(f32 hitDamage);
+	bool checkPixelCollision(SpriteInstance* other);
 };
 
 }

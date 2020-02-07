@@ -46,7 +46,9 @@ struct Graphics
 	void setupBlitRenderTargetRendering();
 	void setupRenderTargetRendering();
 	void drawQuad(const Rect& rect, const Rect& uvRect);
-	void drawQuadRot90(const Rect& rect, const Rect& uvRect);
+	void drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
+	void drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect);
+	void drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
 	void beginFrame();
 	void setupProjection(f32 width, f32 height);
 	void endFrame();

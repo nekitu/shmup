@@ -30,7 +30,7 @@ UnitController* UnitController::create(const std::string& ctrlerName, UnitInstan
 
 	if (ctrlerName == "Player")
 	{
-		auto controller = new PlayerController(0);
+		auto controller = new PlayerController(Game::instance);
 		controller->unitInstance = unitInst;
 		return controller;
 	}
@@ -99,7 +99,7 @@ void PlayerController::update(struct Game* game)
 		for (auto& wp: unitInstance->weapons)
 		{
 			wp.second->fire();
-			//fireSound->play();
+			fireSound->play();
 		}
 	}
 	

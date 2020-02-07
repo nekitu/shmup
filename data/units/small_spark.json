@@ -1,15 +1,15 @@
 {
-    "name": "Fire",
+    "name": "SmallSpark",
     "type": "PlayerProjectile",
     "deleteOnOutOfScreen": true,
-    "script": "scripts/projectile1.lua",
+    "script": "scripts/small_spark.lua",
     "rootSpriteInstance": "body",
     "spriteInstances":
     [
         {
             "name": "body",
-            "scale": 1,
-            "sprite": "sprites/fire"
+            "scale": 0.2,
+            "sprite": "sprites/small_spark"
         }
     ]
 }

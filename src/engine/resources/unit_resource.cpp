@@ -23,9 +23,6 @@ bool UnitResource::load(Json::Value& json)
 	if (typeStr == "Item")
 		type = Type::Item;
 
-	if (typeStr == "Trigger")
-		type = Type::Trigger;
-
 	if (typeStr == "Player")
 		type = Type::Player;
 
@@ -46,11 +43,6 @@ bool UnitResource::load(Json::Value& json)
 	shadowOffset.parse(json.get("shadowOffset", "0 0").asString());
 	deleteOnOutOfScreen = json.get("deleteOnOutOfScreen", deleteOnOutOfScreen).asBool();
 
-	if (type == UnitResource::Type::Trigger)
-	{
-		triggerSize.parse(json.get("triggerSize", "0 0").asString());
-	}
-	
 	// load stages
 	auto stagesJson = json.get("stages", Json::Value(Json::ValueType::arrayValue));
 	for (u32 i = 0; i < stagesJson.size(); i++)

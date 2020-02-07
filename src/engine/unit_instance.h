@@ -15,12 +15,15 @@ struct UnitInstance
 	SpriteInstanceAnimationMap* spriteInstanceAnimationMap = nullptr;
 
 	// unit instance general members
+	static u64 lastId;
+	u64 id = 0;
 	std::string name;
 	std::string currentAnimationName;
 	Rect boundingBox;
 	bool visible = true;
 	f32 speed = 10.0f;
 	f32 health = 100.0f;
+	f32 age = 0;
 	u32 stageIndex = 0;
 	bool collide = true;
 	struct UnitResource* unit = nullptr;
@@ -30,6 +33,7 @@ struct UnitInstance
 
 	bool deleteMeNow = false;
 
+	UnitInstance();
 	//void copyFrom(UnitInstance* other);
 	void initializeFrom(UnitResource* res);
 	void load(struct ResourceLoader* loader, const Json::Value& json);

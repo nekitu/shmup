@@ -1,0 +1,15 @@
+{
+    "frameWidth": 70,
+    "frameHeight": 62,
+    "animations":
+    {
+        "default":
+        {
+            "start": 0,
+            "frames": 32,
+            "type": "Reversed",
+            "fps": 42,
+            "repeat": 0
+        }
+    }
+}

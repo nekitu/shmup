@@ -54,7 +54,6 @@ struct UnitResource : Resource
 		Player,
 		Enemy,
 		Item,
-		Trigger,
 		PlayerProjectile,
 		EnemyProjectile,
 
@@ -69,7 +68,6 @@ struct UnitResource : Resource
 	Vec2 shadowOffset;
 	bool visible = true;
 	bool deleteOnOutOfScreen = false;
-	Vec2 triggerSize;
 	bool collide = true;
 	std::string rootSpriteInstanceName;
 	std::string controllerName;

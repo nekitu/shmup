@@ -196,7 +196,15 @@ struct Rect
 		if (rc.bottom() > bottom()) height = rc.bottom() - y;
 	}
 
-    inline Rect operator + (const Vec2& pt) const
+	inline void add(const Vec2& pt)
+	{
+		if (pt.x < x) { auto r = right(); x = pt.x; width = r - pt.x; }
+		if (pt.y < y) { auto b = bottom(); y = pt.y; height = b - pt.y; }
+		if (pt.x > right()) width = pt.x - x;
+		if (pt.y > bottom()) height = pt.y - y;
+	}
+
+	inline Rect operator + (const Vec2& pt) const
     {
         return { x + pt.x, y + pt.y, width, height };
     }

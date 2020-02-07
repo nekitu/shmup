@@ -10,6 +10,7 @@ struct Transform
 	f32 scale = 1.0f;
 	bool verticalFlip = false;
 	bool horizontalFlip = false;
-	i32 rotation = 0; /// rotation of -90 or 90 degrees
+	f32 rotation = 0;
+	//TODO: add pivotOffset for rotation
 };
 }

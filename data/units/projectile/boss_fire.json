@@ -1,6 +1,6 @@
 {
     "name": "Fire",
-    "type": "PlayerProjectile",
+    "type": "EnemyProjectile",
     "deleteOnOutOfScreen": true,
     "script": "scripts/projectile2.lua",
     "spriteInstances":

@@ -69,6 +69,14 @@ bool initializeLua()
 		.addFunction("log", engine_log)
 		.addFunction("changeLevel", [](int index) { Game::instance->changeLevel(index); })
 		.addFunction("loadNextLevel", []() { Game::instance->changeLevel(~0); })
+		.addFunction("spawnUnitInstance", [](const std::string& unit, const std::string& name, const Vec2& position)
+			{
+				auto uinst = Game::instance->createUnitInstance(Game::instance->resourceLoader->loadUnit(unit));
+				uinst->name = name;
+				uinst->rootSpriteInstance->transform.position = position;
+				return uinst;
+			}
+		)
 		.endModule();
 
 	LUA.beginClass<WeaponInstance>("WeaponInstance")
@@ -81,13 +89,45 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<UnitInstance>("UnitInstance")
+		.addVariable("id", &UnitInstance::id, false)
 		.addVariable("name", &UnitInstance::name, true)
-		.addVariable("unit", &UnitInstance::unit, true)
-		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow, true)
-		.addVariable("rootSpriteInstance", &UnitInstance::rootSpriteInstance, false)
+		.addVariable("unit", &UnitInstance::unit, false)
+		.addVariable("age", &UnitInstance::age, false)
+		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow)
+		.addVariable("rootSpriteInstance", &UnitInstance::rootSpriteInstance)
+		.addFunction("fire", [](UnitInstance* inst)
+			{
+				for (auto& wp : inst->weapons)
+				{
+					wp.second->fire();
+					wp.second->update(Game::instance);
+				}
+			})
+		.endClass();
+
+	LUA.beginClass<Vec2>("Vec2")
+		.addVariable("x", &Vec2::x)
+		.addVariable("y", &Vec2::y)
+		.endClass();
+
+	LUA.beginClass<Rect>("Rect")
+		.addVariable("x", &Rect::x)
+		.addVariable("y", &Rect::y)
+		.addVariable("width", &Rect::width)
+		.addVariable("height", &Rect::height)
+		.endClass();
+
+	LUA.beginClass<Transform>("Transform")
+		.addVariableRef("position", &Transform::position)
+		.addVariable("rotation", &Transform::rotation)
+		.addVariable("scale", &Transform::scale)
+		.addVariable("verticalFlip", &Transform::verticalFlip)
+		.addVariable("horizontalFlip", &Transform::horizontalFlip)
 		.endClass();
 
 	LUA.beginClass<SpriteInstance>("SpriteInstance")
+		.addVariableRef("transform", &SpriteInstance::transform)
+		.addFunction("checkPixelCollision", &SpriteInstance::checkPixelCollision)
 		.addFunction("hit", &SpriteInstance::hit)
 		.endClass();
 
