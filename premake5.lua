@@ -255,3 +255,4 @@ end
 -- TODO: we need to generate solutions for CMake for 3rdparty that uses it
 include "libs"
 include "src"
+include "tools"

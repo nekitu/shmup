@@ -132,7 +132,7 @@ bool Game::initialize()
 	//TODO: remove
 	music = new MusicInstance();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
-	music->play();
+	//music->play();
 }
 
 void Game::shutdown()

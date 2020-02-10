@@ -46,7 +46,7 @@
     [
         {
             "name": "body",
-            "sprite": "sprites/enemy",
+            "sprite": "sprites/out",
             "position": "0 0",
             "scale": 1.0,
             "rotation": 0,
@@ -61,6 +61,26 @@
                     "position": "0 0",
                     "weapon": "weapons/boss",
                     "active": true
+                }
+            }
+        },
+        {
+            "name": "turret",
+            "sprite": "sprites/out",
+            "position": "0 0",
+            "scale": 1.0,
+            "rotation": 0,
+            "horizontalFlip": false,
+            "verticalFlip": false,
+			"color": "0 0 0 1",
+			"hitColor": "1 0.4 0.4 1",
+            "weapons":
+            {
+                "gun1":
+                {
+                    "position": "0 0",
+                    "weapon": "weapons/boss",
+                    "active": false
                 }
             }
         }
