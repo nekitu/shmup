@@ -129,7 +129,7 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 {
 	try
 	{
-		cxxopts::Options options(argv[0], " - sprite sheet generator");
+		cxxopts::Options options(argv[0], "Sprite sheet generator");
 		options
 			.positional_help("[optional args]")
 			.show_positional_help();
@@ -139,24 +139,24 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 		options
 			.allow_unrecognised_options()
 			.add_options()
-			("s,sheet", "make a sheet", cxxopts::value<bool>(args.sheet))
-			("h,nohidden", "skip hidden layers", cxxopts::value<bool>(args.skipHiddenLayers))
-			("r,rotate", "rotate sprite and generate images", cxxopts::value<bool>(args.rotate))
-			("n,nearest", "use nearest interpolation", cxxopts::value<bool>(args.neareast))
-			("x,startangle", "start angle (deg)", cxxopts::value<i32>(args.startAngle))
-			("y,endangle", "end angle (deg)", cxxopts::value<i32>(args.endAngle))
-			("a,stepangle", "step angle (deg)", cxxopts::value<i32>(args.stepAngle))
-			("f, file", "PSD filename", cxxopts::value<std::string>(), "Filename")
-			("o, outfile", "Out filename for the PNG sheet", cxxopts::value<std::string>(), "Out filename")
+			("s,sheet", "Make a sheet, otherwise output separate PNG files for each layer", cxxopts::value<bool>(args.sheet))
+			("h,nohidden", "Skip hidden layers", cxxopts::value<bool>(args.skipHiddenLayers))
+			("r,rotate", "Rotate sprite and generate images", cxxopts::value<bool>(args.rotate))
+			("n,nearest", "Use nearest interpolation when generating rotated images", cxxopts::value<bool>(args.neareast))
+			("x,startangle", "Start angle (deg)", cxxopts::value<i32>(args.startAngle))
+			("y,endangle", "End angle (deg)", cxxopts::value<i32>(args.endAngle))
+			("a,stepangle", "Step angle (deg)", cxxopts::value<i32>(args.stepAngle))
+			("f, file", "PSD filename", cxxopts::value<std::string>(), "<filename>")
+			("o, outfile", "Out filename for the PNG sheet", cxxopts::value<std::string>(), "<outfilename>")
 			;
 
 		options.parse_positional({ "file", "outfile", "positional" });
 
 		auto result = options.parse(argc, argv);
 
-		if (result.count("help"))
+		if (result.count("help") || argc == 1)
 		{
-			std::cout << options.help({ "", "Group" }) << std::endl;
+			std::cout << options.help({ "" }) << std::endl;
 			exit(0);
 		}
 
@@ -169,7 +169,7 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 	catch (const cxxopts::OptionException & e)
 	{
 		std::cout << "error parsing options: " << e.what() << std::endl;
-		//exit(1);
+		exit(1);
 	}
 }
 
@@ -184,6 +184,9 @@ struct LayerImage
 int main(int argc, char *argv[])
 {
 	auto argResult = parseArgs(argc, argv);
+
+	if (!argResult.count("file"))
+		return 0;
 
     PSDImage *img = new PSDImage();
 
@@ -248,10 +251,6 @@ int main(int argc, char *argv[])
 				limg->rotatedRect.width = ceilf(limg->rotatedRect.width);
 				limg->rotatedRect.height = ceilf(limg->rotatedRect.height);
 
-				printf("Rect %f %f %f %f\n", limg->rect.x, limg->rect.y, limg->rect.width, limg->rect.height);
-				printf("RotatedRect %f %f %f %f\n", limg->rotatedRect.x, limg->rotatedRect.y, limg->rotatedRect.width, limg->rotatedRect.height);
-
-				// rotate pixels into new buffer
 				u32* rotatedImage = new u32[(u32)limg->rotatedRect.width * (u32)limg->rotatedRect.height];
 				memset(rotatedImage, 0, (u32)limg->rotatedRect.width * (u32)limg->rotatedRect.height * 4);
 				f32 sina = sinf(angleRad);
@@ -301,8 +300,7 @@ int main(int argc, char *argv[])
 								}
 							}
 						}
-						else
-						if ((args.neareast || forceNearest) && srcx0 >= 0 && srcx0 < limg->rect.width
+						else if ((args.neareast || forceNearest) && srcx0 >= 0 && srcx0 < limg->rect.width
 							&& srcy0 >= 0 && srcy0 < limg->rect.height)
 						{
 							srcx0 = round(srcx0);
@@ -352,9 +350,9 @@ int main(int argc, char *argv[])
                 char* pixel = (char*)&(layerImages[i]->rotatedPixels[y* (u32)layerImages[i]->rotatedRect.width + x]);
                 char* npixel= (char*)&(imagedata[(y + (u32)layerImages[i]->rotatedRect.y + sheetRow * (u32)maxRotateBounds.height) * sheetWidth
 					+ x + (u32)layerImages[i]->rotatedRect.x + (u32)maxRotateBounds.width * sheetCol]);
-                npixel[0] = pixel[2]; //R //B
-                npixel[1] = pixel[1];// pixel[1];//G //G
-                npixel[2] = pixel[0];// pixel[2];//B //R
+                npixel[0] = pixel[2];
+                npixel[1] = pixel[1];
+				npixel[2] = pixel[0];// pixel[2];//B //R
                 npixel[3] = pixel[3]; //A
             }
         }
