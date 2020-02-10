@@ -1,5 +1,6 @@
 #include "gpu_program.h"
 #include "graphics.h"
+#include <string.h>
 
 namespace engine
 {

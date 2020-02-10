@@ -82,9 +82,9 @@ PlayerController::PlayerController(Game* game)
 	//TODO
 	if (game)
 	{
-		fireSoundRes = game->resourceLoader->loadSound("sounds/Laser01.wav");
-		fireSound = new SoundInstance();
-		fireSound->soundResource = fireSoundRes;
+		//fireSoundRes = game->resourceLoader->loadSound("sounds/Laser01.wav");
+		//fireSound = new SoundInstance();
+		//fireSound->soundResource = fireSoundRes;
 	}
 }
 
@@ -99,7 +99,7 @@ void PlayerController::update(struct Game* game)
 		for (auto& wp: unitInstance->weapons)
 		{
 			wp.second->fire();
-			fireSound->play();
+			//fireSound->play();
 		}
 	}
 	

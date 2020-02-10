@@ -5,6 +5,7 @@
 #include "unit_controller.h"
 #include "utils.h"
 #include "resources/script_resource.h"
+#include <float.h>
 
 namespace engine
 {

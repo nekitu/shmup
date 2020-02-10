@@ -107,7 +107,7 @@ bool SpriteResource::load(Json::Value& json)
 
 	for (auto& animName : animNames)
 	{
-		auto& animJson = animationsJson.get(animName, Json::Value());
+		auto animJson = animationsJson.get(animName, Json::Value());
 		SpriteFrameAnimation* anim = new SpriteFrameAnimation();
 
 		anim->name = animName;

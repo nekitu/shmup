@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "resource_loader.h"
 #include "image_atlas.h"
-#include "SDL_mixer.h"
+#include <SDL_mixer.h>
 #include "animation_instance.h"
 #include "unit_controller.h"
 #include "resources/sound_resource.h"
@@ -46,7 +46,7 @@ bool Game::initialize()
 {
 	SDL_SetMainReady();
 
-	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_AUDIO);
+	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
 	if (err != 0)
 	{
@@ -64,6 +64,7 @@ bool Game::initialize()
 		SDL_WINDOWPOS_CENTERED,
 		windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
+	printf("Creating GL context...");
 	glContext = SDL_GL_CreateContext(window);
 
 	if (!glContext)
@@ -79,6 +80,8 @@ bool Game::initialize()
 
 	GLenum errGlew = 0;
 	glewExperimental = GL_TRUE;
+	printf("Initializing GLEW...");
+
 	errGlew = glewInit();
 
 	printf("Initializing game...");
@@ -98,7 +101,7 @@ bool Game::initialize()
 	//	exit(1);
 	//}
 
-	initializeAudio();
+	//initializeAudio();
 
 	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
@@ -131,7 +134,7 @@ bool Game::initialize()
 
 	//TODO: remove
 	music = new MusicInstance();
-	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
+	//music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	//music->play();
 }
 

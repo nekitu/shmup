@@ -59,7 +59,7 @@ struct AnimationResource : Resource
 		PingPong
 	};
 
-	std::unordered_map<AnimationTrack::Type, AnimationTrack*> tracks;
+	std::map<AnimationTrack::Type, AnimationTrack*> tracks;
 	f32 speed = 1.0f;
 	f32 totalTime = 0.0f;
 	Type type = Type::Normal;

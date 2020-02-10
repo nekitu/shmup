@@ -63,7 +63,7 @@ bool initializeLua()
 	
 	luaL_openlibs(L);
 
-	auto& LUA = LuaIntf::LuaBinding(L);
+	auto LUA = LuaIntf::LuaBinding(L);
 
 	LUA.beginModule("engine")
 		.addFunction("log", engine_log)

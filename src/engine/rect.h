@@ -47,7 +47,7 @@ struct Rect
 
 	void parse(const std::string& str)
 	{
-		sscanf_s(str.c_str(), "%f %f %f %f", &x, &y, &width, &height);
+		sscanf(str.c_str(), "%f %f %f %f", &x, &y, &width, &height);
 	}
 
 	std::string toString() const

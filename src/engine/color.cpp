@@ -35,7 +35,7 @@ Color Color::random()
 
 void Color::parse(const std::string& colorStr)
 {
-	sscanf_s(colorStr.c_str(), "%f %f %f %f", &r, &g, &b, &a);
+	sscanf(colorStr.c_str(), "%f %f %f %f", &r, &g, &b, &a);
 }
 
 std::string Color::toString() const

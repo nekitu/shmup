@@ -1,5 +1,6 @@
 #include "animation_resource.h"
 #include "animation_instance.h"
+#include <algorithm>
 
 namespace engine
 {
@@ -57,7 +58,7 @@ bool AnimationResource::load(Json::Value& json)
 		auto track = new AnimationTrack();
 
 		auto keyType = tracksJson.getMemberNames()[i];
-		auto& trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::arrayValue));
+		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::arrayValue));
 		auto trackType = AnimationTrack::Type::Unknown;
 
 		if (keyType == "PositionX") trackType = AnimationTrack::Type::PositionX;

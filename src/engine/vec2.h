@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include <string>
+#include <math.h>
 
 namespace engine
 {
@@ -37,7 +38,7 @@ public:
 
 	inline void parse(const std::string& vecStr)
 	{
-		sscanf_s(vecStr.c_str(), "%f %f", &x, &y);
+		sscanf(vecStr.c_str(), "%f %f", &x, &y);
 	}
 
 	inline std::string toString() const

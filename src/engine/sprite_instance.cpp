@@ -5,6 +5,7 @@
 #include "sprite_instance.h"
 #include <assert.h>
 #include "image_atlas.h"
+#include <cmath>
 
 namespace engine
 {
