@@ -39,6 +39,7 @@ struct Game
 	static const int maxPlayerCount = 2;
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
+	bool fullscreen = false;
 	bool vSync = true;
 	bool exitGame = false;
 	SDL_Window* window = nullptr;

@@ -62,7 +62,15 @@ bool Game::initialize()
 		windowTitle.c_str(),
 		SDL_WINDOWPOS_CENTERED,
 		SDL_WINDOWPOS_CENTERED,
-		windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
+		windowWidth, windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0));
+
+	if (fullscreen)
+	{
+		int w, h;
+		SDL_GetWindowSize(window, &w, &h);
+		windowWidth = w;
+		windowHeight = h;
+	}
 
 	printf("Creating GL context...");
 	glContext = SDL_GL_CreateContext(window);

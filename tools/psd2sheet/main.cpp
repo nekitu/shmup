@@ -154,7 +154,7 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 
 		auto result = options.parse(argc, argv);
 
-		if (result.count("help") || argc == 1)
+		if (result.count("help"))
 		{
 			std::cout << options.help({ "" }) << std::endl;
 			exit(0);
@@ -184,9 +184,6 @@ struct LayerImage
 int main(int argc, char *argv[])
 {
 	auto argResult = parseArgs(argc, argv);
-
-	if (!argResult.count("file"))
-		return 0;
 
     PSDImage *img = new PSDImage();
 
@@ -251,8 +248,10 @@ int main(int argc, char *argv[])
 				limg->rotatedRect.width = ceilf(limg->rotatedRect.width);
 				limg->rotatedRect.height = ceilf(limg->rotatedRect.height);
 
-				u32* rotatedImage = new u32[(u32)limg->rotatedRect.width * (u32)limg->rotatedRect.height];
-				memset(rotatedImage, 0, (u32)limg->rotatedRect.width * (u32)limg->rotatedRect.height * 4);
+				u32 imgSize = (u32)limg->rotatedRect.width * limg->rotatedRect.height;
+				u32 imgSizeBytes = imgSize * 4;
+				u32* rotatedImage = new u32[imgSize];
+				memset(rotatedImage, 0, imgSizeBytes);
 				f32 sina = sinf(angleRad);
 				f32 cosa = cosf(angleRad);
 
@@ -292,7 +291,7 @@ int main(int argc, char *argv[])
 									dst[0] = i11[0] * dx * dy + i21[0] * dx * (1.0f - dy) + i12[0] * (1.0f - dx) * dy + i22[0] * (1.0f - dx) * (1.0f - dy);
 									dst[1] = i11[1] * dx * dy + i21[1] * dx * (1.0f - dy) + i12[1] * (1.0f - dx) * dy + i22[1] * (1.0f - dx) * (1.0f - dy);
 									dst[2] = i11[2] * dx * dy + i21[2] * dx * (1.0f - dy) + i12[2] * (1.0f - dx) * dy + i22[2] * (1.0f - dx) * (1.0f - dy);
-									dst[3] = i00[3]; i11[3] * dx* dy + i21[3] * dx * (1.0f - dy) + i12[3] * (1.0f - dx) * dy + i22[3] * (1.0f - dx) * (1.0f - dy);
+									dst[3] = i00[3];
 								}
 								else
 								{
@@ -300,12 +299,18 @@ int main(int argc, char *argv[])
 								}
 							}
 						}
-						else if ((args.neareast || forceNearest) && srcx0 >= 0 && srcx0 < limg->rect.width
+						
+						if ((args.neareast || forceNearest) && srcx0 >= 0 && srcx0 < limg->rect.width
 							&& srcy0 >= 0 && srcy0 < limg->rect.height)
 						{
 							srcx0 = round(srcx0);
 							srcy0 = round(srcy0);
-							limg->rotatedPixels[y * (u32)limg->rotatedRect.width + x] = imgdata[(u32)srcy0 * (u32)limg->rect.width + (u32)srcx0];
+							u8* dst = (u8*)&limg->rotatedPixels[y * (u32)limg->rotatedRect.width + x];
+							u8* src = (u8*)&limg->pixels[(u32)(srcy0 * limg->rect.width + srcx0)];
+							dst[0] = src[0];
+							dst[1] = src[1];
+							dst[2] = src[2];
+							if (src[3] == 0xff) dst[3] = 0xff;
 						}
 					}
 				}
@@ -330,10 +335,7 @@ int main(int argc, char *argv[])
 	printf("Final image sheet grid:%d sprite: %dx%d sheet:%dx%d\n",
 		sheetGridSize, (u32)maxRotateBounds.width, (u32)maxRotateBounds.height, sheetWidth, sheetHeight);
 
-    for (auto i = 0; i < sheetImageSize; i++)
-    {
-        imagedata[i] = 0;
-    }
+	memset(imagedata, 0, sheetImageSize * 4);
 
     int sheetCol = 0;
     int sheetRow = 0;
@@ -347,14 +349,15 @@ int main(int argc, char *argv[])
         {
             for (int x = 0; x < (u32)layerImages[i]->rotatedRect.width; ++x)
             {
-                char* pixel = (char*)&(layerImages[i]->rotatedPixels[y* (u32)layerImages[i]->rotatedRect.width + x]);
-                char* npixel= (char*)&(imagedata[(y + (u32)layerImages[i]->rotatedRect.y + sheetRow * (u32)maxRotateBounds.height) * sheetWidth
+				u32* src = args.rotate ? layerImages[i]->rotatedPixels : layerImages[i]->pixels;
+				u8* pixel = (u8*)&(src[y * (u32)layerImages[i]->rotatedRect.width + x]);
+				u8* npixel= (u8*)&(imagedata[(y + (u32)layerImages[i]->rotatedRect.y + sheetRow * (u32)maxRotateBounds.height) * sheetWidth
 					+ x + (u32)layerImages[i]->rotatedRect.x + (u32)maxRotateBounds.width * sheetCol]);
                 npixel[0] = pixel[2];
                 npixel[1] = pixel[1];
-				npixel[2] = pixel[0];// pixel[2];//B //R
-                npixel[3] = pixel[3]; //A
-            }
+				npixel[2] = pixel[0];
+				npixel[3] = pixel[3] == 0xff ? 0xff : 0;
+			}
         }
 
         sheetCol++;
@@ -366,7 +369,7 @@ int main(int argc, char *argv[])
         }
     }
     
-    write_png(args.outFilename.c_str(), sheetWidth, sheetHeight, (unsigned int *)imagedata);
+    write_png(args.outFilename.c_str(), sheetWidth, sheetHeight, (u32*)imagedata);
     delete []imagedata;
     delete img; // note that this will free all the image data, so any pointers you might have to layers will be invalid
 

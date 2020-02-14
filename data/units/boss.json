@@ -1,88 +1,88 @@
 {
-    "name": "UltraBoss9000",
-	"type": "Enemy",
-	"speed": 5.0,
-    "controller": "SimpleEnemy",
-    "healthPoints": 1000,
-    "script": "scripts/boss.lua",
-	"rootSpriteInstance": "body",
-    "stages":
-    [
-        {
-            "healthPercent": 100,
-            "introAnimation": "stage0_intro",
-            "outroAnimation": "stage0_outro",
-			"updateFunction": "stage0Update"
-        },
-        {
-            "healthPercent": 50,
-            "introAnimation": "stage1_intro",
-            "outroAnimation": "stage1_outro",
-			"updateFunction": "stage0Update"
-        },
-        {
-            "healthPercent": 0,
-            "introAnimation": "stage2_intro",
-            "outroAnimation": "stage2_outro",
-			"updateFunction": "stage0Update"
-        }
-    ],
-    "animations":
+  "name": "UltraBoss9000",
+  "type": "Enemy",
+  "speed": 5.0,
+  "controller": "SimpleEnemy",
+  "healthPoints": 1000,
+  "script": "scripts/boss.lua",
+  "rootSpriteInstance": "body",
+  "stages":
+  [
     {
-        "stage0_intro":
-        {
-            "body": "anims/boss_body_intro"
-        },
-        "stage0_outro":
-        {
-            "body": "anims/boss_body_outro"
-        },
-        "stage0_idle":
-        {
-            "body": "anims/boss_body_idle"
-        }
+      "healthPercent": 100,
+      "introAnimation": "stage0_intro",
+      "outroAnimation": "stage0_outro",
+      "updateFunction": "stage0Update"
     },
-    "spriteInstances":
-    [
+    {
+      "healthPercent": 50,
+      "introAnimation": "stage1_intro",
+      "outroAnimation": "stage1_outro",
+      "updateFunction": "stage0Update"
+    },
+    {
+      "healthPercent": 0,
+      "introAnimation": "stage2_intro",
+      "outroAnimation": "stage2_outro",
+      "updateFunction": "stage0Update"
+    }
+  ],
+  "animations":
+  {
+    "stage0_intro":
+    {
+      "body": "anims/boss_body_intro"
+    },
+    "stage0_outro":
+    {
+      "body": "anims/boss_body_outro"
+    },
+    "stage0_idle":
+    {
+      "body": "anims/boss_body_idle"
+    }
+  },
+  "spriteInstances":
+  [
+    {
+      "name": "body",
+      "sprite": "sprites/out",
+      "position": "0 0",
+      "scale": 1.0,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1",
+      "weapons":
+      {
+        "gun1":
         {
-            "name": "body",
-            "sprite": "sprites/out",
-            "position": "0 0",
-            "scale": 1.0,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 0.4 0.4 1",
-            "weapons":
-            {
-                "gun1":
-                {
-                    "position": "0 0",
-                    "weapon": "weapons/boss",
-                    "active": true
-                }
-            }
-        },
-        {
-            "name": "turret",
-            "sprite": "sprites/out",
-            "position": "0 0",
-            "scale": 1.0,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 0.4 0.4 1",
-            "weapons":
-            {
-                "gun1":
-                {
-                    "position": "0 0",
-                    "weapon": "weapons/boss",
-                    "active": false
-                }
-            }
+          "position": "0 0",
+          "weapon": "weapons/boss",
+          "active": true
         }
-    ]
+      }
+    },
+    {
+      "name": "turret",
+      "sprite": "sprites/out",
+      "position": "0 0",
+      "scale": 1.0,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1",
+      "weapons":
+      {
+        "gun1":
+        {
+          "position": "0 0",
+          "weapon": "weapons/boss",
+          "active": false
+        }
+      }
+    }
+  ]
 }

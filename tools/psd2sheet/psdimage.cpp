@@ -159,9 +159,12 @@ bool PSDImage::psd_loadchannels(FILE* file)
 		if(layerchannel==0) // first channel in this layer, allocate ARGB data memory
 		{
 			layer.imagedata=new DWORD[width*height];
-			if(layer.channels<4) // this layer has no alpha, so prep imagedata with opaque alpha values
-				for(int i=0;i<width*height;i++)
-					layer.imagedata[i]=0xFF000000;
+			if (layer.channels < 4) // this layer has no alpha, so prep imagedata with opaque alpha values
+			{
+				printf("WARNING: alpha-less layer, #%d\n", curlayer);
+				for (int i = 0; i < width * height; i++)
+					layer.imagedata[i] = 0xFF000000;
+			}
 		}
 
 		if(!(curlayer==0 && layerchannel>0 && compression==0))
