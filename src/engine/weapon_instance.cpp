@@ -26,8 +26,12 @@ void WeaponInstance::initializeFrom(struct WeaponResource* res)
 
 void WeaponInstance::fire()
 {
+	if (!active)
+		return;
+
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
+
 	if (weaponResource->script)
 	{
 		auto f = weaponResource->script->getFunction("onFire");
@@ -41,8 +45,17 @@ void WeaponInstance::fire()
 
 void WeaponInstance::spawnProjectiles(Game* game)
 {
-    f32 angle = rad2deg(acosf(params.direction.getCos(Vec2(0, 1))));
-	f32 angleBetweenRays = params.fireRaysAngle / (f32)(params.fireRays);
+	if (params.autoAim)
+	{
+		Vec2 pos = attachTo->rect.center();
+
+		params.direction.x = game->players[0]->rootSpriteInstance->transform.position.x - pos.x;
+		params.direction.y = game->players[0]->rootSpriteInstance->transform.position.y - pos.y;
+		params.direction.normalize();
+	}
+
+    f32 angle = rad2deg(atan2f(params.direction.x, params.direction.y));
+	f32 angleBetweenRays = params.fireRaysAngle / (f32)(params.fireRays - 1);
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
 
@@ -64,15 +77,15 @@ void WeaponInstance::spawnProjectiles(Game* game)
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
 		Vec2 pos = attachTo->transform.position;
 
-		if (attachTo != parentUnitInstance->rootSpriteInstance)
+		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->noRootParent)
 			pos += parentUnitInstance->rootSpriteInstance->transform.position;
-
 		newProj->rootSpriteInstance->transform.position = pos + params.position + params.offset + offRadius;
-        newProj->velocity.x = sinf(deg2rad(angle));
-        newProj->velocity.y = cosf(deg2rad(angle));
+		auto rads = deg2rad(angle);
+		newProj->velocity.x = sinf(rads);
+		newProj->velocity.y = cosf(rads);
         newProj->velocity.normalize();
-		newProj->controller = new ProjectileController();
-		newProj->controller->unitInstance = newProj;
+		newProj->controllers["main"] = new ProjectileController();
+		newProj->controllers["main"]->unitInstance = newProj;
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;

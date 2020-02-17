@@ -12,6 +12,7 @@ project "seagle"
     link_stb_image()
     link_sdl2()
     link_lua()
+    link_utf8()
 
     filter {"system:linux"}
         linkgroups 'On'

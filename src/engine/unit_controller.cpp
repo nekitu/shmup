@@ -35,6 +35,13 @@ UnitController* UnitController::create(const std::string& ctrlerName, UnitInstan
 		return controller;
 	}
 
+	if (ctrlerName == "Follow")
+	{
+		auto controller = new FollowController();
+		controller->unitInstance = unitInst;
+		return controller;
+	}
+
 	return nullptr;
 }
 
@@ -49,21 +56,11 @@ void SimpleEnemyController::update(struct Game* game)
 {
 	if (!unitInstance || !unitInstance->rootSpriteInstance) return;
 
-	if (game->isPlayerMoveLeft(0))
-	{
-		unitInstance->rootSpriteInstance->transform.position.x += game->deltaTime * 20;
-	}
-
-	if (game->isPlayerMoveRight(0))
-	{
-		unitInstance->rootSpriteInstance->transform.position.x -= game->deltaTime * 20;
-	}
-
 	unitInstance->rootSpriteInstance->transform.position.y += unitInstance->speed * game->deltaTime;
-	unitInstance->rootSpriteInstance->transform.position.x -= sinf(unitInstance->rootSpriteInstance->transform.position.y)*10.3f * game->deltaTime;
 
-	if (unitInstance->rootSpriteInstance->transform.position.y > game->graphics->videoHeight)
-		unitInstance->rootSpriteInstance->transform.position.y = -32;
+	if (unitInstance->rootSpriteInstance->transform.position.y + game->cameraPosition.y > game->graphics->videoHeight)
+
+	unitInstance->rootSpriteInstance->transform.position.y = -32;
 }
 
 void ProjectileController::update(struct Game* game)
@@ -75,6 +72,40 @@ void ProjectileController::update(struct Game* game)
 	unitInstance->rootSpriteInstance->transform.position += projInst->velocity * unitInstance->speed * game->deltaTime;
 	projInst->speed += projInst->speed * projInst->acceleration * game->deltaTime;
 	clampValue(projInst->speed, projInst->minSpeed, projInst->maxSpeed);
+}
+
+void FollowController::acquireOffset()
+{
+	if (!follow) follow = unitInstance->rootSpriteInstance;
+
+	if (follower && follow)
+	{
+		follower->noRootParent = true; // force to not transform locally to parent
+		offset = follower->transform.position;
+		follower->transform.position = follow->transform.position + offset;
+		offsetAcquired = true;
+	}
+}
+
+void FollowController::update(struct Game* game)
+{
+	if (!offsetAcquired) acquireOffset();
+
+	if (follow && follower)
+	{
+		auto worldPos = follow->transform.position + offset;
+
+		follower->transform.position =
+			follower->transform.position +
+			(worldPos - follower->transform.position) * speed * game->deltaTime;
+	}
+}
+
+void FollowController::initializeFromJson(const Json::Value& value)
+{
+	follow = unitInstance->findSpriteInstance(value.get("follow", "").asString());
+	follower = unitInstance->findSpriteInstance(value.get("follower", "").asString());
+	speed = value.get("speed", 1.0f).asFloat();
 }
 
 PlayerController::PlayerController(Game* game)
@@ -112,7 +143,14 @@ void PlayerController::update(struct Game* game)
 	{
 		for (auto& wp : unitInstance->weapons)
 		{
-			wp.second->update(game);
+			wp.second->active = true;
+		}
+	}
+	else
+	{
+		for (auto& wp : unitInstance->weapons)
+		{
+			wp.second->active = false;
 		}
 	}
 
@@ -141,8 +179,10 @@ void PlayerController::update(struct Game* game)
 		unitInstance->rootSpriteInstance->transform.position.y += game->deltaTime * unitInstance->speed;
 	}
 
-	clampValue(unitInstance->rootSpriteInstance->transform.position.x, unitInstance->boundingBox.width / 2, game->graphics->videoWidth - unitInstance->boundingBox.width / 2);
-	clampValue(unitInstance->rootSpriteInstance->transform.position.y, unitInstance->boundingBox.height, game->graphics->videoHeight - unitInstance->boundingBox.height / 2);
+	game->cameraSideOffset = (game->graphics->videoWidth / 2 - unitInstance->rootSpriteInstance->transform.position.x) * 0.5f;
+
+	//clampValue(unitInstance->rootSpriteInstance->transform.position.x, unitInstance->boundingBox.width / 2, game->graphics->videoWidth - unitInstance->boundingBox.width / 2);
+	//clampValue(unitInstance->rootSpriteInstance->transform.position.y, unitInstance->boundingBox.height, game->graphics->videoHeight - unitInstance->boundingBox.height / 2);
 }
 
 }

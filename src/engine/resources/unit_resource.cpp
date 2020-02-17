@@ -33,15 +33,18 @@ bool UnitResource::load(Json::Value& json)
 		type = Type::PlayerProjectile;
 
 	speed = json.get("speed", speed).asFloat();
+	parallaxScale = json.get("parallaxScale", parallaxScale).asFloat();
 	visible = json.get("visible", visible).asBool();
 	collide = json.get("collide", collide).asBool();
 	rootSpriteInstanceName = json.get("rootSpriteInstance", "").asString();
 	script = loader->loadScript(json.get("script", "").asString());
-	controllerName = json.get("controller", "").asString();
 	shadowScale = json.get("shadowScale", shadowScale).asFloat();
 	hasShadows = json.get("hasShadows", hasShadows).asBool();
 	shadowOffset.parse(json.get("shadowOffset", "0 0").asString());
 	deleteOnOutOfScreen = json.get("deleteOnOutOfScreen", deleteOnOutOfScreen).asBool();
+
+	// load controllers json
+	controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));
 
 	// load stages
 	auto stagesJson = json.get("stages", Json::Value(Json::ValueType::arrayValue));
@@ -78,6 +81,7 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->transform.verticalFlip = sprJson.get("verticalFlip", false).asBool();
 		sprInst->orderIndex = i;
 		sprInst->collide = sprJson.get("collide", true).asBool();
+		sprInst->visible = sprJson.get("visible", true).asBool();
 		sprInst->damageDamping = sprJson.get("damageDamping", 1.0f).asFloat();
 		sprInst->color.parse(sprJson.get("color", sprInst->color.toString()).asString());
 		auto colMode = json.get("colorMode", "Add").asString();

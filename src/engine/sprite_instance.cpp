@@ -48,6 +48,7 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 	defaultColor = color = res->color;
 	colorMode = res->colorMode;
 	hitColor = res->hitColor;
+	visible = res->visible;
 	animationFrame = 0;
 	animationRepeatCount = 0;
 	animationDirection = 1;
@@ -164,8 +165,11 @@ void SpriteInstance::hit(f32 hitDamage)
 	currentHitFlashCount = 0;
 }
 
-bool SpriteInstance::checkPixelCollision(SpriteInstance* other)
+bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisionCenter)
 {
+	if (!visible)
+		return false;
+
 	Rect partRc;
 
 	partRc.x = std::fmaxf(rect.x, other->rect.x);
@@ -175,37 +179,46 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other)
 
 	if (partRc.width < 1 || partRc.height < 1) return false;
 
-	auto getRectPixels = [](SpriteInstance* spr, const Rect& rc)
+	auto getRectPixels = [](SpriteInstance* spr, const Rect& localRc)
 	{
 		std::vector<u8> pixels;
 
 		auto frmRc = spr->sprite->getSheetFramePixelRect(spr->animationFrame);
-		pixels.resize(rc.width * rc.height);
+		pixels.resize(localRc.width * localRc.height);
 		int i = 0;
-		for (int y = 0; y < rc.height; y++)
+		f32 step = 1.0f / spr->transform.scale;
+		f32 srcx = 0;
+		f32 srcy = 0;
+		f32 rcx = round(frmRc.width * (localRc.x / spr->rect.width));
+		f32 rcy = round(frmRc.height * (localRc.y / spr->rect.height));
+
+		for (int y = 0; y < localRc.height; y++)
 		{
-			for (int x = 0; x < rc.width; x++)
+			srcx = 0;
+
+			for (int x = 0; x < localRc.width; x++)
 			{
-				u8* px = (u8*)&spr->sprite->image->imageData[((u32)frmRc.y + y + (u32)rc.y) * spr->sprite->image->width + (u32)frmRc.x + x + (u32)rc.x];
+				u8* px = (u8*)&spr->sprite->image->imageData[((u32)frmRc.y + (u32)srcy + (u32)rcy) * spr->sprite->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx];
 				pixels[i++] = px[3];
-				//printf("%s ", px[3] != 0 ? " " : "#");
+				srcx += step;
 			}
-			//printf("\n");
+
+			srcy += step;
 		}
-		//printf("---------------------------------------------------------------------------------------------\n");
 
 		return pixels;
 	};
 
-	//printf("-SPR1 -\n");
-	std::vector<u8> pixels1 = getRectPixels(this, Rect(partRc.x - rect.x, partRc.y - rect.y, partRc.width, partRc.height));
-	//printf("-SPR2 -\n");
-	std::vector<u8> pixels2 = getRectPixels(other, Rect(partRc.x - other->rect.x, partRc.y - other->rect.y, partRc.width, partRc.height));
+	auto r1 = Rect(partRc.x - rect.x, partRc.y - rect.y, partRc.width, partRc.height);
+	auto r2 = Rect(partRc.x - other->rect.x, partRc.y - other->rect.y, partRc.width, partRc.height);
+	std::vector<u8> pixels1 = getRectPixels(this, r1);
+	std::vector<u8> pixels2 = getRectPixels(other, r2);
 
 	for (int i = 0; i < pixels1.size(); i++)
 	{
 		if (pixels1[i] != 0 && pixels2[i] != 0)
 		{
+			outCollisionCenter = partRc.center();
 			return true;
 		}
 	}

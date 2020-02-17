@@ -5,6 +5,8 @@
 #include "vertex_buffer.h"
 #include "image_atlas.h"
 #include "utils.h"
+#include "resources/font_resource.h"
+#include "resources/sprite_resource.h"
 
 namespace engine
 {
@@ -581,6 +583,41 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	i++;
 
 	drawVertexCount = i;
+}
+
+void Graphics::drawText(struct FontResource* font, const Vec2& pos, const std::string& text)
+{
+	UnicodeString ustr;
+
+	utf8ToUtf32(text.c_str(), ustr);
+	Vec2 crtPos = pos;
+	u32 i = 0;
+
+	for (auto chr : ustr)
+	{
+		auto frame = font->getGlyphSpriteFrame(chr);
+		auto frameUvRect = font->charsSprite->getFrameUvRect(frame);
+		auto framePixRect = font->charsSprite->getFramePixelRect(frame);
+		auto rc = Rect(crtPos.x, crtPos.y, font->charsSprite->frameWidth, font->charsSprite->frameHeight);
+
+		if (font->charsSprite->image->rotated)
+		{
+			drawQuadWithTexCoordRotated90(rc, frameUvRect);
+		}
+		else
+		{
+			drawQuad(rc, frameUvRect);
+		}
+		i32 kern = 0;
+
+		if (i < ustr.size() - 1)
+		{
+			auto kern = font->kernings[std::make_pair(chr, ustr[i + 1])];
+		}
+
+		crtPos.x += rc.width + kern;
+		i++;
+	}
 }
 
 void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotationAngle)

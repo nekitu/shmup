@@ -79,6 +79,25 @@ bool utf8ToUtf32(const char* text, UnicodeString& outText)
 	return true;
 }
 
+u32 singleUtf8ToUtf32(const char* glyph)
+{
+	u32 out;
+
+	try
+	{
+		out = utf8::peek_next(
+			(char*)glyph,
+			(char*)(glyph + strlen(glyph)));
+	}
+
+	catch (utf8::invalid_utf8 ex)
+	{
+		return 0;
+	}
+
+	return out;
+}
+
 bool loadJson(const std::string& fullFilename, Json::Value& root)
 {
 	printf("Loading %s\n", fullFilename.c_str());

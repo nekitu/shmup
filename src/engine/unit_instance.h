@@ -5,6 +5,12 @@
 
 namespace engine
 {
+struct SpriteInstanceCollision
+{
+	struct SpriteInstance* a = nullptr;
+	struct SpriteInstance* b = nullptr;
+	Vec2 collisionCenter;
+};
 struct UnitInstance
 {
 	// members related to unit resource instantiation
@@ -17,6 +23,7 @@ struct UnitInstance
 	// unit instance general members
 	static u64 lastId;
 	u64 id = 0;
+	f32 parallaxScale = 1.0f;
 	std::string name;
 	std::string currentAnimationName;
 	Rect boundingBox;
@@ -27,7 +34,7 @@ struct UnitInstance
 	u32 stageIndex = 0;
 	bool collide = true;
 	struct UnitResource* unit = nullptr;
-	struct UnitController* controller = nullptr;
+	std::map<std::string /*name*/, struct UnitController*> controllers;
 	struct ScriptResource* script = nullptr;
 	struct SpriteInstance* rootSpriteInstance = nullptr;
 
@@ -42,6 +49,10 @@ struct UnitInstance
 	void computeBoundingBox();
 	void computeHealth();
 	void setAnimation(const std::string& animName);
+	struct UnitController* findController(const std::string& cname);
+	struct SpriteInstance* findSpriteInstance(const std::string& sname);
+
+	bool checkPixelCollision(struct UnitInstance* other, std::vector<SpriteInstanceCollision>& collisions);
 
 	static void updateShadowToggle();
 private:

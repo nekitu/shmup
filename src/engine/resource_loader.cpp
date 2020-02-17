@@ -8,6 +8,7 @@
 #include "resources/weapon_resource.h"
 #include "resources/script_resource.h"
 #include "resources/animation_resource.h"
+#include "resources/font_resource.h"
 #include "image_atlas.h"
 #include <json/json.h>
 #include "utils.h"
@@ -35,6 +36,23 @@ void ResourceLoader::unload(struct Resource* res)
 			resources.erase(iter);
 			delete res;
 		}
+	}
+}
+
+void ResourceLoader::reloadScripts()
+{
+	for (auto res : scripts)
+	{
+		res->unload();
+	}
+
+	shutdownLua();
+	initializeLua();
+
+	for (auto res : scripts)
+	{
+		Json::Value json;
+		res->load(json);
 	}
 }
 
@@ -246,6 +264,7 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 	res->fileName = filename;
 	res->load(json);
 	resources[filename] = res;
+	scripts.push_back(res);
 
 	return res;
 }
@@ -269,6 +288,34 @@ AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 	}
 
 	AnimationResource* res = new AnimationResource();
+
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
+
+	return res;
+}
+
+FontResource* ResourceLoader::loadFont(const std::string& filename)
+{
+	checkEmptyFilename("loadFont", filename);
+	std::string fullFilename = root + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (FontResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
+	FontResource* res = new FontResource();
 
 	res->loader = this;
 	res->fileName = filename;

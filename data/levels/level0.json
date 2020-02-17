@@ -4,23 +4,27 @@
 	{
 		"name": "bg",
 		"unit": "units/bg",
-		"position": "120 -1672.0"
+		"position": "120 -572.0"
+	},
+	{
+		"name": "bg2",
+		"unit": "units/bg2",
+		"position": "120 -572.0"
+	},
+	{
+		"name": "Turret",
+		"unit": "units/turret",
+		"position": "70.0 -300.0"
+	},    
+	{
+		"name": "Turret2",
+		"unit": "units/turret",
+		"position": "110.0 -600.0"
 	},
 	{
 		"name": "Some1",
 		"unit": "units/boss",
-		"position": "120.0 0.0"
-	},
-	{
-		"name": "Some2",
-		"unit": "units/boss",
-		"position": "20.0 44.0"
-	},
-	{
-		"name": "Some2",
-		"unit": "units/boss",
-		"position": "120.0 24.0"
-	}
-    
+		"position": "180 0"
+	}    
     ]
 }

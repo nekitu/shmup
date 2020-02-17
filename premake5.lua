@@ -248,6 +248,11 @@ function link_lua()
 	links { "lua" }
 end
 
+function link_utf8()
+	filter {}
+	includedirs {scriptRoot.."/libs/utf8/source"}
+end
+
 ---
 --- Include the subprojects
 ---

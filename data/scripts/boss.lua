@@ -7,11 +7,30 @@ local function onUpdate(unitInst)
   unitInst:fire()
 end
 
+function dump(o)
+	if type(o) == 'table' then
+	   local s = '{ '
+	   for k,v in pairs(o) do
+		  if type(k) ~= 'number' then k = '"'..k..'"' end
+		  s = s .. '['..k..'] = ' .. dump(v) .. ','
+	   end
+	   return s .. '} '
+	else
+	   return tostring(o)
+	end
+ end
+
 local function onCollide(unitInst1, unitInst2)
   --print("Collision! "..unitInst1.name .. " "..unitInst2.name)
-  if unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance) then
-    unitInst1.rootSpriteInstance:hit(1)
+  local pos = Vec2(0, 0)
+  if unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, pos) then
   end
+  local cols={}
+  if unitInst1:checkPixelCollision(unitInst2, cols) then
+  	--print("COLS "..tostring(#cols)) dump(cols)
+  unitInst1.rootSpriteInstance:hit(1)
+
+	end
 end
 
 M.onCollide = onCollide

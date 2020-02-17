@@ -4,9 +4,11 @@ local function onUpdate(unit)
 end
 
 local function onCollide(unitInst1, unitInst2)
-  if unitInst1.unit.type == 4 and unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance) then
+  local colCenter = Vec2(0, 0)
+  if unitInst1.unit.type == 4 and unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, colCenter) then
     unitInst1.deleteMeNow = true
-    local uinst = engine.spawnUnitInstance("units/small_spark", "expl", unitInst1.rootSpriteInstance.transform.position)
+  if unitInst2.unit.type == 5 then unitInst2.deleteMeNow = true end
+    local uinst = engine.spawnUnitInstance("units/small_spark", "expl", colCenter)
   end
 end
 

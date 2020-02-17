@@ -20,6 +20,7 @@ struct SpriteInstanceResource
 	Transform transform;
 	u32 orderIndex = 0;
 	bool collide = true;
+	bool visible = true;
 	f32 damageDamping = 1.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
@@ -64,13 +65,14 @@ struct UnitResource : Resource
 	Type type = Type::Unknown;
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;
+	f32 parallaxScale = 1.0f;
 	bool hasShadows = false;
 	Vec2 shadowOffset;
 	bool visible = true;
 	bool deleteOnOutOfScreen = false;
 	bool collide = true;
 	std::string rootSpriteInstanceName;
-	std::string controllerName;
+	Json::Value controllersJson;
 	struct ScriptResource* script = nullptr;
 	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> spriteInstances;
 	std::vector<UnitLifeStage> stages;

@@ -221,7 +221,17 @@ struct Rect
         return { x - pt.x, y - pt.y, width, height };
     }
 
-    inline Rect& operator -= (const Vec2& pt)
+	inline Rect operator * (const f32 s) const
+	{
+		return { x, y, width * s, height * s };
+	}
+
+	inline Rect operator / (const f32 s) const
+	{
+		return { x, y, width / s, height / s };
+	}
+
+	inline Rect& operator -= (const Vec2& pt)
     {
         x -= pt.x;
         y -= pt.y;

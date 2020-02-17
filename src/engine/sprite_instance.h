@@ -13,6 +13,7 @@ struct SpriteInstance
 	std::string name;
 	struct SpriteResource* sprite = nullptr;
 	Transform transform;
+	Vec2 cameraSpacePosition;
 	u32 orderIndex = 0;
 	bool visible = true;
 	bool collide = true;
@@ -21,6 +22,7 @@ struct SpriteInstance
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Rect rect;
+	bool noRootParent = false;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;
@@ -42,7 +44,7 @@ struct SpriteInstance
 	void setFrameAnimation(const std::string& name);
 	void play();
 	void hit(f32 hitDamage);
-	bool checkPixelCollision(SpriteInstance* other);
+	bool checkPixelCollision(SpriteInstance* other, Vec2& outCollisionCenter);
 };
 
 }

@@ -8,7 +8,7 @@
     [
         {
             "name": "body",
-            "scale": 1,
+            "scale": 0.2,
             "sprite": "sprites/fire"
         }
     ]

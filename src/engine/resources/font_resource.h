@@ -8,9 +8,12 @@ namespace engine
 struct FontResource : Resource
 {
 	struct SpriteResource* charsSprite = nullptr;
-	std::vector<u32> glyphCodes;
+	u32 startGlyphFrame = 0;
+	std::map<u32, u32 /*frame*/> glyphCodes;
 	std::map<std::pair<u32, u32>, i32> kernings;
+
 	bool load(Json::Value& json) override;
+	u32 getGlyphSpriteFrame(u32 code);
 };
 
 }

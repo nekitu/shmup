@@ -1,45 +1,8 @@
-/* Initial source code: psdslayer
- * Copyright 2009 Jetro Lauha
- *
- * This is simply the example code for using DrPetter's PSDImage class
- * combined with some options and stb_image + zlib + libpng for saving
- * each layer as a separate image file.
- *
- * My home page / blog URL:
- *   http://jet.ro
- *
- * Original URL for PSDImage release:
- *   http://www.ludumdare.com/compo/2008/04/12/psdimage-class/
- * URL for stb_image:
- *   http://nothings.org/stb_image.c
- *
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- * $Id$
- * $Revision$
- */
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include "psdimage.h"
 #include "png.h"
 #include <stdint.h>
 #define STBI_HEADER_FILE_ONLY
@@ -48,6 +11,7 @@
 #include "vec2.h"
 #include "rect.h"
 #include "utils.h"
+#include "libpsd.h"
 
 using namespace engine;
 
@@ -184,30 +148,34 @@ struct LayerImage
 int main(int argc, char *argv[])
 {
 	auto argResult = parseArgs(argc, argv);
-
-    PSDImage *img = new PSDImage();
-
 	printf("Loading %s\n", args.filename.c_str());
+	psd_context* context = NULL;
+	psd_status status;
 
-    if (!img->Load(args.filename.c_str())) // load image file and store image data for all layers
-    {
-        printf("Error loading %s\n", args.filename.c_str());
-        return EXIT_FAILURE;
-    }
-
+	// parse the psd file to psd_context
+	status = psd_image_load(&context, (psd_char*)args.filename.c_str());
+	printf("Layer count: %d\n", context->layer_count);
 	std::vector<LayerImage*> layerImages;
-	Rect maxRotateBounds = {0, 0, (f32)img->GetHeader().Columns, (f32)img->GetHeader().Rows};
 
-	for (int i = 0; i < img->NumLayers(); ++i) // iterate over all layers (if desired)
+	auto imageWidth = context->width;
+	auto imageHeight = context->height;
+	Rect maxRotateBounds = {0, 0, (f32)imageWidth, (f32)imageHeight};
+
+#ifdef _DEBUG
+	if (context->merged_image_data)
+		write_png("merged.png", imageWidth, imageHeight, context->merged_image_data);
+	if (context->blending_image_data)
+		write_png("blend.png", imageWidth, imageHeight, context->blending_image_data);
+#endif
+
+	for (int i = 0; i < context->layer_count; ++i) // iterate over all layers (if desired)
 	{
-		// dimensions of this layer (outer boundaries of image content)
-		int width;
-		int height;
-		// upper-left coordinate of bounding box, use this to place the layer accurately within the image
-		int offset_x;
-		int offset_y;
-		uint32_t* imgdata = (uint32_t*)img->GetLayerData(i, width, height, offset_x, offset_y); // get pointer to layer image, and info
-		
+		uint32_t* imgdata = context->layer_records[i].image_data;
+		int width = context->layer_records[i].width;
+		int height = context->layer_records[i].height;
+		int offset_x = context->layer_records[i].left;
+		int offset_y = context->layer_records[i].top;
+
 		if (!args.rotate)
 		{
 			LayerImage* limg = new LayerImage;
@@ -310,7 +278,8 @@ int main(int argc, char *argv[])
 							dst[0] = src[0];
 							dst[1] = src[1];
 							dst[2] = src[2];
-							if (src[3] == 0xff) dst[3] = 0xff;
+							dst[3] = src[3];
+							//if (src[3] == 0xff) dst[3] = 0xff;
 						}
 					}
 				}
@@ -356,7 +325,7 @@ int main(int argc, char *argv[])
                 npixel[0] = pixel[2];
                 npixel[1] = pixel[1];
 				npixel[2] = pixel[0];
-				npixel[3] = pixel[3] == 0xff ? 0xff : 0;
+				npixel[3] = pixel[3];
 			}
         }
 
@@ -371,7 +340,7 @@ int main(int argc, char *argv[])
     
     write_png(args.outFilename.c_str(), sheetWidth, sheetHeight, (u32*)imagedata);
     delete []imagedata;
-    delete img; // note that this will free all the image data, so any pointers you might have to layers will be invalid
+	//psd_image_free(context);
 
     return EXIT_SUCCESS;
 }

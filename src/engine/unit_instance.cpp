@@ -116,6 +116,7 @@ void UnitInstance::initializeFrom(UnitResource* res)
 	visible = res->visible;
 	script = res->script;
 	collide = res->collide;
+	parallaxScale = res->parallaxScale;
 
 	// map from other unit to new sprite instances
 	std::map<SpriteInstanceResource*, SpriteInstance*> spriteInstMap;
@@ -130,7 +131,7 @@ void UnitInstance::initializeFrom(UnitResource* res)
 		spriteInstMap[iter.second] = sprInst;
 	}
 
-	std::sort(spriteInstances.begin(), spriteInstances.end(), [](const SpriteInstance* a, const SpriteInstance* b) { return a->orderIndex > b->orderIndex; });
+	std::sort(spriteInstances.begin(), spriteInstances.end(), [](const SpriteInstance* a, const SpriteInstance* b) { return a->orderIndex < b->orderIndex; });
 
 	if (res->rootSpriteInstanceName.size())
 	{
@@ -173,7 +174,27 @@ void UnitInstance::initializeFrom(UnitResource* res)
 		weapons[weaponInstRes.first] = weaponInst;
 	}
 
-	controller = UnitController::create(res->controllerName, this);
+	for (auto ctrlerJson : res->controllersJson)
+	{
+		auto controller = UnitController::create(ctrlerJson.get("class", "").asString(), this);
+
+		if (controller)
+		{
+			controller->name = ctrlerJson.get("name", "").asString();
+
+			if (controller->name.empty())
+			{
+				printf("WARNING: all controllers must have a name! (class: %s in unit %s) skipping this controller, not added.",
+					ctrlerJson.get("class", "").asCString(),
+					name.c_str());
+			}
+			else
+			{
+				controllers[controller->name] = controller;
+				controller->initializeFromJson(ctrlerJson);
+			}
+		}
+	}
 }
 
 void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
@@ -201,9 +222,9 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 
 void UnitInstance::update(Game* game)
 {
-	if (controller)
+	for (auto controller : controllers)
 	{
-		controller->update(game);
+		controller.second->update(game);
 	}
 
 	if (spriteInstanceAnimationMap)
@@ -216,6 +237,11 @@ void UnitInstance::update(Game* game)
 			sprAnimInst->update(game->deltaTime);
 			sprAnimInst->animateSpriteInstance(sprInst);
 		}
+	}
+
+	for (auto& wp : weapons)
+	{
+		wp.second->update(game);
 	}
 
 	for (auto sprInst : spriteInstances)
@@ -283,6 +309,13 @@ void UnitInstance::computeBoundingBox()
 			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
 		}
 
+		if (unit->type != UnitResource::Type::Player
+			&& unit->type != UnitResource::Type::PlayerProjectile)
+		{
+			boundingBox.x += Game::instance->cameraPosition.x * parallaxScale;
+			boundingBox.y += Game::instance->cameraPosition.y;
+		}
+
 		rootSpriteInstance->rect = boundingBox;
 	}
 	
@@ -290,7 +323,13 @@ void UnitInstance::computeBoundingBox()
 	{
 		if (!sprInst->visible || sprInst == rootSpriteInstance) continue;
 
-		auto pos = rootSpriteInstance->transform.position;
+		Vec2 pos;
+
+		if (!sprInst->noRootParent)
+		{
+			pos = rootSpriteInstance->transform.position;
+		}
+
 		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
 		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
 
@@ -302,6 +341,14 @@ void UnitInstance::computeBoundingBox()
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
+
+		if (unit->type != UnitResource::Type::Player
+			&& unit->type != UnitResource::Type::PlayerProjectile
+			&& sprInst->noRootParent)
+		{
+			pos.x += Game::instance->cameraPosition.x * parallaxScale;
+			pos.y += Game::instance->cameraPosition.y;
+		}
 
 		Rect spriteRc =
 		{
@@ -374,7 +421,12 @@ void UnitInstance::render(Graphics* gfx)
 	{
 		if (!sprInst->visible) continue;
 
-		auto pos = sprInst != rootSpriteInstance ? rootSpriteInstance->transform.position : Vec2();
+		Vec2 pos;
+
+		if (!sprInst->noRootParent)
+		{
+			pos = sprInst != rootSpriteInstance ? rootSpriteInstance->transform.position : Vec2();
+		}
 
 		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
 		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
@@ -394,7 +446,17 @@ void UnitInstance::render(Graphics* gfx)
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
 
-		Rect spriteRc = 
+		if (unit->type != UnitResource::Type::Player
+			&& unit->type != UnitResource::Type::PlayerProjectile)
+		{
+			pos.y += Game::instance->cameraPosition.y;
+			pos.x += Game::instance->cameraPosition.x * parallaxScale;
+		}
+
+		pos.x = round(pos.x);
+		pos.y = round(pos.y);
+
+		Rect spriteRc =
 		{
 				round(pos.x),
 				round(pos.y),
@@ -462,6 +524,44 @@ void UnitInstance::render(Graphics* gfx)
 			}
 		}
 	}
+}
+
+UnitController* UnitInstance::findController(const std::string& cname)
+{
+	auto iter = controllers.find(cname);
+	if (iter == controllers.end()) return nullptr;
+	return iter->second;
+}
+
+SpriteInstance* UnitInstance::findSpriteInstance(const std::string& sname)
+{
+	for (auto sprInst : spriteInstances)
+	{
+		if (sname == sprInst->name)
+			return sprInst;
+	}
+
+	return nullptr;
+}
+
+bool UnitInstance::checkPixelCollision(struct UnitInstance* other, std::vector<SpriteInstanceCollision>& collisions)
+{
+	bool collided = false;
+	Vec2 collisionCenter;
+
+	for (auto sprInst1 : spriteInstances)
+	{
+		for (auto sprInst2 : other->spriteInstances)
+		{
+			if (sprInst1->checkPixelCollision(sprInst2, collisionCenter))
+			{
+				collisions.push_back({sprInst1, sprInst2, collisionCenter});
+				collided = true;
+			}
+		}
+	}
+
+	return collided;
 }
 
 }

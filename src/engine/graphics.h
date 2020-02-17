@@ -49,6 +49,7 @@ struct Graphics
 	void drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
 	void drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect);
 	void drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
+	void drawText(struct FontResource* font, const Vec2& pos, const std::string& text);
 	void beginFrame();
 	void setupProjection(f32 width, f32 height);
 	void endFrame();

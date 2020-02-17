@@ -1,8 +1,12 @@
 {
     "name": "bg",
 	"type": "Item",
-	"speed": 30.0,
-    "controller": "Background",
+    "speed": 0.0,
+    "parallaxScale": 0.4,
+    "controllers":
+    [ 
+        { "name": "bg", "class": "Background" }
+    ],
     "healthPoints": 1000,
 	"rootSpriteInstance": "body",
     "collide": false,
@@ -12,7 +16,7 @@
             "name": "body",
             "sprite": "sprites/bg1",
             "position": "0 0",
-            "scale": 1.0,
+            "scale": 2,
             "rotation": 0,
             "horizontalFlip": false,
             "verticalFlip": false,

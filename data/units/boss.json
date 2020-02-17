@@ -1,9 +1,13 @@
 {
   "name": "UltraBoss9000",
   "type": "Enemy",
-  "speed": 5.0,
-  "controller": "SimpleEnemy",
+  "speed": -22.0,
+	"controllers":
+	[
+		{ "name": "main", "class": "SimpleEnemy" }
+	],
   "healthPoints": 1000,
+  "deleteOnOutOfScreen": false, 
   "script": "scripts/boss.lua",
   "rootSpriteInstance": "body",
   "stages":
@@ -60,23 +64,24 @@
         {
           "position": "0 0",
           "weapon": "weapons/boss",
-          "active": true
+          "active": false
         }
       }
     },
     {
       "name": "turret",
-      "sprite": "sprites/out",
-      "position": "0 0",
-      "scale": 1.0,
+      "sprite": "sprites/fire",
+      "position": "0 40",
+      "scale": 0.4,
       "rotation": 0,
+      "visible": false,
       "horizontalFlip": false,
       "verticalFlip": false,
-      "color": "0 0 0 1",
+      "color": "1 0 0 1",
       "hitColor": "1 0.4 0.4 1",
       "weapons":
       {
-        "gun1":
+        "gun2":
         {
           "position": "0 0",
           "weapon": "weapons/boss",

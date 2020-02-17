@@ -30,6 +30,7 @@ struct WeaponResource : Resource
 		Vec2 offset;
 		f32 offsetRadius = 0;
 		f32 ammo = 0;
+		bool autoAim = false;
 		Type type = Type::Projectile;
 	};
 

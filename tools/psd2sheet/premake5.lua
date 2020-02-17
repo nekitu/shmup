@@ -5,8 +5,13 @@ project "psd2sheet"
     includedirs {scriptRoot, scriptRoot.."/tools/psd2sheet/zlib"}
     includedirs {scriptRoot, scriptRoot.."/src/engine"}
     includedirs {scriptRoot, scriptRoot.."/libs/jsoncpp/include"}
+    includedirs {scriptRoot, scriptRoot.."/tools/psd2sheet/libpsd/include"}
+    includedirs {scriptRoot, scriptRoot.."/tools/psd2sheet/libpsd/include"}
+    includedirs {scriptRoot, scriptRoot.."/tools/psd2sheet/libpsd/src"}
+    
     add_sources_from("./")
     add_sources_from("./libpng")
+    add_sources_from("./libpsd/src")
     add_sources_from("./zlib")
     files { "../../src/engine/utils.cpp" }
     link_jsoncpp()

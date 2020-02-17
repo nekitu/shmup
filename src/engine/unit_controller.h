@@ -1,14 +1,18 @@
 #include "types.h"
 #include <string>
+#include "json/value.h"
+#include "vec2.h"
 
 namespace engine
 {
 struct UnitController
 {
 	struct UnitInstance* unitInstance = nullptr;
+	std::string name;
 
 	virtual void update(struct Game* game) = 0;
 	virtual UnitController* createNew() = 0;
+	virtual void initializeFromJson(const Json::Value& value) {}
 
 	static UnitController* create(const std::string& ctrlerName, struct UnitInstance* unitInst);
 };
@@ -29,6 +33,20 @@ struct ProjectileController : UnitController
 {
 	void update(struct Game* game) override;
 	UnitController* createNew() { return new ProjectileController(); }
+};
+
+struct FollowController : UnitController
+{
+	struct SpriteInstance* follower = nullptr;
+	struct SpriteInstance* follow = nullptr;
+	Vec2 offset;
+	f32 speed = 1;
+	bool offsetAcquired = false;
+
+	void acquireOffset();
+	void update(struct Game* game) override;
+	void initializeFromJson(const Json::Value& value) override;
+	UnitController* createNew() { return new FollowController(); }
 };
 
 struct PlayerController : UnitController

@@ -21,6 +21,7 @@ bool WeaponResource::load(Json::Value& json)
 	params.position.parse(json.get("position", "0 0").asString());
 	params.offsetRadius = json.get("offsetRadius", 0.0f).asFloat();
 	params.type = (Type)json.get("type", 0).asInt();
+	params.autoAim = json.get("autoAim", params.autoAim).asBool();
 
 	return true;
 }

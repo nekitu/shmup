@@ -6,6 +6,7 @@
 #include <SDL_audio.h>
 #include <string>
 #include <unordered_map>
+#include "vec2.h"
 
 namespace engine
 {
@@ -30,13 +31,13 @@ enum class InputControl
 	Player2_Fire1,
 	Player2_Fire2,
 	Player2_Fire3,
-
+	ReloadScripts,
 	Count
 };
 
 struct Game
 {
-	static const int maxPlayerCount = 2;
+	static const int maxPlayerCount = 1;
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
 	bool fullscreen = false;
@@ -55,7 +56,11 @@ struct Game
 	struct MusicInstance* music = nullptr;
 	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
 	u32 currentLevelIndex = 0;
+	struct ScriptResource* currentMainScript = nullptr;
 	static Game* instance;
+	Vec2 cameraPosition;
+	f32 cameraSpeed = 30;
+	f32 cameraSideOffset = 0;
 
 	Game();
 	~Game();

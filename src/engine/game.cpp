@@ -18,6 +18,7 @@
 #include "resources/weapon_resource.h"
 #include "resources/level_resource.h"
 #include "resources/script_resource.h"
+#include "resources/font_resource.h"
 #include "unit_instance.h"
 #include "sprite_instance.h"
 #include "music_instance.h"
@@ -139,11 +140,14 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_b] = InputControl::Player2_Fire1;
 	mapSdlToControl[SDLK_g] = InputControl::Player2_Fire2;
 	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
+	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
 
 	//TODO: remove
 	music = new MusicInstance();
 	//music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	//music->play();
+
+	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen.lua");
 }
 
 void Game::shutdown()
@@ -161,7 +165,7 @@ void Game::createPlayers()
 		players[i]->name = "Player" + std::to_string(i + 1);
 		players[i]->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
 		players[i]->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
-		((PlayerController*)players[i]->controller)->playerIndex = i;
+		static_cast<PlayerController*>(players[i]->findController("main"))->playerIndex = i;
 	}
 
 	//TODO: fix later to have a single atlas pack call after loading all sprites
@@ -255,8 +259,16 @@ void Game::mainLoop()
 		computeDeltaTime();
 		handleInputEvents();
 
+		cameraPosition.y += cameraSpeed * deltaTime;
+		cameraPosition.x = cameraSideOffset;
+
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
+
+		if (isControlDown(InputControl::ReloadScripts))
+		{
+			resourceLoader->reloadScripts();
+		}
 
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
@@ -290,6 +302,46 @@ void Game::mainLoop()
 		{
 			inst->render(graphics);
 		}
+
+		if (currentMainScript)
+		{
+			if (currentMainScript->getFunction("onRender").isFunction())
+				currentMainScript->getFunction("onRender").call(0);
+			if (currentMainScript->getFunction("onUpdate").isFunction())
+				currentMainScript->getFunction("onUpdate").call(deltaTime);
+		}
+
+		static FontResource* fnt = nullptr;
+
+		if (!fnt) fnt = resourceLoader->loadFont("fonts/default");
+		static f32 time = 0;
+
+		graphics->currentColorMode = (u32)ColorMode::Mul;
+		graphics->currentColor = Color::red.getRgba();
+		graphics->drawText(fnt, { 90, 2 }, "HISCORE");
+		graphics->currentColorMode = (u32)ColorMode::Add;
+		graphics->currentColor = Color::green.getRgba();
+		graphics->drawText(fnt, { 90, 12 }, "OOOOOOO");
+
+
+		if (time > 0.2 && time < 1)
+		{
+			graphics->currentColorMode = (u32)ColorMode::Mul;
+			graphics->currentColor = Color::red.getRgba();
+			graphics->drawText(fnt, { 8, 17 }, "   PLEASE");
+			graphics->currentColorMode = (u32)ColorMode::Add;
+			graphics->currentColor = Color::black.getRgba();
+			graphics->drawText(fnt, { 10, 25 }, "INSERT COIN");
+
+			graphics->currentColorMode = (u32)ColorMode::Add;
+			graphics->currentColor = Color::sky.getRgba();
+			graphics->drawText(fnt, { 135, 17 }, "   PLEASE");
+			graphics->currentColorMode = (u32)ColorMode::Add;
+			graphics->currentColor = Color::black.getRgba();
+			graphics->drawText(fnt, { 140, 25 }, "INSERT COIN");
+		}
+		time += deltaTime;
+		if (time > 1) time = 0;
 
 		graphics->endFrame();
 
@@ -341,6 +393,7 @@ void Game::checkCollisions()
 				{
 					exists1 = true;
 				}
+
 				if (iter2 != collisionPairs.end() && iter2->second == unitInst)
 				{
 					exists2 = true;
@@ -356,7 +409,6 @@ void Game::checkCollisions()
 
 	for (auto& cp : collisionPairs)
 	{
-		//printf("COL: %s %s\n", cp.first->name.c_str(), cp.second->name.c_str());
 		if (cp.first->script)
 		{
 			auto func = cp.first->script->getFunction("onCollide");

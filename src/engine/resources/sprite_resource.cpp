@@ -34,7 +34,7 @@ Rect SpriteResource::getFrameUvRect(u32 frame)
 	if (image->rotated)
 	{
 		rc.x = image->uvRect.x + uvFrameWidth * (f32)row;
-		rc.y = image->uvRect.y + uvFrameHeight * (f32)col;
+		rc.y = image->uvRect.y + uvFrameHeight * (f32)(columns - col - 1);
 		rc.width = uvFrameWidth;
 		rc.height = uvFrameHeight;
 	}
