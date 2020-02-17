@@ -47,10 +47,10 @@ void WeaponInstance::spawnProjectiles(Game* game)
 {
 	if (params.autoAim)
 	{
-		Vec2 pos = attachTo->rect.center();
+		Vec2 pos = attachTo->screenRect.center();
 
-		params.direction.x = game->players[0]->rootSpriteInstance->transform.position.x - pos.x;
-		params.direction.y = game->players[0]->rootSpriteInstance->transform.position.y - pos.y;
+		params.direction.x = game->players[0]->rootSpriteInstance->screenRect.center().x - pos.x;
+		params.direction.y = game->players[0]->rootSpriteInstance->screenRect.center().y - pos.y;
 		params.direction.normalize();
 	}
 
@@ -77,7 +77,7 @@ void WeaponInstance::spawnProjectiles(Game* game)
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
 		Vec2 pos = attachTo->transform.position;
 
-		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->noRootParent)
+		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->notRelativeToRoot)
 			pos += parentUnitInstance->rootSpriteInstance->transform.position;
 		newProj->rootSpriteInstance->transform.position = pos + params.position + params.offset + offRadius;
 		auto rads = deg2rad(angle);
@@ -86,11 +86,12 @@ void WeaponInstance::spawnProjectiles(Game* game)
         newProj->velocity.normalize();
 		newProj->controllers["main"] = new ProjectileController();
 		newProj->controllers["main"]->unitInstance = newProj;
+		newProj->layerIndex = parentUnitInstance->layerIndex;
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
-		game->unitInstances.push_back(newProj);
+		game->newUnitInstances.push_back(newProj);
         angle += angleBetweenRays;
     }
 }

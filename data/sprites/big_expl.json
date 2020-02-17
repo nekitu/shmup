@@ -1,0 +1,15 @@
+{
+    "frameWidth": 200,
+    "frameHeight": 288,
+    "animations":
+    {
+        "default":
+        {
+            "start": 0,
+            "frames": 25,
+            "type": "Normal",
+            "fps": 25,
+            "repeat": 1
+        }
+    }
+}

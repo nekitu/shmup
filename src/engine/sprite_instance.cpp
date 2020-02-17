@@ -6,6 +6,7 @@
 #include <assert.h>
 #include "image_atlas.h"
 #include <cmath>
+#include "utils.h"
 
 namespace engine
 {
@@ -16,6 +17,7 @@ void SpriteInstance::copyFrom(SpriteInstance* other)
 	transform = other->transform;
 	orderIndex = other->orderIndex;
 	visible = other->visible;
+	shadow = other->shadow;
 	collide = other->collide;
 	health = other->health;
 	defaultColor = other->defaultColor;
@@ -49,6 +51,7 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 	colorMode = res->colorMode;
 	hitColor = res->hitColor;
 	visible = res->visible;
+	shadow = res->shadow;
 	animationFrame = 0;
 	animationRepeatCount = 0;
 	animationDirection = 1;
@@ -75,23 +78,17 @@ void SpriteInstance::update(struct Game* game)
 
 		animationFrame += (f32)frameAnimation->framesPerSecond * game->deltaTime * animationDirection;
 
-		if (frameAnimation->repeatCount)
-		{
-			animationRepeatCount++;
-
-			if (animationRepeatCount >= frameAnimation->repeatCount)
-			{
-				animationIsActive = false;
-			}
-		}
-
 		f32 frame = (i32)animationFrame;
+		bool reachedEnd = false;
+		u32 freezeFrame = 0;
 
 		if (frameAnimation->type == SpriteFrameAnimation::Type::Normal)
 		{
 			if (frame > frameAnimation->startFrame + frameAnimation->frameCount - 1)
 			{
 				animationFrame = frameAnimation->startFrame;
+				freezeFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
+				reachedEnd = true;
 			}
 		}
 		else if (frameAnimation->type == SpriteFrameAnimation::Type::Reversed)
@@ -99,6 +96,8 @@ void SpriteInstance::update(struct Game* game)
 			if (frame < frameAnimation->startFrame)
 			{
 				animationFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
+				freezeFrame = frameAnimation->startFrame;
+				reachedEnd = true;
 			}
 		}
 		else if (frameAnimation->type == SpriteFrameAnimation::Type::PingPong)
@@ -107,11 +106,29 @@ void SpriteInstance::update(struct Game* game)
 			{
 				animationFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
 				animationDirection = -1;
+				reachedEnd = true;
 			}
 			else if (animationDirection < 0 && frame < frameAnimation->startFrame)
 			{
 				animationFrame = frameAnimation->startFrame;
 				animationDirection = 1;
+				reachedEnd = true;
+			}
+
+			if (animationDirection > 0)
+				freezeFrame = frameAnimation->startFrame + frameAnimation->frameCount - 1;
+			else
+				freezeFrame = frameAnimation->startFrame;
+		}
+
+		if (reachedEnd && frameAnimation->repeatCount != 0)
+		{
+			animationRepeatCount++;
+
+			if (animationRepeatCount >= frameAnimation->repeatCount)
+			{
+				animationFrame = freezeFrame;
+				animationIsActive = false;
 			}
 		}
 	}
@@ -157,6 +174,7 @@ void SpriteInstance::play()
 void SpriteInstance::hit(f32 hitDamage)
 {
 	health -= hitDamage;
+	clampValue(health, 0, 100);
 	if (hitFlashActive) return;
 	hitFlashActive = true;
 	hitOldColorMode = colorMode;
@@ -172,10 +190,10 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 
 	Rect partRc;
 
-	partRc.x = std::fmaxf(rect.x, other->rect.x);
-	partRc.y = std::fmaxf(rect.y, other->rect.y);
-	partRc.width  = floorf(fminf(rect.x + rect.width,  other->rect.x + other->rect.width) - partRc.x);
-	partRc.height = floorf(fminf(rect.y + rect.height, other->rect.y + other->rect.height)- partRc.y);
+	partRc.x = std::fmaxf(screenRect.x, other->screenRect.x);
+	partRc.y = std::fmaxf(screenRect.y, other->screenRect.y);
+	partRc.width  = floorf(fminf(screenRect.x + screenRect.width,  other->screenRect.x + other->screenRect.width) - partRc.x);
+	partRc.height = floorf(fminf(screenRect.y + screenRect.height, other->screenRect.y + other->screenRect.height)- partRc.y);
 
 	if (partRc.width < 1 || partRc.height < 1) return false;
 
@@ -189,8 +207,8 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		f32 step = 1.0f / spr->transform.scale;
 		f32 srcx = 0;
 		f32 srcy = 0;
-		f32 rcx = round(frmRc.width * (localRc.x / spr->rect.width));
-		f32 rcy = round(frmRc.height * (localRc.y / spr->rect.height));
+		f32 rcx = round(frmRc.width * (localRc.x / spr->screenRect.width));
+		f32 rcy = round(frmRc.height * (localRc.y / spr->screenRect.height));
 
 		for (int y = 0; y < localRc.height; y++)
 		{
@@ -209,8 +227,8 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		return pixels;
 	};
 
-	auto r1 = Rect(partRc.x - rect.x, partRc.y - rect.y, partRc.width, partRc.height);
-	auto r2 = Rect(partRc.x - other->rect.x, partRc.y - other->rect.y, partRc.width, partRc.height);
+	auto r1 = Rect(partRc.x - screenRect.x, partRc.y - screenRect.y, partRc.width, partRc.height);
+	auto r2 = Rect(partRc.x - other->screenRect.x, partRc.y - other->screenRect.y, partRc.width, partRc.height);
 	std::vector<u8> pixels1 = getRectPixels(this, r1);
 	std::vector<u8> pixels2 = getRectPixels(other, r2);
 

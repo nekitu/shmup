@@ -68,7 +68,7 @@ bool AnimationResource::load(Json::Value& json)
 		if (keyType == "HorizontalFlip") trackType = AnimationTrack::Type::HorizontalFlip;
 		if (keyType == "Rotation") trackType = AnimationTrack::Type::Rotation;
 		if (keyType == "Visible") trackType = AnimationTrack::Type::Visible;
-		if (keyType == "HasShadows") trackType = AnimationTrack::Type::HasShadows;
+		if (keyType == "Shadow") trackType = AnimationTrack::Type::Shadow;
 		if (keyType == "ShadowOffsetX") trackType = AnimationTrack::Type::ShadowOffsetX;
 		if (keyType == "ShadowOffsetY") trackType = AnimationTrack::Type::ShadowOffsetY;
 		if (keyType == "ShadowScaleX") trackType = AnimationTrack::Type::ShadowScaleX;

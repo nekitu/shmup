@@ -21,6 +21,7 @@ struct SpriteInstanceResource
 	u32 orderIndex = 0;
 	bool collide = true;
 	bool visible = true;
+	bool shadow = true;
 	f32 damageDamping = 1.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
@@ -66,7 +67,7 @@ struct UnitResource : Resource
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;
 	f32 parallaxScale = 1.0f;
-	bool hasShadows = false;
+	bool shadow = false;
 	Vec2 shadowOffset;
 	bool visible = true;
 	bool deleteOnOutOfScreen = false;

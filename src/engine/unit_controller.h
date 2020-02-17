@@ -41,6 +41,7 @@ struct FollowController : UnitController
 	struct SpriteInstance* follow = nullptr;
 	Vec2 offset;
 	f32 speed = 1;
+	bool constantSpeed = false;
 	bool offsetAcquired = false;
 
 	void acquireOffset();

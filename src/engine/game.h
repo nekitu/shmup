@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include "vec2.h"
+#include "resources/level_resource.h"
 
 namespace engine
 {
@@ -50,6 +51,7 @@ struct Game
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
 	std::vector<UnitInstance*> unitInstances;
+	std::vector<UnitInstance*> newUnitInstances;
 	UnitInstance* players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
@@ -60,7 +62,8 @@ struct Game
 	static Game* instance;
 	Vec2 cameraPosition;
 	f32 cameraSpeed = 30;
-	f32 cameraSideOffset = 0;
+	f32 cameraParallaxOffset = 0;
+	std::vector<Layer> layers;
 
 	Game();
 	~Game();

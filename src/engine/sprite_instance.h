@@ -13,16 +13,19 @@ struct SpriteInstance
 	std::string name;
 	struct SpriteResource* sprite = nullptr;
 	Transform transform;
-	Vec2 cameraSpacePosition;
+	Vec2 screenPosition;
+	Rect screenRect;
+	Rect uvRect;
+	Rect shadowRect;
 	u32 orderIndex = 0;
 	bool visible = true;
 	bool collide = true;
+	bool shadow = false;
 	f32 health = 100;
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
-	Rect rect;
-	bool noRootParent = false;
+	bool notRelativeToRoot = false;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;

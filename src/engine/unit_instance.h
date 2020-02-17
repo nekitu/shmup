@@ -23,16 +23,18 @@ struct UnitInstance
 	// unit instance general members
 	static u64 lastId;
 	u64 id = 0;
-	f32 parallaxScale = 1.0f;
+	u32 layerIndex = 0;
 	std::string name;
 	std::string currentAnimationName;
 	Rect boundingBox;
 	bool visible = true;
+	bool appeared = false;
 	f32 speed = 10.0f;
 	f32 health = 100.0f;
 	f32 age = 0;
 	u32 stageIndex = 0;
 	bool collide = true;
+	bool shadow = false;
 	struct UnitResource* unit = nullptr;
 	std::map<std::string /*name*/, struct UnitController*> controllers;
 	struct ScriptResource* script = nullptr;

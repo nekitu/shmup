@@ -311,8 +311,11 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < layerImages.size(); ++i) // iterate over all layers (if desired)
     {
-		layerImages[i]->rotatedRect.x = maxRotateBounds.width / 2 - layerImages[i]->rotatedRect.width / 2;
-		layerImages[i]->rotatedRect.y = maxRotateBounds.height / 2 - layerImages[i]->rotatedRect.height / 2;
+		if (args.rotate)
+		{
+			layerImages[i]->rotatedRect.x = maxRotateBounds.width / 2 - layerImages[i]->rotatedRect.width / 2;
+			layerImages[i]->rotatedRect.y = maxRotateBounds.height / 2 - layerImages[i]->rotatedRect.height / 2;
+		}
 
         for (int y = 0; y < (u32)layerImages[i]->rotatedRect.height; ++y)
         {

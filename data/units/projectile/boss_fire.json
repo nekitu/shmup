@@ -1,5 +1,5 @@
 {
-    "name": "Fire",
+    "name": "FireFromBoss",
     "type": "EnemyProjectile",
     "deleteOnOutOfScreen": true,
     "script": "scripts/projectile2.lua",

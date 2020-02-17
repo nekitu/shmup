@@ -39,7 +39,7 @@ bool UnitResource::load(Json::Value& json)
 	rootSpriteInstanceName = json.get("rootSpriteInstance", "").asString();
 	script = loader->loadScript(json.get("script", "").asString());
 	shadowScale = json.get("shadowScale", shadowScale).asFloat();
-	hasShadows = json.get("hasShadows", hasShadows).asBool();
+	shadow = json.get("shadow", shadow).asBool();
 	shadowOffset.parse(json.get("shadowOffset", "0 0").asString());
 	deleteOnOutOfScreen = json.get("deleteOnOutOfScreen", deleteOnOutOfScreen).asBool();
 
@@ -81,6 +81,7 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->transform.verticalFlip = sprJson.get("verticalFlip", false).asBool();
 		sprInst->orderIndex = i;
 		sprInst->collide = sprJson.get("collide", true).asBool();
+		sprInst->shadow = sprJson.get("shadow", sprInst->shadow).asBool();
 		sprInst->visible = sprJson.get("visible", true).asBool();
 		sprInst->damageDamping = sprJson.get("damageDamping", 1.0f).asFloat();
 		sprInst->color.parse(sprJson.get("color", sprInst->color.toString()).asString());

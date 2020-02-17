@@ -33,7 +33,7 @@ void UnitInstance::updateShadowToggle()
 //{
 //	boundingBox = other->boundingBox;
 //	currentAnimationName = other->currentAnimationName;
-//	hasShadows = other->hasShadows;
+//	shadow = other->shadow;
 //	name = other->name;
 //	shadowOffset = other->shadowOffset;
 //	shadowScale = other->shadowScale;
@@ -116,7 +116,7 @@ void UnitInstance::initializeFrom(UnitResource* res)
 	visible = res->visible;
 	script = res->script;
 	collide = res->collide;
-	parallaxScale = res->parallaxScale;
+	shadow = res->shadow;
 
 	// map from other unit to new sprite instances
 	std::map<SpriteInstanceResource*, SpriteInstance*> spriteInstMap;
@@ -214,14 +214,18 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 	currentAnimationName = json.get("animationName", "").asString();
 	boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
 	visible = json.get("visible", visible).asBool();
+	shadow = json.get("shadow", visible).asBool();
 	speed = json.get("speed", speed).asFloat();
 	health = json.get("health", health).asFloat();
+	layerIndex = json.get("layerIndex", layerIndex).asInt();
 	rootSpriteInstance->transform.position.parse(json.get("position", "0 0").asString());
 	stageIndex = 0;
 }
 
 void UnitInstance::update(Game* game)
 {
+	computeHealth();
+
 	for (auto controller : controllers)
 	{
 		controller.second->update(game);
@@ -251,12 +255,12 @@ void UnitInstance::update(Game* game)
 
 	computeBoundingBox();
 
-	if (unit->deleteOnOutOfScreen)
+	if (appeared && unit->deleteOnOutOfScreen)
 	{
 		if (boundingBox.x > game->graphics->videoWidth
 			|| boundingBox.y > game->graphics->videoHeight
 			|| boundingBox.right() < 0
-			|| boundingBox.top() < 0)
+			|| boundingBox.bottom() < 0)
 		{
 			deleteMeNow = true;
 		}
@@ -268,6 +272,26 @@ void UnitInstance::update(Game* game)
 	{
 		auto func = script->getFunction("onUpdate");
 		if (func.isFunction()) func.call(this);
+	}
+}
+
+void UnitInstance::computeHealth()
+{
+	health = 0.0f;
+
+	for (auto sprInst : spriteInstances)
+	{
+		health += sprInst->health;
+	}
+
+	health /= spriteInstances.size();
+}
+
+void UnitInstance::setAnimation(const std::string& animName)
+{
+	if (spriteInstanceAnimations.find(animName) != spriteInstanceAnimations.end())
+	{
+		spriteInstanceAnimationMap = &spriteInstanceAnimations[currentAnimationName];
 	}
 }
 
@@ -309,23 +333,20 @@ void UnitInstance::computeBoundingBox()
 			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
 		}
 
-		if (unit->type != UnitResource::Type::Player
-			&& unit->type != UnitResource::Type::PlayerProjectile)
-		{
-			boundingBox.x += Game::instance->cameraPosition.x * parallaxScale;
-			boundingBox.y += Game::instance->cameraPosition.y;
-		}
-
-		rootSpriteInstance->rect = boundingBox;
+		boundingBox.x += Game::instance->cameraPosition.x * Game::instance->layers[layerIndex].parallaxScale;
+		boundingBox.y += Game::instance->cameraPosition.y * Game::instance->layers[layerIndex].parallaxScale;
+		rootSpriteInstance->screenRect = boundingBox;
 	}
-	
+
+	// compute bbox for the rest of the sprite instances
 	for (auto sprInst : spriteInstances)
 	{
 		if (!sprInst->visible || sprInst == rootSpriteInstance) continue;
 
 		Vec2 pos;
 
-		if (!sprInst->noRootParent)
+		// if relative to root sprite instance
+		if (!sprInst->notRelativeToRoot)
 		{
 			pos = rootSpriteInstance->transform.position;
 		}
@@ -342,12 +363,10 @@ void UnitInstance::computeBoundingBox()
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
 
-		if (unit->type != UnitResource::Type::Player
-			&& unit->type != UnitResource::Type::PlayerProjectile
-			&& sprInst->noRootParent)
+		//if (sprInst->notRelativeToRoot)
 		{
-			pos.x += Game::instance->cameraPosition.x * parallaxScale;
-			pos.y += Game::instance->cameraPosition.y;
+			pos.x += Game::instance->cameraPosition.x * Game::instance->layers[layerIndex].parallaxScale;
+			pos.y += Game::instance->cameraPosition.y * Game::instance->layers[layerIndex].parallaxScale;
 		}
 
 		Rect spriteRc =
@@ -373,11 +392,11 @@ void UnitInstance::computeBoundingBox()
 			v2.rotateAround(center, angle);
 			v3.rotateAround(center, angle);
 
-			sprInst->rect = Rect(center.x, center.y, 0, 0);
-			sprInst->rect.add(v0);
-			sprInst->rect.add(v1);
-			sprInst->rect.add(v2);
-			sprInst->rect.add(v3);
+			sprInst->screenRect = Rect(center.x, center.y, 0, 0);
+			sprInst->screenRect.add(v0);
+			sprInst->screenRect.add(v1);
+			sprInst->screenRect.add(v2);
+			sprInst->screenRect.add(v3);
 
 			boundingBox.add(v0);
 			boundingBox.add(v1);
@@ -387,28 +406,16 @@ void UnitInstance::computeBoundingBox()
 		else
 		{
 			boundingBox.add(spriteRc);
-			sprInst->rect = spriteRc;
+			sprInst->screenRect = spriteRc;
 		}
 	}
-}
 
-void UnitInstance::computeHealth()
-{
-	health = 0.0f;
-
-	for (auto sprInst : spriteInstances)
+	if (!appeared)
 	{
-		health += sprInst->health;
-	}
-
-	health /= spriteInstances.size();
-}
-
-void UnitInstance::setAnimation(const std::string& animName)
-{
-	if (spriteInstanceAnimations.find(animName) != spriteInstanceAnimations.end())
-	{
-		spriteInstanceAnimationMap = &spriteInstanceAnimations[currentAnimationName];
+		if (boundingBox.bottom() > 0)
+		{
+			appeared = true;
+		}
 	}
 }
 
@@ -423,7 +430,7 @@ void UnitInstance::render(Graphics* gfx)
 
 		Vec2 pos;
 
-		if (!sprInst->noRootParent)
+		if (!sprInst->notRelativeToRoot)
 		{
 			pos = sprInst != rootSpriteInstance ? rootSpriteInstance->transform.position : Vec2();
 		}
@@ -436,33 +443,6 @@ void UnitInstance::render(Graphics* gfx)
 			if (rootSpriteInstance->transform.verticalFlip) mirrorV *= -1;
 			if (rootSpriteInstance->transform.horizontalFlip) mirrorH *= -1;
 		}
-
-		pos.x += sprInst->transform.position.x * mirrorH;
-		pos.y += sprInst->transform.position.y * mirrorV;
-
-		f32 renderW = sprInst->sprite->frameWidth * sprInst->transform.scale * ((sprInst != rootSpriteInstance) ? rootSpriteInstance->transform.scale : 1.0f);
-		f32 renderH = sprInst->sprite->frameHeight * sprInst->transform.scale * ((sprInst != rootSpriteInstance) ? rootSpriteInstance->transform.scale : 1.0f);
-
-		pos.x -= renderW / 2.0f;
-		pos.y -= renderH / 2.0f;
-
-		if (unit->type != UnitResource::Type::Player
-			&& unit->type != UnitResource::Type::PlayerProjectile)
-		{
-			pos.y += Game::instance->cameraPosition.y;
-			pos.x += Game::instance->cameraPosition.x * parallaxScale;
-		}
-
-		pos.x = round(pos.x);
-		pos.y = round(pos.y);
-
-		Rect spriteRc =
-		{
-				round(pos.x),
-				round(pos.y),
-				renderW,
-				renderH
-		};
 
 		Rect uvRc = sprInst->sprite->getFrameUvRect(sprInst->animationFrame);
 
@@ -478,25 +458,52 @@ void UnitInstance::render(Graphics* gfx)
 			uvRc.width *= -1.0f;
 		}
 
-		if (unit->hasShadows && shadowToggle)
-		{
-			auto shadowRc = spriteRc;
-			shadowRc += unit->shadowOffset;
-			shadowRc.width *= unit->shadowScale;
-			shadowRc.height *= unit->shadowScale;
+		auto shadowRc = sprInst->screenRect;
+		shadowRc += unit->shadowOffset;
+		shadowRc.width *= unit->shadowScale;
+		shadowRc.height *= unit->shadowScale;
+		sprInst->uvRect = uvRc;
+		sprInst->shadowRect = shadowRc;
+	}
 
-			gfx->currentColor = 0;
-			gfx->currentColorMode = (u32)ColorMode::Mul;
-			//TODO: handle shadow rotation
+	// draw shadows first
+	if (shadow && shadowToggle)
+	for (auto sprInst : spriteInstances)
+	{
+		if (!sprInst->visible || !sprInst->shadow) continue;
+
+		Game::instance->graphics->atlasTextureIndex = sprInst->sprite->image->atlasTexture->textureIndex;
+		gfx->currentColor = 0;
+		gfx->currentColorMode = (u32)ColorMode::Mul;
+
+		if (sprInst->transform.rotation > 0)
+		{
 			if (sprInst->sprite->image->rotated)
 			{
-				gfx->drawQuadWithTexCoordRotated90(shadowRc, uvRc);
+				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->shadowRect, sprInst->uvRect, sprInst->transform.rotation);
 			}
 			else
 			{
-				gfx->drawQuad(shadowRc, uvRc);
+				gfx->drawRotatedQuad(sprInst->shadowRect, sprInst->uvRect, sprInst->transform.rotation);
 			}
 		}
+		else
+		{
+			if (sprInst->sprite->image->rotated)
+			{
+				gfx->drawQuadWithTexCoordRotated90(sprInst->shadowRect, sprInst->uvRect);
+			}
+			else
+			{
+				gfx->drawQuad(sprInst->shadowRect, sprInst->uvRect);
+			}
+		}
+	}
+
+	// draw color sprites
+	for (auto sprInst : spriteInstances)
+	{
+		if (!sprInst->visible) continue;
 
 		gfx->currentColor = sprInst->color.getRgba();
 		gfx->currentColorMode = (u32)sprInst->colorMode;
@@ -505,22 +512,22 @@ void UnitInstance::render(Graphics* gfx)
 		{
 			if (sprInst->sprite->image->rotated)
 			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(spriteRc, uvRc, sprInst->transform.rotation);
+				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->screenRect, sprInst->uvRect, sprInst->transform.rotation);
 			}
 			else
 			{
-				gfx->drawRotatedQuad(spriteRc, uvRc, sprInst->transform.rotation);
+				gfx->drawRotatedQuad(sprInst->screenRect, sprInst->uvRect, sprInst->transform.rotation);
 			}
 		}
 		else
 		{
 			if (sprInst->sprite->image->rotated)
 			{
-				gfx->drawQuadWithTexCoordRotated90(spriteRc, uvRc);
+				gfx->drawQuadWithTexCoordRotated90(sprInst->screenRect, sprInst->uvRect);
 			}
 			else
 			{
-				gfx->drawQuad(spriteRc, uvRc);
+				gfx->drawQuad(sprInst->screenRect, sprInst->uvRect);
 			}
 		}
 	}

@@ -9,10 +9,18 @@ namespace engine
 {
 bool LevelResource::load(Json::Value& json)
 {
+	auto layersJson = json.get("layers", Json::Value());
 	auto unitInstancesJson = json.get("unitInstances", Json::Value());
 
 	if (!unitInstancesJson.size())
 		return true;
+
+	for (auto& item : layersJson)
+	{
+		Layer layer;
+		layer.parallaxScale = item.get("parallaxScale", 1.0f).asFloat();
+		layers.push_back(layer);
+	}
 
 	for (auto& item : unitInstancesJson)
 	{

@@ -260,7 +260,7 @@ void Game::mainLoop()
 		handleInputEvents();
 
 		cameraPosition.y += cameraSpeed * deltaTime;
-		cameraPosition.x = cameraSideOffset;
+		cameraPosition.x = cameraParallaxOffset;
 
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
@@ -270,17 +270,16 @@ void Game::mainLoop()
 			resourceLoader->reloadScripts();
 		}
 
-		// update and render the game graphics render target
-		graphics->setupRenderTargetRendering();
-		graphics->beginFrame();
-
-		UnitInstance::updateShadowToggle();
-
 		for (u32 i = 0; i < unitInstances.size(); i++)
 		{
 			unitInstances[i]->update(this);
 		}
 
+		// add the new created instances
+		unitInstances.insert(unitInstances.end(), newUnitInstances.begin(), newUnitInstances.end());
+		newUnitInstances.clear();
+
+		UnitInstance::updateShadowToggle();
 		checkCollisions();
 
 		auto iter = unitInstances.begin();
@@ -289,7 +288,7 @@ void Game::mainLoop()
 		{
 			if ((*iter)->deleteMeNow)
 			{
-				delete *iter;
+				delete* iter;
 				iter = unitInstances.erase(iter);
 			}
 			else
@@ -297,6 +296,10 @@ void Game::mainLoop()
 				iter++;
 			}
 		}
+
+		// update and render the game graphics render target
+		graphics->setupRenderTargetRendering();
+		graphics->beginFrame();
 
 		for (auto inst : unitInstances)
 		{
@@ -526,6 +529,11 @@ bool Game::changeLevel(i32 index)
 	currentLevelIndex = index;
 	auto level = resourceLoader->loadLevel(levels[currentLevelIndex].second);
 
+	for (auto& layer : level->layers)
+	{
+		layers.push_back(layer);
+	}
+
 	for (auto& inst : level->unitInstances)
 	{
 		unitInstances.push_back(inst);
@@ -551,7 +559,7 @@ UnitInstance* Game::createUnitInstance(UnitResource* unit)
 	auto unitInst = new UnitInstance();
 
 	unitInst->initializeFrom(unit);
-	unitInstances.push_back(unitInst);
+	newUnitInstances.push_back(unitInst);
 
 	return unitInst;
 }

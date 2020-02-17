@@ -1,7 +1,7 @@
 {
     "name": "bg2",
 	"type": "Item",
-	"speed": 10.0,
+	"speed": 0.0,
     "controllers":
     [ 
         { "name": "bg", "class": "Background" }

@@ -1,0 +1,16 @@
+{
+    "name": "TurretExpl",
+    "type": "Enemy",
+    "speed": 0,
+    "deleteOnOutOfScreen": true,
+    "rootSpriteInstance": "body",
+    "script":"scripts/turret_expl.lua",
+    "spriteInstances":
+    [
+        {
+            "name": "body",
+            "scale": 0.5,
+            "sprite": "sprites/big_expl"
+        }
+    ]
+}

@@ -1,13 +1,13 @@
 {
   "name": "Turret",
   "type": "Enemy",
-  "speed": 10.0,
+  "speed": 0.0,
 	"controllers":
 	[
 		{ "name": "main", "class": "SimpleEnemy" }
 	],
   "healthPoints": 1000,
-  "deleteOnOutOfScreen": false, 
+  "deleteOnOutOfScreen": true, 
   "script": "scripts/turret.lua",
   "rootSpriteInstance": "body",
   "stages":
@@ -64,7 +64,7 @@
         {
           "position": "0 0",
           "weapon": "weapons/turret",
-          "active": true
+          "active": false
         }
       }
     }

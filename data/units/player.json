@@ -1,15 +1,15 @@
 {
     "name": "StellarEagle1",
 	"type": "Player",
-	"speed": 120.0,
+	"speed": 180.0,
     "script": "scripts/player.lua",
-    "hasShadows": true,
+    "shadow": true,
     "shadowOffset": "40 40",
     "shadowScale": 0.4,
     "controllers":
 	[
         { "name": "main", "class": "Player" },
-        { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":10},
+        { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
         { "name": "gunR_follow", "class": "Follow", "follower":"gunR", "follow": "body", "speed":10},
         { "name": "gunLtrail_follow", "class": "Follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
         { "name": "gunRtrail_follow", "class": "Follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}

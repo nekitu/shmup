@@ -1,7 +1,7 @@
 local M = {}
 
 local function onUpdate(unit)
-  if unit.age > 0.5 then
+  if unit.age > 10 then
     unit.deleteMeNow = true
   end
 end

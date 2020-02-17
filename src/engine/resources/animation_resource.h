@@ -31,7 +31,7 @@ struct AnimationTrack
 		HorizontalFlip,
 		Rotation,
 		Visible,
-		HasShadows,
+		Shadow,
 		ShadowOffsetX,
 		ShadowOffsetY,
 		ShadowScaleX,

@@ -69,6 +69,9 @@ void ProjectileController::update(struct Game* game)
 	
 	auto projInst = (ProjectileInstance*)unitInstance;
 
+	// keep projectile in the screen space
+	unitInstance->rootSpriteInstance->transform.position.y -= game->cameraSpeed * game->deltaTime;
+
 	unitInstance->rootSpriteInstance->transform.position += projInst->velocity * unitInstance->speed * game->deltaTime;
 	projInst->speed += projInst->speed * projInst->acceleration * game->deltaTime;
 	clampValue(projInst->speed, projInst->minSpeed, projInst->maxSpeed);
@@ -80,7 +83,7 @@ void FollowController::acquireOffset()
 
 	if (follower && follow)
 	{
-		follower->noRootParent = true; // force to not transform locally to parent
+		follower->notRelativeToRoot = true; // force to not transform locally to parent
 		offset = follower->transform.position;
 		follower->transform.position = follow->transform.position + offset;
 		offsetAcquired = true;
@@ -93,11 +96,29 @@ void FollowController::update(struct Game* game)
 
 	if (follow && follower)
 	{
-		auto worldPos = follow->transform.position + offset;
+		auto targetPos = follow->transform.position + offset;
 
-		follower->transform.position =
-			follower->transform.position +
-			(worldPos - follower->transform.position) * speed * game->deltaTime;
+		if (constantSpeed)
+		{
+			auto delta = targetPos - follower->transform.position;
+			auto dist = delta.getLength();
+
+			if (dist <= speed * game->deltaTime)
+			{
+				follower->transform.position = targetPos;
+			}
+			else
+			{
+				delta.normalize();
+				follower->transform.position += delta * speed * game->deltaTime;
+			}
+		}
+		else
+		{
+			follower->transform.position =
+				follower->transform.position +
+				(targetPos - follower->transform.position) * speed * game->deltaTime;
+		}
 	}
 }
 
@@ -105,7 +126,8 @@ void FollowController::initializeFromJson(const Json::Value& value)
 {
 	follow = unitInstance->findSpriteInstance(value.get("follow", "").asString());
 	follower = unitInstance->findSpriteInstance(value.get("follower", "").asString());
-	speed = value.get("speed", 1.0f).asFloat();
+	speed = value.get("speed", speed).asFloat();
+	constantSpeed = value.get("constantSpeed", constantSpeed).asBool();
 }
 
 PlayerController::PlayerController(Game* game)
@@ -123,6 +145,8 @@ void PlayerController::update(struct Game* game)
 {
 	if (!unitInstance || !unitInstance->rootSpriteInstance) return;
 	static f32 t = 0;
+
+	unitInstance->rootSpriteInstance->transform.position.y -= game->cameraSpeed * game->deltaTime;
 
 	if (game->isPlayerFire1(playerIndex) && !isFirePressed)
 	{
@@ -159,30 +183,38 @@ void PlayerController::update(struct Game* game)
 		unitInstance->rootSpriteInstance->hit(10);
 	}
 
+	Vec2 moveDir;
+
 	if (game->isPlayerMoveLeft(playerIndex))
 	{
-		unitInstance->rootSpriteInstance->transform.position.x -= game->deltaTime * unitInstance->speed;
+		moveDir.x = -1;
 	}
 
 	if (game->isPlayerMoveRight(playerIndex))
 	{
-		unitInstance->rootSpriteInstance->transform.position.x += game->deltaTime * unitInstance->speed;
+		moveDir.x = 1;
 	}
 
 	if (game->isPlayerMoveUp(playerIndex))
 	{
-		unitInstance->rootSpriteInstance->transform.position.y -= game->deltaTime * unitInstance->speed;
+		moveDir.y = -1;
 	}
 
 	if (game->isPlayerMoveDown(playerIndex))
 	{
-		unitInstance->rootSpriteInstance->transform.position.y += game->deltaTime * unitInstance->speed;
+		moveDir.y = 1;
 	}
 
-	game->cameraSideOffset = (game->graphics->videoWidth / 2 - unitInstance->rootSpriteInstance->transform.position.x) * 0.5f;
+	moveDir.normalize();
 
-	//clampValue(unitInstance->rootSpriteInstance->transform.position.x, unitInstance->boundingBox.width / 2, game->graphics->videoWidth - unitInstance->boundingBox.width / 2);
-	//clampValue(unitInstance->rootSpriteInstance->transform.position.y, unitInstance->boundingBox.height, game->graphics->videoHeight - unitInstance->boundingBox.height / 2);
+	unitInstance->rootSpriteInstance->transform.position += moveDir * game->deltaTime * unitInstance->speed;
+
+	clampValue(unitInstance->rootSpriteInstance->transform.position.x, -game->cameraParallaxOffset, game->graphics->videoWidth - game->cameraParallaxOffset);
+	clampValue(unitInstance->rootSpriteInstance->transform.position.y,
+		-game->cameraPosition.y,
+		-game->cameraPosition.y + game->graphics->videoHeight);
+
+	game->cameraParallaxOffset = (game->graphics->videoWidth / 2 - unitInstance->rootSpriteInstance->transform.position.x) * 0.3f;
 }
 
 }
