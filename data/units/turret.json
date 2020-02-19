@@ -50,9 +50,10 @@
   [
     {
       "name": "body",
-      "sprite": "sprites/turret",
+      "sprite": "sprites/gun",
       "position": "0 0",
       "scale": 1.0,
+      "damageScale": 0.1,
       "rotation": 0,
       "horizontalFlip": false,
       "verticalFlip": false,

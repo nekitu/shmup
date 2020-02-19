@@ -17,10 +17,12 @@ struct WeaponInstance
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);
 	void debug(const std::string& info);
+
+	f32 angle = 0;
 private:
 	f32 fireTimer = 0.0f;
 	f32 fireInterval = 0;
-	f32 fireDirectionAngle = 0.0f;
+	f32 fireAngleOffset = 0.0f;
 };
 
 }

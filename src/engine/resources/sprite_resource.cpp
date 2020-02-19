@@ -102,6 +102,38 @@ bool SpriteResource::load(Json::Value& json)
 	if (colMode == "Sub") colorMode = ColorMode::Sub;
 	if (colMode == "Mul") colorMode = ColorMode::Mul;
 
+	Json::Value rotAnimsJson = json.get("rotationAnims", Json::Value());
+
+	if (rotAnimsJson.isObject())
+	{
+		rotationAnimPrefix = rotAnimsJson.get("prefix", rotationAnimPrefix).asString();
+		auto frmCount = rotAnimsJson.get("frameCount", 0).asInt();
+		rotationAnimCount = rotAnimsJson.get("count", 0).asInt();
+		auto fps = rotAnimsJson.get("fps", Json::Value(0)).asInt();
+		auto repeatCount = rotAnimsJson.get("repeat", Json::Value(0)).asInt();
+		std::string type = rotAnimsJson.get("type", Json::Value("normal")).asString();
+		SpriteFrameAnimation::Type animType = SpriteFrameAnimation::Type::Normal;
+
+		if (type == "Normal") animType = SpriteFrameAnimation::Type::Normal;
+		if (type == "Reversed") animType = SpriteFrameAnimation::Type::Reversed;
+		if (type == "PingPong") animType = SpriteFrameAnimation::Type::PingPong;
+
+		for (size_t i = 0; i < rotationAnimCount; i++)
+		{
+			SpriteFrameAnimation* anim = new SpriteFrameAnimation();
+
+			anim->frameCount = frmCount;
+			anim->framesPerSecond = fps;
+			char buf[10] = { 0 };
+			itoa(i, buf, 10);
+			anim->name = rotationAnimPrefix + buf;
+			anim->repeatCount = repeatCount;
+			anim->startFrame = i * frmCount;
+			anim->type = animType;
+			frameAnimations[anim->name] = anim;
+		}
+	}
+
 	Json::Value animationsJson = json.get("animations", Json::Value());
 	auto animNames = animationsJson.getMemberNames();
 
@@ -139,6 +171,7 @@ bool SpriteResource::load(Json::Value& json)
 
 	columns = image->width / frameWidth;
 	rows = image->height / frameHeight;
+	frameCount = rows * columns;
 
 	return true;
 }

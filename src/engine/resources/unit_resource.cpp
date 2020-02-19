@@ -83,7 +83,7 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->collide = sprJson.get("collide", true).asBool();
 		sprInst->shadow = sprJson.get("shadow", sprInst->shadow).asBool();
 		sprInst->visible = sprJson.get("visible", true).asBool();
-		sprInst->damageDamping = sprJson.get("damageDamping", 1.0f).asFloat();
+		sprInst->damageScale = sprJson.get("damageScale", 1.0f).asFloat();
 		sprInst->color.parse(sprJson.get("color", sprInst->color.toString()).asString());
 		auto colMode = json.get("colorMode", "Add").asString();
 

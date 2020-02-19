@@ -1,7 +1,7 @@
 {
-	"fireRate" : 3,
-	"fireRays" : 5,
-    "fireRaysAngle" : 30,
+	"fireRate" : 10,
+	"fireRays" : 1,
+    "fireRaysAngle" : 0,
     "direction" : "0 1",
     "offsetRadius": 10,
     "fireRaysRotationSpeed": 0,

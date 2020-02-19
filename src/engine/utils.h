@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "json/value.h"
+#include "vec2.h"
 
 namespace engine
 {
@@ -39,4 +40,5 @@ namespace engine
 	std::string readTextFile(const std::string& path);
 	f32 deg2rad(f32 deg);
 	f32 rad2deg(f32 rad);
+	f32 dir2deg(const Vec2& dir);
 }

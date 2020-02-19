@@ -1,6 +1,7 @@
 #include "resources/script_resource.h"
 #include "resources/unit_resource.h"
 #include "resources/font_resource.h"
+#include "resources/sprite_resource.h"
 #include "utils.h"
 #include "resource_loader.h"
 #include "weapon_instance.h"
@@ -86,6 +87,7 @@ bool initializeLua()
 			}
 		)
 		.addFunction("loadFont", [](const std::string& filename) { return Game::instance->resourceLoader->loadFont(filename); })
+		.addFunction("loadSprite", [](const std::string& filename) { return Game::instance->resourceLoader->loadSprite(filename); })
 		.endModule();
 
 	LUA.beginModule("gfx")
@@ -95,8 +97,14 @@ bool initializeLua()
 			})
 		.endModule();
 
+	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
+		.addVariableRef("direction", &WeaponResource::Parameters::direction)
+		.endClass();
+
 	LUA.beginClass<WeaponInstance>("WeaponInstance")
 		.addVariable("active", &WeaponInstance::active)
+		.addVariable("angle", &WeaponInstance::angle)
+		.addVariableRef("params", &WeaponInstance::params)
 		.addFunction("fire", &WeaponInstance::fire)
 		.addFunction("debug", &WeaponInstance::debug)
 		.endClass();
@@ -105,6 +113,10 @@ bool initializeLua()
 		.addVariable("name", &UnitResource::name)
 		.addVariable("fileName", &UnitResource::fileName)
 		.addVariable("type", &UnitResource::type)
+		.endClass();
+
+	LUA.beginExtendClass<SpriteResource, UnitResource>("SpriteResource")
+		.addVariable("frameCount", &SpriteResource::frameCount)
 		.endClass();
 
 	LUA.beginExtendClass<FontResource, UnitResource>("FontResource")
@@ -161,6 +173,7 @@ bool initializeLua()
 		.addConstructor(LUA_ARGS(f32, f32))
 		.addVariable("x", &Vec2::x)
 		.addVariable("y", &Vec2::y)
+		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
 		.endClass();
 
 	LUA.beginClass<Rect>("Rect")
@@ -181,9 +194,14 @@ bool initializeLua()
 
 	LUA.beginClass<SpriteInstance>("SpriteInstance")
 		.addVariableRef("transform", &SpriteInstance::transform)
+		.addVariableRef("sprite", &SpriteInstance::sprite)
+		.addVariable("animationFrame", &SpriteInstance::animationFrame)
 		.addVariable("screenRect", &SpriteInstance::screenRect)
+		.addFunction("setFrameAnimation", &SpriteInstance::setFrameAnimation)
+		.addFunction("setFrameAnimationFromAngle", &SpriteInstance::setFrameAnimationFromAngle)
 		.addFunction("checkPixelCollision", &SpriteInstance::checkPixelCollision)
 		.addFunction("hit", &SpriteInstance::hit)
+		.addFunction("getFrameFromAngle", &SpriteInstance::getFrameFromAngle)
 		.endClass();
 
 	LUA.beginClass<SpriteInstanceCollision>("SpriteInstanceCollision")

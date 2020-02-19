@@ -145,5 +145,9 @@ std::string readTextFile(const std::string& path)
 
 f32 deg2rad(f32 deg) { return deg * M_PI / 180.f; }
 f32 rad2deg(f32 rad) { return rad * 180.f / M_PI; }
+f32 dir2deg(const Vec2& dir)
+{
+	return rad2deg(atan2f(dir.x, dir.y));
+}
 
 }

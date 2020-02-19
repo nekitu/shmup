@@ -52,6 +52,7 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 	hitColor = res->hitColor;
 	visible = res->visible;
 	shadow = res->shadow;
+	damageScale = res->damageScale;
 	animationFrame = 0;
 	animationRepeatCount = 0;
 	animationDirection = 1;
@@ -173,7 +174,7 @@ void SpriteInstance::play()
 
 void SpriteInstance::hit(f32 hitDamage)
 {
-	health -= hitDamage;
+	health -= hitDamage * damageScale;
 	clampValue(health, 0, 100);
 	if (hitFlashActive) return;
 	hitFlashActive = true;
@@ -242,6 +243,21 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 	}
 
 	return false;
+}
+
+f32 SpriteInstance::getFrameFromAngle(f32 angle)
+{
+	return (f32)(sprite->frameCount - 1) * fabs(angle) / 360.0f;
+}
+
+void SpriteInstance::setFrameAnimationFromAngle(f32 angle)
+{
+	int idx = (f32)(sprite->rotationAnimCount - 1)* fabs(angle) / 360.0f;
+	char buf[10] = { 0 };
+	itoa(idx, buf, 10);
+	f32 relFrame = frameAnimation ? animationFrame - frameAnimation->startFrame : 0;
+	setFrameAnimation(sprite->rotationAnimPrefix + buf);
+	animationFrame = frameAnimation->startFrame + relFrame;
 }
 
 }

@@ -46,6 +46,8 @@ struct SpriteResource : Resource
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	std::unordered_map<std::string, SpriteFrameAnimation*> frameAnimations;
+	std::string rotationAnimPrefix = "r";
+	u32 rotationAnimCount = 0;
 
 	struct AtlasImage* loadImage(const std::string& filename);
 	Rect getFrameUvRect(u32 frame);

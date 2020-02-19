@@ -54,21 +54,21 @@ void WeaponInstance::spawnProjectiles(Game* game)
 		params.direction.normalize();
 	}
 
-    f32 angle = rad2deg(atan2f(params.direction.x, params.direction.y));
-	f32 angleBetweenRays = params.fireRaysAngle / (f32)(params.fireRays - 1);
+    angle = dir2deg(params.direction);
+	f32 angleBetweenRays = params.fireRays > 1 ? params.fireRaysAngle / (f32)(params.fireRays - 1) : 0;
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
 
 	if (params.fireRays > 1)
 		angle = angle1;
 
-	fireDirectionAngle += params.fireRaysRotationSpeed * game->deltaTime;
+	fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
 
-	if (fireDirectionAngle > 360) fireDirectionAngle = 0;
+	if (fireAngleOffset > 360) fireAngleOffset = 0;
 
-	angle += fireDirectionAngle;
+	angle += fireAngleOffset;
 
-    for (u32 i = 0; i < params.fireRays; i++)
+	for (u32 i = 0; i < params.fireRays; i++)
     {
         ProjectileInstance* newProj = new ProjectileInstance();
 
@@ -109,6 +109,16 @@ void WeaponInstance::update(struct Game* game)
         fireTimer = 0;
 		spawnProjectiles(game);
     }
+
+	if (weaponResource && weaponResource->script)
+	{
+		auto func = weaponResource->script->getFunction("onUpdate");
+
+		if (func.isFunction())
+		{
+			func.call(this);
+		}
+	}
 }
 
 void WeaponInstance::debug(const std::string& info)

@@ -22,7 +22,7 @@ struct SpriteInstanceResource
 	bool collide = true;
 	bool visible = true;
 	bool shadow = true;
-	f32 damageDamping = 1.0f;
+	f32 damageScale = 1.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;

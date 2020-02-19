@@ -1,13 +1,13 @@
 {
   "name": "UltraBoss9000",
   "type": "Enemy",
-  "speed": 0.0,
+  "speed": -80.0,
 	"controllers":
 	[
 		{ "name": "main", "class": "SimpleEnemy" }
 	],
   "healthPoints": 1000,
-  "deleteOnOutOfScreen": true, 
+  "deleteOnOutOfScreen": false, 
   "script": "scripts/boss.lua",
   "rootSpriteInstance": "body",
   "stages":
@@ -50,7 +50,7 @@
   [
     {
       "name": "body",
-      "sprite": "sprites/out",
+      "sprite": "sprites/gun",
       "position": "0 0",
       "scale": 1.0,
       "rotation": 0,

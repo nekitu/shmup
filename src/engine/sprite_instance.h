@@ -22,6 +22,7 @@ struct SpriteInstance
 	bool collide = true;
 	bool shadow = false;
 	f32 health = 100;
+	f32 damageScale = 1.0f;
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
@@ -47,6 +48,8 @@ struct SpriteInstance
 	void setFrameAnimation(const std::string& name);
 	void play();
 	void hit(f32 hitDamage);
+	f32 getFrameFromAngle(f32 angle);
+	void setFrameAnimationFromAngle(f32 angle);
 	bool checkPixelCollision(SpriteInstance* other, Vec2& outCollisionCenter);
 };
 
