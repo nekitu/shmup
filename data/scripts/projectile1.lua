@@ -11,6 +11,14 @@ local function onCollide(unitInst1, unitInst2)
   end
 end
 
+local function onCollide(unitInst1, unitInst2)
+	local pos = Vec2(0, 0)
+		if unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, pos) then
+		unitInst1.rootSpriteInstance:hit(1)
+	end
+end
+
+
 M.onCollide = onCollide
 M.onUpdate = onUpdate
 

@@ -13,13 +13,11 @@ AtlasImage* SpriteResource::loadImage(const std::string& filename)
 
 	stbi_uc* data = stbi_load(filename.c_str(), &width, &height, &comp, 4);
 	printf("Loaded image: %s %dx%d\n", filename.c_str(), width, height);
+
 	if (!data)
 		return nullptr;
 
 	auto img = atlas->addImage((Rgba32*)data, width, height);
-	printf("Added image\n");
-	atlas->pack();
-	printf("Packed image\n");
 
 	return img;
 }
@@ -81,10 +79,10 @@ Rect SpriteResource::getSheetFramePixelRect(u32 frame)
 	u32 col = frame % columns;
 	u32 row = frame / columns;
 
-	rc.x = frameWidth * col;
-	rc.y = frameHeight * row;
-	rc.width = frameWidth;
-	rc.height = frameHeight;
+	rc.x = ceilf(frameWidth * col);
+	rc.y = ceilf(frameHeight * row);
+	rc.width = ceilf(frameWidth);
+	rc.height = ceilf(frameHeight);
 
 	return rc;
 }
@@ -156,8 +154,12 @@ bool SpriteResource::load(Json::Value& json)
 	}
 
 	image = loadImage(Game::makeFullDataPath(imageFilename));
-	//TODO: put this after the global atlas packing
 
+	return true;
+}
+
+void SpriteResource::computeParamsAfterAtlasGeneration()
+{
 	if (image->rotated)
 	{
 		uvFrameWidth = image->uvRect.width / (f32)(image->rect.height / frameHeight);
@@ -172,8 +174,6 @@ bool SpriteResource::load(Json::Value& json)
 	columns = image->width / frameWidth;
 	rows = image->height / frameHeight;
 	frameCount = rows * columns;
-
-	return true;
 }
 
 }

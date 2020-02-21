@@ -9,6 +9,7 @@
 #include "sprite_instance.h"
 #include "game.h"
 #include "graphics.h"
+#include "unit_controller.h"
 
 namespace engine
 {
@@ -76,6 +77,31 @@ bool initializeLua()
 	LUA.beginModule("game")
 		.addVariable("deltaTime", &Game::instance->deltaTime)
 		.addFunction("log", engine_log)
+		.addVariable("cameraSpeed", &Game::instance->cameraSpeed)
+		.addVariable("score", &Game::instance->score)
+		.addVariableRef("player1", &Game::instance->players[0])
+		.addVariableRef("player2", &Game::instance->players[1])
+		.addVariable("credit", &Game::instance->credit)
+		.addFunction("shakeCamera", [](UnitInstance* inst, const std::string& ctrlName, const Vec2& force, f32 duration, u32 count)
+			{
+				auto ctrl = static_cast<ScreenFxController*>(inst->findController(ctrlName));
+				if (ctrl)
+				{
+					ctrl->shakeCamera(force, duration, count);
+				}
+			})
+		.addFunction("fadeScreen", [](UnitInstance* inst, const std::string& ctrlName, const Color& color, u32 colorMode, f32 duration, bool revertBackAfter)
+			{
+				auto ctrl = static_cast<ScreenFxController*>(inst->findController(ctrlName));
+				if (ctrl)
+				{
+					ctrl->fadeScreen(color, (ColorMode)colorMode, duration, revertBackAfter);
+				}
+			})
+				.addFunction("animateCameraSpeed", [](f32 towards, f32 speed)
+			{
+				Game::instance->animateCameraSpeed(towards, speed);
+			})
 		.addFunction("changeLevel", [](int index) { Game::instance->changeLevel(index); })
 		.addFunction("loadNextLevel", []() { Game::instance->changeLevel(~0); })
 		.addFunction("spawn", [](const std::string& unit, const std::string& name, const Vec2& position)
@@ -122,6 +148,11 @@ bool initializeLua()
 	LUA.beginExtendClass<FontResource, UnitResource>("FontResource")
 		.endClass();
 
+	LUA.beginClass<UnitLifeStage>("UnitLifeStage")
+		.addVariable("name", &UnitLifeStage::name)
+		.addVariable("triggerOnHealth", &UnitLifeStage::triggerOnHealth)
+		.endClass();
+
 	LUA.beginClass<UnitInstance>("UnitInstance")
 		.addVariable("id", &UnitInstance::id, false)
 		.addVariable("name", &UnitInstance::name, true)
@@ -130,6 +161,7 @@ bool initializeLua()
 		.addVariable("unit", &UnitInstance::unit, false)
 		.addVariable("age", &UnitInstance::age, false)
 		.addVariable("health", &UnitInstance::health)
+		.addVariable("stage", &UnitInstance::currentStage)
 		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow)
 		.addVariable("rootSpriteInstance", &UnitInstance::rootSpriteInstance)
 		.addFunction("findWeapon",
@@ -167,6 +199,14 @@ bool initializeLua()
 					wp.second->update(Game::instance);
 				}
 			})
+		.endClass();
+
+	LUA.beginClass<Color>("Color")
+		.addConstructor(LUA_ARGS(f32, f32, f32, f32))
+		.addVariable("r", &Color::r)
+		.addVariable("g", &Color::g)
+		.addVariable("b", &Color::b)
+		.addVariable("a", &Color::a)
 		.endClass();
 
 	LUA.beginClass<Vec2>("Vec2")

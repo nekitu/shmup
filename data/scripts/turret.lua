@@ -1,8 +1,5 @@
 local M = {}
 
-game.loadSprite("sprites/turret_expl")
-game.loadSprite("sprites/big_expl")
-
 local function onUpdate(unitInst)
   --print("Updating "..unitInst.name.."  a:"..tostring(unitInst.rootSpriteInstance.transform.scale))
   --unitInst.rootSpriteInstance.transform.rotation = unitInst.rootSpriteInstance.transform.rotation + 1
@@ -22,12 +19,12 @@ local function onUpdate(unitInst)
         unitInst.deleteMeNow = true
         local uinst = game.spawn("units/turret_expl", "expl2", unitInst.rootSpriteInstance.transform.position)
         uinst.layerIndex = unitInst.layerIndex
-        print("Spawned ".. uinst.unit.name .." at "..tostring(uinst.rootSpriteInstance.transform.position.x) .." "..tostring(uinst.rootSpriteInstance.transform.position.y))
+		game.shakeCamera(game.player1, "screenFx", Vec2(2, 2), 0.5, 70)
+		game.fadeScreen(game.player1, "screenFx", Color(1,1,1,1), 0, 0.1, true)
     end
 end
 
 local function onCollide(unitInst1, unitInst2)
-  --print("Collision! "..unitInst1.name .. " "..unitInst2.name)
   local pos = Vec2(0, 0)
   if unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, pos) then
     unitInst1.rootSpriteInstance:hit(1)

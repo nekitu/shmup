@@ -9,33 +9,13 @@
     "controllers":
 	[
         { "name": "main", "class": "Player" },
+        { "name": "screenFx", "class": "ScreenFx" },
         { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
         { "name": "gunR_follow", "class": "Follow", "follower":"gunR", "follow": "body", "speed":10},
         { "name": "gunLtrail_follow", "class": "Follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
         { "name": "gunRtrail_follow", "class": "Follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
 	],
 	"rootSpriteInstance": "body",
-    "stages":
-    [
-        {
-            "healthPercent": 100,
-            "introAnimation": "stage0_intro",
-            "outroAnimation": "stage0_outro",
-			"updateFunction": "stage0Update"
-        },
-        {
-            "healthPercent": 50,
-            "introAnimation": "stage1_intro",
-            "outroAnimation": "stage1_outro",
-			"updateFunction": "stage0Update"
-        },
-        {
-            "healthPercent": 0,
-            "introAnimation": "stage2_intro",
-            "outroAnimation": "stage2_outro",
-			"updateFunction": "stage0Update"
-        }
-    ],
     "animations":
     {
         "stage0_intro":

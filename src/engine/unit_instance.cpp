@@ -216,7 +216,6 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 	visible = json.get("visible", visible).asBool();
 	shadow = json.get("shadow", visible).asBool();
 	speed = json.get("speed", speed).asFloat();
-	health = json.get("health", health).asFloat();
 	layerIndex = json.get("layerIndex", layerIndex).asInt();
 	rootSpriteInstance->transform.position.parse(json.get("position", "0 0").asString());
 	stageIndex = 0;
@@ -225,6 +224,25 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 void UnitInstance::update(Game* game)
 {
 	computeHealth();
+
+	for (auto stage : unit->stages)
+	{
+		if (health <= stage->triggerOnHealth && stage != currentStage)
+		{
+			//TODO: maybe just use a currentStageIndex
+			auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
+
+			if (iter != triggeredStages.end()) continue;
+
+			triggeredStages.push_back(stage);
+
+			auto func = unit->script->getFunction("onStageChange");
+
+			if (func.isFunction()) func.call(this, currentStage ? currentStage->name : "", stage->name);
+
+			currentStage = stage;
+		}
+	}
 
 	for (auto controller : controllers)
 	{
@@ -255,15 +273,27 @@ void UnitInstance::update(Game* game)
 
 	computeBoundingBox();
 
-	if (appeared && unit->deleteOnOutOfScreen)
+	if (appeared && unit->autoDeleteType == AutoDeleteType::EndOfScreen)
 	{
-		if (boundingBox.x > game->graphics->videoWidth
-			|| boundingBox.y > game->graphics->videoHeight
-			|| boundingBox.right() < 0
-			|| boundingBox.bottom() < 0)
+		if (game->screenMode == ScreenMode::Vertical)
 		{
-			deleteMeNow = true;
+			if (boundingBox.y > game->graphics->videoHeight)
+				deleteMeNow = true;
 		}
+		else if (game->screenMode == ScreenMode::Horizontal)
+		{
+			if (boundingBox.right() < 0)
+				deleteMeNow = true;
+		}
+	}
+
+	if (unit->autoDeleteType == AutoDeleteType::OutOfScreen)
+	if (boundingBox.x > game->graphics->videoWidth
+		|| boundingBox.y > game->graphics->videoHeight
+		|| boundingBox.right() < 0
+		|| boundingBox.bottom() < 0)
+	{
+		deleteMeNow = true;
 	}
 
 	age += game->deltaTime;
@@ -277,14 +307,18 @@ void UnitInstance::update(Game* game)
 
 void UnitInstance::computeHealth()
 {
-	health = 0.0f;
+	health = 0;
+	maxHealth = 0.0f;
 
 	for (auto sprInst : spriteInstances)
 	{
+		if (!sprInst->visible) continue;
+
 		health += sprInst->health;
+		maxHealth += sprInst->maxHealth;
 	}
 
-	health /= spriteInstances.size();
+	health = health / maxHealth * 100;
 }
 
 void UnitInstance::setAnimation(const std::string& animName)
@@ -333,9 +367,13 @@ void UnitInstance::computeBoundingBox()
 			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
 		}
 
-		boundingBox.x += Game::instance->cameraPosition.x * Game::instance->layers[layerIndex].parallaxScale;
-		boundingBox.y += Game::instance->cameraPosition.y * Game::instance->layers[layerIndex].parallaxScale;
+		boundingBox.x += (Game::instance->cameraPosition.x + Game::instance->cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
+		boundingBox.y += (Game::instance->cameraPosition.y + Game::instance->cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
 		rootSpriteInstance->screenRect = boundingBox;
+		rootSpriteInstance->screenRect.x = roundf(rootSpriteInstance->screenRect.x);
+		rootSpriteInstance->screenRect.y = roundf(rootSpriteInstance->screenRect.y);
+		rootSpriteInstance->screenRect.width = roundf(rootSpriteInstance->screenRect.width);
+		rootSpriteInstance->screenRect.height = roundf(rootSpriteInstance->screenRect.height);
 	}
 
 	// compute bbox for the rest of the sprite instances
@@ -362,19 +400,15 @@ void UnitInstance::computeBoundingBox()
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
-
-		//if (sprInst->notRelativeToRoot)
-		{
-			pos.x += Game::instance->cameraPosition.x * Game::instance->layers[layerIndex].parallaxScale;
-			pos.y += Game::instance->cameraPosition.y * Game::instance->layers[layerIndex].parallaxScale;
-		}
+		pos.x += (Game::instance->cameraPosition.x + Game::instance->cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
+		pos.y += (Game::instance->cameraPosition.y + Game::instance->cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
 
 		Rect spriteRc =
 		{
-			round(pos.x),
-			round(pos.y),
-			renderW,
-			renderH
+			roundf(pos.x),
+			roundf(pos.y),
+			roundf(renderW),
+			roundf(renderH)
 		};
 
 		if (sprInst->transform.rotation != 0)
@@ -410,11 +444,27 @@ void UnitInstance::computeBoundingBox()
 		}
 	}
 
+	boundingBox.x = roundf(boundingBox.x);
+	boundingBox.y = roundf(boundingBox.y);
+	boundingBox.width = roundf(boundingBox.width);
+	boundingBox.height = roundf(boundingBox.height);
+
 	if (!appeared)
 	{
-		if (boundingBox.bottom() > 0)
+		if ((Game::instance->screenMode == ScreenMode::Vertical && boundingBox.bottom() > 0)
+			|| (Game::instance->screenMode == ScreenMode::Horizontal && boundingBox.x < Game::instance->graphics->videoWidth))
 		{
 			appeared = true;
+
+			if (unit->script)
+			{
+				auto func = unit->script->getFunction("onAppeared");
+
+				if (func.isFunction())
+				{
+					func.call(this);
+				}
+			}
 		}
 	}
 }

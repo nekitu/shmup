@@ -100,7 +100,7 @@ u32 singleUtf8ToUtf32(const char* glyph)
 
 bool loadJson(const std::string& fullFilename, Json::Value& root)
 {
-	printf("Loading %s\n", fullFilename.c_str());
+	printf("Loading \"%s\"\n", fullFilename.c_str());
 	Json::Reader reader;
 	auto json = readTextFile(fullFilename);
 	bool ok = reader.parse(json, root);
@@ -148,6 +148,26 @@ f32 rad2deg(f32 rad) { return rad * 180.f / M_PI; }
 f32 dir2deg(const Vec2& dir)
 {
 	return rad2deg(atan2f(dir.x, dir.y));
+}
+
+void replaceAll(std::string& source, const std::string& from, const std::string& to)
+{
+	std::string newString;
+	newString.reserve(source.length());
+
+	std::string::size_type lastPos = 0;
+	std::string::size_type findPos;
+
+	while (std::string::npos != (findPos = source.find(from, lastPos)))
+	{
+		newString.append(source, lastPos, findPos - lastPos);
+		newString += to;
+		lastPos = findPos + from.length();
+	}
+
+	newString += source.substr(lastPos);
+
+	source.swap(newString);
 }
 
 }

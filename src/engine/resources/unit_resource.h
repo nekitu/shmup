@@ -12,6 +12,13 @@
 
 namespace engine
 {
+enum class AutoDeleteType
+{
+	None,
+	OutOfScreen, // delete when out of screen, any side
+	EndOfScreen // delete when exits screen, depending on screen mode vertical/horizontal
+};
+
 struct SpriteInstanceResource
 {
 	struct SpriteResource* sprite = nullptr;
@@ -22,7 +29,8 @@ struct SpriteInstanceResource
 	bool collide = true;
 	bool visible = true;
 	bool shadow = true;
-	f32 damageScale = 1.0f;
+	f32 health = 100.0f;
+	f32 maxHealth = 100.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;
@@ -40,12 +48,8 @@ struct WeaponInstanceResource
 
 struct UnitLifeStage
 {
-	f32 healthPercent = 100;
-	std::string introAnimationName;
-	std::string outroAnimationName;
-	std::string introFunction; // called once
-	std::string outroFunction; // called once
-	std::string updateFunction; // called every frame
+	std::string name;
+	f32 triggerOnHealth = 100;
 };
 
 struct UnitResource : Resource
@@ -70,13 +74,13 @@ struct UnitResource : Resource
 	bool shadow = false;
 	Vec2 shadowOffset;
 	bool visible = true;
-	bool deleteOnOutOfScreen = false;
+	AutoDeleteType autoDeleteType = AutoDeleteType::EndOfScreen;
 	bool collide = true;
 	std::string rootSpriteInstanceName;
 	Json::Value controllersJson;
 	struct ScriptResource* script = nullptr;
 	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> spriteInstances;
-	std::vector<UnitLifeStage> stages;
+	std::vector<UnitLifeStage*> stages;
 	std::map<std::string /*weapon name*/, WeaponInstanceResource*> weapons;
 
 	virtual bool load(Json::Value& json) override;

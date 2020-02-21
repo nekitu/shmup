@@ -84,6 +84,7 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 	res->fileName = filename;
 	res->load(json);
 	resources[filename] = res;
+	sprites.push_back(res);
 
 	return res;
 }

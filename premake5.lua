@@ -45,6 +45,7 @@ postbuildcommands { "{MKDIR} bin" }
 postbuildcommands { "{COPY} \"%{cfg.linktarget.abspath}\" bin" }
 
 language "C++"
+cppdialect "C++17"
 
 -- We only support 64bit architectures
 architecture "x64"
@@ -64,7 +65,7 @@ libdirs { "%{prj.location}\\bin" }
 characterset ("Unicode")
 
 flags { "NoMinimalRebuild", "MultiProcessorCompile", "NoPCH" }
-cppdialect "C++11"
+
 filter { "system:windows" }
 	-- Disable some warnings
 	disablewarnings { 4251, 4006, 4221, 4204 }

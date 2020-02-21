@@ -106,13 +106,21 @@ static const char* blitRTPixelShaderSource =
 uniform sampler2D diffuseSampler;\
 \
 in vec2 outTEXCOORD;\
+flat in uint outColorMode;\
 in vec4 outCOLOR;\
 flat in uint outTEXINDEX;\
 out vec4 finalCOLOR;\
 \
 void main()\
 {\
-    finalCOLOR = texture2D(diffuseSampler, outTEXCOORD);\
+    vec4 texelColor = texture2D(diffuseSampler, outTEXCOORD);\
+	if (texelColor.a < 1) discard;\
+	if (outColorMode == 0U)\
+		finalCOLOR = texelColor + outCOLOR;\
+	else if (outColorMode == 1U)\
+		finalCOLOR = texelColor - outCOLOR;\
+	else if (outColorMode == 2U)\
+		finalCOLOR = texelColor * outCOLOR;\
 }\
 ";
 
@@ -191,7 +199,8 @@ void Graphics::blitRenderTarget()
 	Rect rc = { round((game->windowWidth - newWidth) / 2.0f),
 		round((game->windowHeight - newHeight) / 2.0f),
 		round(newWidth), round(newHeight) };
-	currentColor = 0;
+	currentColor = renderTargetColor;
+	currentColorMode = (u32)renderTargetColorMode;
 	drawQuad(rc, { 0, 1, 1, -1 });
 	endFrame();
 	glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);

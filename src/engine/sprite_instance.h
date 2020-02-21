@@ -22,7 +22,7 @@ struct SpriteInstance
 	bool collide = true;
 	bool shadow = false;
 	f32 health = 100;
-	f32 damageScale = 1.0f;
+	f32 maxHealth = 100;
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;

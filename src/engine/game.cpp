@@ -24,6 +24,7 @@
 #include "music_instance.h"
 #include "sound_instance.h"
 #include "weapon_instance.h"
+#include <filesystem>
 
 namespace engine
 {
@@ -130,7 +131,7 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_RIGHT] = InputControl::Player1_MoveRight;
 	mapSdlToControl[SDLK_UP] = InputControl::Player1_MoveUp;
 	mapSdlToControl[SDLK_DOWN] = InputControl::Player1_MoveDown;
-	mapSdlToControl[SDLK_RCTRL] = InputControl::Player1_Fire1;
+	mapSdlToControl[SDLK_LCTRL] = InputControl::Player1_Fire1;
 	mapSdlToControl[SDLK_RSHIFT] = InputControl::Player1_Fire2;
 	mapSdlToControl[SDLK_RALT] = InputControl::Player1_Fire3;
 	mapSdlToControl[SDLK_a] = InputControl::Player2_MoveLeft;
@@ -144,10 +145,11 @@ bool Game::initialize()
 
 	//TODO: remove
 	music = new MusicInstance();
-	//music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
-	//music->play();
+	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
+	music->play();
 
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen.lua");
+	preloadSprites();
 }
 
 void Game::shutdown()
@@ -259,6 +261,25 @@ void Game::mainLoop()
 		computeDeltaTime();
 		handleInputEvents();
 
+		if (currentMainScript)
+		if (currentMainScript->getFunction("onUpdate").isFunction())
+			currentMainScript->getFunction("onUpdate").call(deltaTime);
+
+		if (animatingCameraSpeed)
+		{
+			cameraSpeedAnimateTime += deltaTime * cameraSpeedAnimateSpeed;
+
+			if (cameraSpeedAnimateTime >= 1.0f)
+			{
+				animatingCameraSpeed = false;
+				cameraSpeed = newCameraSpeed;
+			}
+			else
+			{
+				cameraSpeed = lerp(oldCameraSpeed, newCameraSpeed, cameraSpeedAnimateTime);
+			}
+		}
+
 		cameraPosition.y += cameraSpeed * deltaTime;
 		cameraPosition.x = cameraParallaxOffset;
 
@@ -280,9 +301,9 @@ void Game::mainLoop()
 		newUnitInstances.clear();
 
 		UnitInstance::updateShadowToggle();
-		checkCollisions();
 
 		auto iter = unitInstances.begin();
+		checkCollisions();
 
 		while (iter != unitInstances.end())
 		{
@@ -290,11 +311,10 @@ void Game::mainLoop()
 			{
 				delete* iter;
 				iter = unitInstances.erase(iter);
+				continue;
 			}
-			else
-			{
-				iter++;
-			}
+
+			++iter;
 		}
 
 		// update and render the game graphics render target
@@ -310,12 +330,11 @@ void Game::mainLoop()
 		{
 			if (currentMainScript->getFunction("onRender").isFunction())
 				currentMainScript->getFunction("onRender").call(0);
-			if (currentMainScript->getFunction("onUpdate").isFunction())
-				currentMainScript->getFunction("onUpdate").call(deltaTime);
 		}
 
 		static FontResource* fnt = nullptr;
 
+		//TODO: remove
 		if (!fnt) fnt = resourceLoader->loadFont("fonts/default");
 		static f32 time = 0;
 
@@ -325,7 +344,6 @@ void Game::mainLoop()
 		graphics->currentColorMode = (u32)ColorMode::Add;
 		graphics->currentColor = Color::green.getRgba();
 		graphics->drawText(fnt, { 90, 12 }, "OOOOOOO");
-
 
 		if (time > 0.2 && time < 1)
 		{
@@ -343,6 +361,7 @@ void Game::mainLoop()
 			graphics->currentColor = Color::black.getRgba();
 			graphics->drawText(fnt, { 140, 25 }, "INSERT COIN");
 		}
+
 		time += deltaTime;
 		if (time > 1) time = 0;
 
@@ -432,11 +451,66 @@ void Game::checkCollisions()
 	}
 }
 
+void Game::preloadSprites()
+{
+	printf("Preloading sprites...\n");
+
+	auto recursiveSearch = [](const std::string& currentPath)
+	{
+		static void (*recursiveSearchIn)(const std::string&) = [](const std::string& currentPath)
+		{
+			for (auto& p : std::filesystem::directory_iterator(currentPath))
+			{
+				auto path = p.path();
+
+				if (p.is_regular_file())
+				{
+					if (path.extension() == ".json")
+					{
+						path.replace_extension("");
+						auto str = path.relative_path().u8string();
+						std::replace(str.begin(), str.end(), '\\', '/');
+						replaceAll(str, Game::instance->dataRoot, "");
+					Game:instance->resourceLoader->loadSprite(str);
+					}
+				}
+				else if (p.is_directory())
+				{
+					recursiveSearchIn(path.relative_path().u8string());
+				}
+			}
+		};
+
+		recursiveSearchIn(currentPath);
+	};
+
+	recursiveSearch(dataRoot + "sprites");
+
+	printf("Packing atlas sprites...\n");
+	graphics->atlas->pack();
+
+	printf("Computing sprite params after packing...\n");
+
+	for (auto sprite : resourceLoader->sprites)
+	{
+		sprite->computeParamsAfterAtlasGeneration();
+	}
+}
+
 void Game::computeDeltaTime()
 {
 	f32 ticks = SDL_GetTicks();
 	deltaTime = (ticks - lastTime) / 1000.0f;
 	lastTime = ticks;
+}
+
+void Game::animateCameraSpeed(f32 towardsSpeed, f32 animSpeed)
+{
+	cameraSpeedAnimateSpeed = animSpeed;
+	cameraSpeedAnimateTime = 0;
+	animatingCameraSpeed = true;
+	oldCameraSpeed = cameraSpeed;
+	newCameraSpeed = towardsSpeed;
 }
 
 bool Game::isPlayerMoveLeft(u32 playerIndex)

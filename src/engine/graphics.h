@@ -5,6 +5,7 @@
 #include "vertex_buffer.h"
 #include "rect.h"
 #include "gpu_program.h"
+#include "resources/sprite_resource.h"
 
 namespace engine
 {
@@ -33,6 +34,8 @@ struct Graphics
 	u32 currentColor = 0;
 	u32 currentColorMode = 0;
 	u32 atlasTextureIndex = 0;
+	u32 renderTargetColor = 0;
+	ColorMode renderTargetColorMode = ColorMode::Add;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;

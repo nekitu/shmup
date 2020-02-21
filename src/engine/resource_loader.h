@@ -10,6 +10,7 @@ struct ResourceLoader
 	std::string root = "../data/";
 	std::unordered_map<std::string/*filename*/, struct Resource*> resources;
 	std::vector<struct ScriptResource*> scripts;
+	std::vector<struct SpriteResource*> sprites;
 	struct ImageAtlas* atlas = nullptr;
 
 	void unload(struct Resource* res);

@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include "vec2.h"
+#include "utils.h"
 #include "resources/level_resource.h"
 
 namespace engine
@@ -36,13 +37,21 @@ enum class InputControl
 	Count
 };
 
+enum class ScreenMode
+{
+	Vertical,
+	Horizontal
+};
+
 struct Game
 {
 	static const int maxPlayerCount = 1;
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
+	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
 	bool vSync = true;
+	std::string dataRoot = "../data/";
 	bool exitGame = false;
 	SDL_Window* window = nullptr;
 	SDL_GLContext glContext = 0;
@@ -50,6 +59,9 @@ struct Game
 	struct ResourceLoader* resourceLoader = nullptr;
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
+	u32 score = 0;
+	u32 credit = 0;
+	bool playerActive[maxPlayerCount] = {false};
 	std::vector<UnitInstance*> unitInstances;
 	std::vector<UnitInstance*> newUnitInstances;
 	UnitInstance* players[maxPlayerCount];
@@ -61,9 +73,14 @@ struct Game
 	struct ScriptResource* currentMainScript = nullptr;
 	static Game* instance;
 	Vec2 cameraPosition;
+	Vec2 cameraPositionOffset;
 	f32 cameraSpeed = 30;
 	f32 cameraParallaxOffset = 0;
 	std::vector<Layer> layers;
+	f32 cameraSpeedAnimateSpeed = 1.0f;
+	bool animatingCameraSpeed = false;
+	f32 cameraSpeedAnimateTime = 0;
+	f32 oldCameraSpeed = 0, newCameraSpeed = 0;
 
 	Game();
 	~Game();
@@ -73,8 +90,10 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
+	void preloadSprites();
 	void mainLoop();
 	void computeDeltaTime();
+	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
 	bool isPlayerMoveLeft(u32 playerIndex);
 	bool isPlayerMoveRight(u32 playerIndex);

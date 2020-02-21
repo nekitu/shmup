@@ -20,29 +20,127 @@ UnitController* UnitController::create(const std::string& ctrlerName, UnitInstan
 		controller->unitInstance = unitInst;
 		return controller;
 	}
-
-	if (ctrlerName == "Background")
+	else if (ctrlerName == "Background")
 	{
 		auto controller = new BackgroundController();
 		controller->unitInstance = unitInst;
 		return controller;
 	}
-
-	if (ctrlerName == "Player")
+	else if (ctrlerName == "Player")
 	{
 		auto controller = new PlayerController(Game::instance);
 		controller->unitInstance = unitInst;
 		return controller;
 	}
-
-	if (ctrlerName == "Follow")
+	else if (ctrlerName == "Follow")
 	{
 		auto controller = new FollowController();
 		controller->unitInstance = unitInst;
 		return controller;
 	}
+	else if (ctrlerName == "ScreenFx")
+	{
+		auto controller = new ScreenFxController();
+		controller->unitInstance = unitInst;
+		return controller;
+	}
 
 	return nullptr;
+}
+
+void ScreenFxController::shakeCamera(const Vec2& force, f32 duration, u32 count)
+{
+	doingShake = true;
+	shakeTimer = 0;
+	shakeForce = force;
+	shakeCount = shakeCounter = count;
+	shakeDuration = duration;
+}
+
+void ScreenFxController::fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter)
+{
+	doingFade = true;
+	fadeTimer = 0;
+	fadeTimerDir = 1;
+	fadeColor = color;
+	fadeDuration = duration;
+	fadeColorMode = colorMode;
+	fadeRevertBackAfter = revertBackAfter;
+}
+
+void ScreenFxController::update(struct Game* game)
+{
+	if (doingShake)
+	{
+		f32 slice = shakeDuration / (f32)shakeCount;
+		shakeTimer += game->deltaTime;
+
+		if (shakeTimer >= slice && !shakeCounter)
+		{
+			doingShake = false;
+			game->cameraPositionOffset.clear();
+		}
+		else
+		if (shakeTimer >= slice && shakeCounter)
+		{
+			shakeTimer = 0;
+			f32 x = shakeForce.x * (f32)shakeCounter / (f32)shakeCount;
+			f32 y = shakeForce.y * (f32)shakeCounter / (f32)shakeCount;
+			game->cameraPositionOffset.x = randomFloat(-x, x);
+			game->cameraPositionOffset.y = randomFloat(-y, y);
+			shakeCounter--;
+		}
+	}
+
+	if (doingFade)
+	{
+		fadeTimer += game->deltaTime * fadeTimerDir * 1.0 / fadeDuration;
+
+		if (fadeTimer >= 1 && fadeTimerDir > 0)
+		{
+			if (fadeRevertBackAfter)
+			{
+				fadeTimer = 1;
+				fadeTimerDir = -1;
+				fadeRevertBackAfter = false;
+			}
+			else
+			{
+				doingFade = false;
+				fadeTimer = 1;
+				game->graphics->renderTargetColor = fadeColor.getRgba();
+			}
+		}
+		else if (fadeTimerDir < 0 && fadeTimer < 0)
+		{
+			doingFade = false;
+			game->graphics->renderTargetColor = Color(0, 0, 0, 1).getRgba();
+			game->graphics->renderTargetColorMode = ColorMode::Add;
+		}
+		else
+		{
+			Color c = fadeColor;
+
+			if (fadeColorMode == ColorMode::Add
+				|| fadeColorMode == ColorMode::Sub)
+			{
+				c.r *= fadeTimer;
+				c.g *= fadeTimer;
+				c.b *= fadeTimer;
+				c.a = 1;
+			}
+			else if (fadeColorMode == ColorMode::Mul)
+			{
+				c.r = 1.0 + fadeTimer * (c.r - 1.0f);
+				c.g = 1.0 + fadeTimer * (c.g - 1.0f);
+				c.b = 1.0 + fadeTimer * (c.b - 1.0f);
+				c.a = 1;
+			}
+
+			game->graphics->renderTargetColor = c.getRgba();
+			game->graphics->renderTargetColorMode = fadeColorMode;
+		}
+	}
 }
 
 void BackgroundController::update(struct Game* game)

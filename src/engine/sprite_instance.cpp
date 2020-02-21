@@ -52,7 +52,7 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 	hitColor = res->hitColor;
 	visible = res->visible;
 	shadow = res->shadow;
-	damageScale = res->damageScale;
+	maxHealth = health = res->health;
 	animationFrame = 0;
 	animationRepeatCount = 0;
 	animationDirection = 1;
@@ -174,8 +174,8 @@ void SpriteInstance::play()
 
 void SpriteInstance::hit(f32 hitDamage)
 {
-	health -= hitDamage * damageScale;
-	clampValue(health, 0, 100);
+	health -= hitDamage;
+	clampValue(health, 0, maxHealth);
 	if (hitFlashActive) return;
 	hitFlashActive = true;
 	hitOldColorMode = colorMode;
@@ -190,7 +190,7 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		return false;
 
 	Rect partRc;
-
+	
 	partRc.x = std::fmaxf(screenRect.x, other->screenRect.x);
 	partRc.y = std::fmaxf(screenRect.y, other->screenRect.y);
 	partRc.width  = floorf(fminf(screenRect.x + screenRect.width,  other->screenRect.x + other->screenRect.width) - partRc.x);
@@ -208,8 +208,8 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		f32 step = 1.0f / spr->transform.scale;
 		f32 srcx = 0;
 		f32 srcy = 0;
-		f32 rcx = round(frmRc.width * (localRc.x / spr->screenRect.width));
-		f32 rcy = round(frmRc.height * (localRc.y / spr->screenRect.height));
+		f32 rcx = floorf(frmRc.width * (localRc.x / spr->screenRect.width));
+		f32 rcy = floorf(frmRc.height * (localRc.y / spr->screenRect.height));
 
 		for (int y = 0; y < localRc.height; y++)
 		{
@@ -217,7 +217,8 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 
 			for (int x = 0; x < localRc.width; x++)
 			{
-				u8* px = (u8*)&spr->sprite->image->imageData[((u32)frmRc.y + (u32)srcy + (u32)rcy) * spr->sprite->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx];
+				u32 offs = ((u32)frmRc.y + srcy + (u32)rcy) * spr->sprite->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx;
+				u8* px = (u8*)&spr->sprite->image->imageData[offs];
 				pixels[i++] = px[3];
 				srcx += step;
 			}
@@ -230,6 +231,15 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 
 	auto r1 = Rect(partRc.x - screenRect.x, partRc.y - screenRect.y, partRc.width, partRc.height);
 	auto r2 = Rect(partRc.x - other->screenRect.x, partRc.y - other->screenRect.y, partRc.width, partRc.height);
+	r1.x = floorf(r1.x);
+	r1.y = floorf(r1.y);
+	r1.width = floorf(r1.width);
+	r1.height = floorf(r1.height);
+	r2.x = floorf(r2.x);
+	r2.y = floorf(r2.y);
+	r2.width = floorf(r2.width);
+	r2.height = floorf(r2.height);
+
 	std::vector<u8> pixels1 = getRectPixels(this, r1);
 	std::vector<u8> pixels2 = getRectPixels(other, r2);
 

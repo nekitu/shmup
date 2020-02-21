@@ -1,10 +1,29 @@
 local M = {}
 
+local function onStageChange(unitInst, old, new)
+	print("Change stage to "..new .. " from " .. old)
+	if new == "stage0" then
+		print("ACTIVATING MAGEBALAST")
+		unitInst:findWeapon("gun1").active = true
+	end
+	if new == "stage1" then
+		unitInst:findWeapon("gun2").active = true
+
+	print("ACTIVATING LAST RESORT SWORD") end
+end
+
+local function onStageUpdate(unitInst, name)
+	--print("Updating stage " .. name .. " health "..tostring(unitInst.health))
+end
+
 local function onUpdate(unitInst)
-  --print("Updating "..unitInst.name.."  a:"..tostring(unitInst.rootSpriteInstance.transform.scale))
-  --unitInst.rootSpriteInstance.transform.rotation = unitInst.rootSpriteInstance.transform.rotation + 1
-  --unitInst.rootSpriteInstance.transform.scale = 5
-  unitInst:fire()
+	if unitInst.health == 0 then
+        unitInst.deleteMeNow = true
+        local uinst = game.spawn("units/turret_expl", "expl2", unitInst.rootSpriteInstance.transform.position)
+        uinst.layerIndex = unitInst.layerIndex
+		game.animateCameraSpeed(110, 0.6)
+		game.shakeCamera(game.player1, "screenFx", Vec2(10, 10), 3, 200)
+	end
 end
 
 function dump(o)
@@ -29,11 +48,17 @@ local function onCollide(unitInst1, unitInst2)
   if unitInst1:checkPixelCollision(unitInst2, cols) then
   	--print("COLS "..tostring(#cols)) dump(cols)
   unitInst1.rootSpriteInstance:hit(1)
-
 	end
+end
+
+local function onAppeared(unitInst)
+	print("Appeared...")
+	game.animateCameraSpeed(0, 0.1)
 end
 
 M.onCollide = onCollide
 M.onUpdate = onUpdate
+M.onStageChange = onStageChange
+M.onAppeared = onAppeared
 
 return M

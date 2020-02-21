@@ -1,34 +1,26 @@
 {
   "name": "UltraBoss9000",
   "type": "Enemy",
-  "speed": -80.0,
+  "speed": 0.0,
 	"controllers":
 	[
 		{ "name": "main", "class": "SimpleEnemy" }
 	],
-  "healthPoints": 1000,
-  "deleteOnOutOfScreen": false, 
   "script": "scripts/boss.lua",
   "rootSpriteInstance": "body",
   "stages":
   [
     {
-      "healthPercent": 100,
-      "introAnimation": "stage0_intro",
-      "outroAnimation": "stage0_outro",
-      "updateFunction": "stage0Update"
+        "name":"stage0",
+        "triggerOnHealth": 100
     },
     {
-      "healthPercent": 50,
-      "introAnimation": "stage1_intro",
-      "outroAnimation": "stage1_outro",
-      "updateFunction": "stage0Update"
+        "name":"stage1",
+        "triggerOnHealth": 50
     },
     {
-      "healthPercent": 0,
-      "introAnimation": "stage2_intro",
-      "outroAnimation": "stage2_outro",
-      "updateFunction": "stage0Update"
+        "name":"stage2",
+        "triggerOnHealth": 0
     }
   ],
   "animations":
@@ -65,13 +57,19 @@
           "position": "0 0",
           "weapon": "weapons/boss",
           "active": false
+        },
+        "gun2":
+        {
+          "position": "0 0",
+          "weapon": "weapons/boss2",
+          "active": false
         }
       }
     },
     {
       "name": "turret",
-      "sprite": "sprites/fire",
-      "position": "0 40",
+      "sprite": "sprites/fire2",
+      "position": "0 60",
       "scale": 0.4,
       "rotation": 0,
       "visible": false,

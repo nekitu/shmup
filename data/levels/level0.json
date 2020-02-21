@@ -3,7 +3,8 @@
 [
 	{ "name": "background1", "parallaxScale": 1},
 	{ "name": "background2", "parallaxScale": 2},
-	{ "name": "foreground", "parallaxScale": 3}
+	{ "name": "background3", "parallaxScale": 3},
+	{ "name": "foreground", "parallaxScale": 1}
 ],
 "unitInstances":
 [
@@ -45,9 +46,9 @@
 	},
 	{
 		"name": "Some1",
-		"layerIndex": 2,
+		"layerIndex": 3,
 		"unit": "units/boss",
-		"position": "180 0"
+		"position": "180 -510"
 	}
 	]
 }

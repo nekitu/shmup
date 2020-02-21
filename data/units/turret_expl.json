@@ -2,7 +2,7 @@
     "name": "TurretExpl",
     "type": "Enemy",
     "speed": 0,
-    "deleteOnOutOfScreen": true,
+    "autoDeleteType": "EndOfScreen",
     "rootSpriteInstance": "body",
     "script":"scripts/turret_expl.lua",
     "spriteInstances":

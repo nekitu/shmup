@@ -12,19 +12,26 @@ namespace engine
 		f32 time = 0;
 		f32 triggerTime = 1.0f;
 		f32 speed = 1.0f;
-		bool triggered = false;
+		bool triggered = false, ongoing = false;
 
 		bool update(f32 deltaTime)
 		{
 			if (triggered) return true;
+			if (!ongoing) return false;
 
 			time += deltaTime * speed;
 
-			if (time >= triggerTime) triggered = true;
+			if (time >= triggerTime)
+			{
+				triggered = true;
+				ongoing = false;
+			}
 
 			return triggered;
 		}
+
 		void reset() { triggered = false; time = 0; }
+		void start() { ongoing = true; }
 	};
 	
 	bool clampValue(f32& value, f32 minVal, f32 maxVal);
@@ -41,4 +48,5 @@ namespace engine
 	f32 deg2rad(f32 deg);
 	f32 rad2deg(f32 rad);
 	f32 dir2deg(const Vec2& dir);
+	void replaceAll(std::string& source, const std::string& from, const std::string& to);
 }

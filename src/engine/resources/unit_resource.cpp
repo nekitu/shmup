@@ -41,24 +41,25 @@ bool UnitResource::load(Json::Value& json)
 	shadowScale = json.get("shadowScale", shadowScale).asFloat();
 	shadow = json.get("shadow", shadow).asBool();
 	shadowOffset.parse(json.get("shadowOffset", "0 0").asString());
-	deleteOnOutOfScreen = json.get("deleteOnOutOfScreen", deleteOnOutOfScreen).asBool();
+	auto autoDeleteTypeStr = json.get("autoDeleteType", "EndOfScreen").asString();
+
+	if (autoDeleteTypeStr == "None") autoDeleteType = AutoDeleteType::None;
+	if (autoDeleteTypeStr == "OutOfScreen") autoDeleteType = AutoDeleteType::OutOfScreen;
+	if (autoDeleteTypeStr == "EndOfScreen") autoDeleteType = AutoDeleteType::EndOfScreen;
 
 	// load controllers json
 	controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));
 
 	// load stages
 	auto stagesJson = json.get("stages", Json::Value(Json::ValueType::arrayValue));
+
 	for (u32 i = 0; i < stagesJson.size(); i++)
 	{
-		UnitLifeStage stage;
+		UnitLifeStage* stage = new UnitLifeStage();
 		auto& stageJson = stagesJson[i];
 
-		stage.healthPercent = stageJson.get("healthPercent", 100.0f).asFloat();
-		stage.introAnimationName = stageJson.get("introAnimation", "").asString();
-		stage.outroAnimationName = stageJson.get("outroAnimation", "").asString();
-		stage.introFunction = stageJson.get("introFunction", "").asString();
-		stage.outroFunction = stageJson.get("outroFunction", "").asString();
-		stage.updateFunction = stageJson.get("updateFunction", "").asString();
+		stage->name = stageJson.get("name", "").asString();
+		stage->triggerOnHealth = stageJson.get("triggerOnHealth", 100.0f).asFloat();
 		stages.push_back(stage);
 	}
 
@@ -83,7 +84,8 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->collide = sprJson.get("collide", true).asBool();
 		sprInst->shadow = sprJson.get("shadow", sprInst->shadow).asBool();
 		sprInst->visible = sprJson.get("visible", true).asBool();
-		sprInst->damageScale = sprJson.get("damageScale", 1.0f).asFloat();
+		sprInst->health = sprJson.get("health", 100.0f).asFloat();
+		sprInst->maxHealth = sprJson.get("maxHealth", 100.0f).asFloat();
 		sprInst->color.parse(sprJson.get("color", sprInst->color.toString()).asString());
 		auto colMode = json.get("colorMode", "Add").asString();
 

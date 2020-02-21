@@ -1,7 +1,7 @@
 {
     "name": "SmallSpark",
     "type": "PlayerProjectile",
-    "deleteOnOutOfScreen": true,
+    "autoDeleteType": "OutOfScreen",
     "script": "scripts/small_spark.lua",
     "rootSpriteInstance": "body",
     "spriteInstances":

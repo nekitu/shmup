@@ -1,6 +1,6 @@
 {
-	"fireRate" : 50,
-	"fireRays" : 3,
+	"fireRate" : 30,
+	"fireRays" : 1,
     "fireRaysAngle" : 30,
     "direction" : "0 -1",
     "offsetRadius": 0,

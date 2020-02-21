@@ -2,6 +2,8 @@
 #include <string>
 #include "json/value.h"
 #include "vec2.h"
+#include "color.h"
+#include "resources/sprite_resource.h"
 
 namespace engine
 {
@@ -21,6 +23,27 @@ struct BackgroundController : UnitController
 {
 	void update(struct Game* game) override;
 	UnitController* createNew() { return new BackgroundController(); }
+};
+
+struct ScreenFxController : UnitController
+{
+	Vec2 shakeForce;
+	f32 shakeDuration, shakeTimer = 0;
+	u32 shakeCounter;
+	u32 shakeCount;
+	bool doingShake = false;
+
+	f32 fadeDuration, fadeTimer = 0;
+	Color fadeColor;
+	ColorMode fadeColorMode;
+	f32 fadeTimerDir = 1;
+	bool fadeRevertBackAfter = false;
+	bool doingFade = false;
+
+	void shakeCamera(const Vec2& force, f32 duration, u32 count);
+	void fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter);
+	void update(struct Game* game) override;
+	UnitController* createNew() { return new ScreenFxController(); }
 };
 
 struct SimpleEnemyController : UnitController

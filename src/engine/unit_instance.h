@@ -11,6 +11,7 @@ struct SpriteInstanceCollision
 	struct SpriteInstance* b = nullptr;
 	Vec2 collisionCenter;
 };
+
 struct UnitInstance
 {
 	// members related to unit resource instantiation
@@ -30,7 +31,8 @@ struct UnitInstance
 	bool visible = true;
 	bool appeared = false;
 	f32 speed = 10.0f;
-	f32 health = 100.0f;
+	f32 health = 100.0f; // auto computed, always a percentage
+	f32 maxHealth = 100.0f; // auto computed from sprite instances health
 	f32 age = 0;
 	u32 stageIndex = 0;
 	bool collide = true;
@@ -39,7 +41,8 @@ struct UnitInstance
 	std::map<std::string /*name*/, struct UnitController*> controllers;
 	struct ScriptResource* script = nullptr;
 	struct SpriteInstance* rootSpriteInstance = nullptr;
-
+	struct UnitLifeStage* currentStage = nullptr;
+	std::vector<UnitLifeStage*> triggeredStages;
 	bool deleteMeNow = false;
 
 	UnitInstance();

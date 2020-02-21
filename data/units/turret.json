@@ -7,28 +7,22 @@
 		{ "name": "main", "class": "SimpleEnemy" }
 	],
   "healthPoints": 1000,
-  "deleteOnOutOfScreen": true, 
+  "autoDeleteType": "EndOfScreen",
   "script": "scripts/turret.lua",
   "rootSpriteInstance": "body",
   "stages":
   [
     {
-      "healthPercent": 100,
-      "introAnimation": "stage0_intro",
-      "outroAnimation": "stage0_outro",
-      "updateFunction": "stage0Update"
+      "name":"stage0",
+      "triggerOnHealth": 100
     },
     {
-      "healthPercent": 50,
-      "introAnimation": "stage1_intro",
-      "outroAnimation": "stage1_outro",
-      "updateFunction": "stage0Update"
+        "name":"stage1",
+        "triggerOnHealth": 50
     },
     {
-      "healthPercent": 0,
-      "introAnimation": "stage2_intro",
-      "outroAnimation": "stage2_outro",
-      "updateFunction": "stage0Update"
+        "name":"stage2",
+        "triggerOnHealth": 10
     }
   ],
   "animations":
@@ -53,7 +47,6 @@
       "sprite": "sprites/gun",
       "position": "0 0",
       "scale": 1.0,
-      "damageScale": 0.1,
       "rotation": 0,
       "horizontalFlip": false,
       "verticalFlip": false,

@@ -53,6 +53,7 @@ struct SpriteResource : Resource
 	Rect getFrameUvRect(u32 frame);
 	Rect getFramePixelRect(u32 frame);
 	Rect getSheetFramePixelRect(u32 frame);
+	void computeParamsAfterAtlasGeneration();
 	bool load(Json::Value& json) override;
 };
 
