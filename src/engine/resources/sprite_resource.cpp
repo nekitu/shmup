@@ -79,10 +79,10 @@ Rect SpriteResource::getSheetFramePixelRect(u32 frame)
 	u32 col = frame % columns;
 	u32 row = frame / columns;
 
-	rc.x = ceilf(frameWidth * col);
-	rc.y = ceilf(frameHeight * row);
-	rc.width = ceilf(frameWidth);
-	rc.height = ceilf(frameHeight);
+	rc.x = floorf(frameWidth * col);
+	rc.y = floorf(frameHeight * row);
+	rc.width = floorf(frameWidth);
+	rc.height = floorf(frameHeight);
 
 	return rc;
 }

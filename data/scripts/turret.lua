@@ -8,7 +8,7 @@ local function onUpdate(unitInst)
     local w = unitInst:findWeapon("gun1")
 
     if unitInst.appeared then
-        w.active = true
+        --w.active = true
     end
 
     unitInst.rootSpriteInstance:setFrameAnimationFromAngle(w.angle - 180)

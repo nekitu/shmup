@@ -262,12 +262,17 @@ f32 SpriteInstance::getFrameFromAngle(f32 angle)
 
 void SpriteInstance::setFrameAnimationFromAngle(f32 angle)
 {
+	if (!sprite->rotationAnimCount) return;
+
 	int idx = (f32)(sprite->rotationAnimCount - 1)* fabs(angle) / 360.0f;
 	char buf[10] = { 0 };
 	itoa(idx, buf, 10);
 	f32 relFrame = frameAnimation ? animationFrame - frameAnimation->startFrame : 0;
 	setFrameAnimation(sprite->rotationAnimPrefix + buf);
-	animationFrame = frameAnimation->startFrame + relFrame;
+	if (frameAnimation)
+	{
+		animationFrame = frameAnimation->startFrame + relFrame;
+	}
 }
 
 }

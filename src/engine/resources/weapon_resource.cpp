@@ -8,6 +8,7 @@ bool WeaponResource::load(Json::Value& json)
 	script = loader->loadScript(json.get("script", "").asString());
 	projectileUnit = loader->loadUnit(json.get("projectileUnit", "").asString());
 	params.fireDamage = json.get("fireDamage", params.fireDamage).asFloat();
+	params.beamWidth = json.get("beamWidth", params.beamWidth).asFloat();
 	params.fireRate = json.get("fireRate", params.fireRate).asFloat();
 	params.fireRays = json.get("fireRays", params.fireRays).asInt();
 	params.fireRaysAngle = json.get("fireRaysAngle", params.fireRaysAngle).asFloat();
@@ -20,7 +21,11 @@ bool WeaponResource::load(Json::Value& json)
 	params.offset.parse(json.get("offset", "0 0").asString());
 	params.position.parse(json.get("position", "0 0").asString());
 	params.offsetRadius = json.get("offsetRadius", 0.0f).asFloat();
-	params.type = (Type)json.get("type", 0).asInt();
+	auto typeStr = json.get("type", "Projectile").asString();
+
+	if (typeStr == "Projectile") params.type = Type::Projectile;
+	else if (typeStr == "Beam") params.type = Type::Beam;
+
 	params.autoAim = json.get("autoAim", params.autoAim).asBool();
 
 	return true;

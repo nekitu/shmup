@@ -451,6 +451,115 @@ void Game::checkCollisions()
 	}
 }
 
+BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 width)
+{
+	BeamCollisionInfo closest;
+	Rect rc;
+
+	closest.distance = FLT_MAX;
+
+	if (screenMode == ScreenMode::Vertical)
+	{
+		rc.set(pos.x - width / 2, 0, width, pos.y);
+	}
+	else if (screenMode == ScreenMode::Horizontal)
+	{
+		rc.set(pos.x, pos.y - width / 2, graphics->videoWidth - pos.x, width);
+	}
+
+	for (auto unitInst : unitInstances)
+	{
+		if (unitInst == inst) continue;
+		if (!unitInst->collide) continue;
+
+		for (auto sprInst2 : unitInst->spriteInstances)
+		{
+			if (sprInst == sprInst2) continue;
+			if (!sprInst2->collide) continue;
+			if (sprInst2->screenRect.y > pos.y) continue;
+
+			if (sprInst2->screenRect.overlaps(rc))
+			if (screenMode == ScreenMode::Vertical)
+			{
+				Vec2 col;
+
+				col.x = pos.x;
+				col.y = sprInst2->screenRect.y;
+
+				f32 relativeX = col.x - sprInst2->screenRect.x;
+
+				if (relativeX < 0 || relativeX >= sprInst2->screenRect.width) continue;
+
+				Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
+
+				bool pixelCollided = false;
+
+				for (int y = sprInst2->sprite->frameHeight - 1; y >= 0 ; y--)
+				{
+					u8* p = (u8*)&sprInst2->sprite->image->imageData[
+					(u32)(y + frmRc.y) * sprInst2->sprite->image->width
+					+ (u32)(relativeX + frmRc.x)];
+
+					if (p[3] == 0xff)
+					{
+						pixelCollided = true;
+						col.y += y;
+						break;
+					}
+				}
+
+				if (pixelCollided)
+				{
+					f32 dist = pos.y - col.y;
+
+					if (dist < closest.distance)
+					{
+						closest.valid = true;
+						closest.distance = dist;
+						closest.point = col;
+						closest.unitInst = inst;
+						closest.spriteInst = sprInst2;
+					}
+				}
+			}
+		}
+	}
+
+	return closest;
+}
+
+Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
+{
+	Vec2 newPos = pos;
+
+	newPos.x += (cameraPosition.x + cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
+	newPos.y += (cameraPosition.y + cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+
+	return newPos;
+}
+
+Vec2 Game::screenToWorld(const Vec2& pos, u32 layerIndex)
+{
+	Vec2 newPos = pos;
+
+	newPos.x -= (cameraPosition.x + cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
+	newPos.y -= (cameraPosition.y + cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+
+	return newPos;
+}
+
+Rect Game::worldToScreen(const Rect& rc, u32 layerIndex)
+{
+	Vec2 pos = worldToScreen({ rc.x, rc.y }, layerIndex);
+	return { pos.x, pos.y, rc.width, rc.height };
+}
+
+Rect Game::screenToWorld(const Rect& rc, u32 layerIndex)
+{
+	Vec2 pos = screenToWorld({ rc.x, rc.y }, layerIndex);
+	return { pos.x, pos.y, rc.width, rc.height };
+}
+
 void Game::preloadSprites()
 {
 	printf("Preloading sprites...\n");

@@ -367,9 +367,10 @@ void UnitInstance::computeBoundingBox()
 			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
 		}
 
-		boundingBox.x += (Game::instance->cameraPosition.x + Game::instance->cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
-		boundingBox.y += (Game::instance->cameraPosition.y + Game::instance->cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
+
 		rootSpriteInstance->screenRect = boundingBox;
+
 		rootSpriteInstance->screenRect.x = roundf(rootSpriteInstance->screenRect.x);
 		rootSpriteInstance->screenRect.y = roundf(rootSpriteInstance->screenRect.y);
 		rootSpriteInstance->screenRect.width = roundf(rootSpriteInstance->screenRect.width);
@@ -400,8 +401,8 @@ void UnitInstance::computeBoundingBox()
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
-		pos.x += (Game::instance->cameraPosition.x + Game::instance->cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
-		pos.y += (Game::instance->cameraPosition.y + Game::instance->cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+
+		pos = Game::instance->worldToScreen(pos, layerIndex);
 
 		Rect spriteRc =
 		{
@@ -580,6 +581,11 @@ void UnitInstance::render(Graphics* gfx)
 				gfx->drawQuad(sprInst->screenRect, sprInst->uvRect);
 			}
 		}
+	}
+
+	for (auto weapon : weapons)
+	{
+		weapon.second->render();
 	}
 }
 

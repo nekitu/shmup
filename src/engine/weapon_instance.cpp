@@ -4,8 +4,10 @@
 #include "sprite_instance.h"
 #include "unit_controller.h"
 #include "utils.h"
+#include "graphics.h"
 #include "resources/script_resource.h"
 #include <float.h>
+#include "resource_loader.h"
 
 namespace engine
 {
@@ -45,6 +47,8 @@ void WeaponInstance::fire()
 
 void WeaponInstance::spawnProjectiles(Game* game)
 {
+	if (params.type == WeaponResource::Type::Beam) return;
+
 	if (params.autoAim)
 	{
 		Vec2 pos = attachTo->screenRect.center();
@@ -101,6 +105,24 @@ void WeaponInstance::update(struct Game* game)
 	if (!active)
 		return;
 
+	if (attachTo && weaponResource->params.type == WeaponResource::Type::Beam)
+	{
+		Vec2 pos = attachTo->transform.position;
+
+		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->notRelativeToRoot)
+			pos += parentUnitInstance->rootSpriteInstance->transform.position;
+
+		pos = Game::instance->worldToScreen(pos, parentUnitInstance->layerIndex);
+
+		// line to sprite check collision
+		BeamCollisionInfo bci = game->checkBeamIntersection(parentUnitInstance, attachTo, pos, params.beamWidth);
+
+		dbgBeamStartPos = pos;
+		dbgBeamCol = bci;
+
+		return;
+	}
+
     fireInterval = 1.0f / params.fireRate;
     fireTimer += game->deltaTime;
 
@@ -118,6 +140,21 @@ void WeaponInstance::update(struct Game* game)
 		{
 			func.call(this);
 		}
+	}
+}
+
+void WeaponInstance::render()
+{
+
+	if (params.type == WeaponResource::Type::Beam)
+	{
+		auto spr = Game::instance->resourceLoader->loadSprite("sprites/black");
+		Game::instance->graphics->currentColor = 0xffff;
+		Game::instance->graphics->currentColorMode = (u32)ColorMode::Add;
+
+		if (!dbgBeamCol.valid) dbgBeamCol.distance = dbgBeamStartPos.y;
+
+		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - params.beamWidth / 2, dbgBeamStartPos.y, params.beamWidth, -dbgBeamCol.distance }, spr->getFrameUvRect(0));
 	}
 }
 

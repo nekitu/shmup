@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include "vec2.h"
+#include "rect.h"
 #include "utils.h"
 #include "resources/level_resource.h"
 
@@ -43,6 +44,15 @@ enum class ScreenMode
 	Horizontal
 };
 
+struct BeamCollisionInfo
+{
+	bool valid = false;
+	Vec2 point;
+	f32 distance = 0;
+	struct UnitInstance* unitInst = nullptr;
+	struct SpriteInstance* spriteInst = nullptr;
+};
+
 struct Game
 {
 	static const int maxPlayerCount = 1;
@@ -74,7 +84,7 @@ struct Game
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset;
-	f32 cameraSpeed = 30;
+	f32 cameraSpeed = 11;
 	f32 cameraParallaxOffset = 0;
 	std::vector<Layer> layers;
 	f32 cameraSpeedAnimateSpeed = 1.0f;
@@ -90,6 +100,11 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
+	BeamCollisionInfo checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 width);
+	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
+	Vec2 screenToWorld(const Vec2& pos, u32 layerIndex);
+	Rect worldToScreen(const Rect& rc, u32 layerIndex);
+	Rect screenToWorld(const Rect& rc, u32 layerIndex);
 	void preloadSprites();
 	void mainLoop();
 	void computeDeltaTime();

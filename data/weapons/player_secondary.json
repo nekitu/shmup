@@ -1,6 +1,8 @@
 {
 	"fireRate" : 30,
 	"fireRays" : 1,
+	"type": "Beam",
+	"beamWidth": 1,
     "fireRaysAngle" : 30,
     "direction" : "0 -1",
     "offsetRadius": 0,

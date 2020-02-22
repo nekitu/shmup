@@ -241,6 +241,9 @@ PlayerController::PlayerController(Game* game)
 
 void PlayerController::update(struct Game* game)
 {
+	if (!active)
+		return;
+
 	if (!unitInstance || !unitInstance->rootSpriteInstance) return;
 	static f32 t = 0;
 
@@ -252,7 +255,6 @@ void PlayerController::update(struct Game* game)
 		for (auto& wp: unitInstance->weapons)
 		{
 			wp.second->fire();
-			//fireSound->play();
 		}
 	}
 	

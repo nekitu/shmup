@@ -76,9 +76,8 @@ struct FollowController : UnitController
 struct PlayerController : UnitController
 {
 	u32 playerIndex = 0;
-	struct SoundResource* fireSoundRes = nullptr;
-	struct SoundInstance* fireSound = nullptr;
 	bool isFirePressed = false;
+	bool active = true;
 
 	PlayerController(struct Game* game);
 	void update(struct Game* game) override;

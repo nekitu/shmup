@@ -69,7 +69,6 @@ void engine_log(const char* str)
 bool initializeLua()
 {
 	L = luaL_newstate();
-	
 	luaL_openlibs(L);
 
 	auto LUA = LuaIntf::LuaBinding(L);
