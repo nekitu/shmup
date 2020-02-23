@@ -44,7 +44,7 @@
   [
     {
       "name": "body",
-      "sprite": "sprites/circle",
+      "sprite": "sprites/gun",
       "position": "0 0",
       "scale": 1.0,
       "rotation": 0,

@@ -1,7 +1,7 @@
 {
     "name": "StellarEagle1",
 	"type": "Player",
-	"speed": 180.0,
+	"speed": 100.0,
     "script": "scripts/player.lua",
     "shadow": true,
     "shadowOffset": "40 40",
@@ -101,6 +101,6 @@
             "verticalFlip": false,
 			"color": "0 0 0 1",
             "hitColor": "1 1 0.4 1"
-        } 
+        }
     ]
 }

@@ -25,12 +25,12 @@
 		"layerIndex": 1,
 		"unit": "units/turret",
 		"position": "70 -300"
-	},    
+	},
 	{
 		"name": "Turret2",
 		"layerIndex": 1,
 		"unit": "units/turret",
-		"position": "110 -600"
+		"position": "70 -380"
 	},
 	{
 		"name": "Turret2",

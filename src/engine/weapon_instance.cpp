@@ -148,13 +148,26 @@ void WeaponInstance::render()
 
 	if (params.type == WeaponResource::Type::Beam)
 	{
-		auto spr = Game::instance->resourceLoader->loadSprite("sprites/black");
-		Game::instance->graphics->currentColor = 0xffff;
+		static f32 f = 0;
+		static f32 f2 = 0;
+		static f32 f3 = 0;
+		auto spr = Game::instance->resourceLoader->loadSprite("sprites/beam");
+		auto sprTop = Game::instance->resourceLoader->loadSprite("sprites/beam_top");
+		auto sprBtm = Game::instance->resourceLoader->loadSprite("sprites/beam_btm");
+		Game::instance->graphics->currentColor = 0;
 		Game::instance->graphics->currentColorMode = (u32)ColorMode::Add;
 
 		if (!dbgBeamCol.valid) dbgBeamCol.distance = dbgBeamStartPos.y;
 
-		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - params.beamWidth / 2, dbgBeamStartPos.y, params.beamWidth, -dbgBeamCol.distance }, spr->getFrameUvRect(0));
+		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - params.beamWidth / 2, dbgBeamStartPos.y, params.beamWidth, -dbgBeamCol.distance }, spr->getFrameUvRect(f));
+		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - 25, dbgBeamCol.point.y - 50, 50, (f32)sprTop->frameHeight }, sprTop->getFrameUvRect(f2));
+		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - 25, dbgBeamStartPos.y - 50, 50, (f32)sprBtm->frameHeight }, sprBtm->getFrameUvRect(f3));
+		f += Game::instance->deltaTime * 20;
+		if (f > spr->frameCount - 1) f = 0;
+		f2 += Game::instance->deltaTime * 20;
+		if ((u32)f2 > 1) f2 = 0;
+		f3 += Game::instance->deltaTime * 20;
+		if ((u32)f3 > 1) f3 = 0;
 	}
 }
 

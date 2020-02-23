@@ -102,16 +102,16 @@ bool Game::initialize()
 		return false;
 	}
 	
-	//int result = 0;
-	//int flags = MIX_INIT_MP3;
+	int result = 0;
+	int flags = MIX_INIT_MP3;
 
-	//if (flags != (result = Mix_Init(flags))) {
-	//	printf("Could not initialize mixer (result: %d).\n", result);
-	//	printf("Mix_Init: %s\n", Mix_GetError());
-	//	exit(1);
-	//}
+	if (flags != (result = Mix_Init(flags))) {
+		printf("Could not initialize mixer (result: %d).\n", result);
+		printf("Mix_Init: %s\n", Mix_GetError());
+		exit(1);
+	}
 
-	//initializeAudio();
+	initializeAudio();
 
 	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
@@ -147,6 +147,7 @@ bool Game::initialize()
 	music = new MusicInstance();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	music->play();
+	Mix_VolumeMusic(1);
 
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen.lua");
 	preloadSprites();
@@ -476,39 +477,69 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 		{
 			if (sprInst == sprInst2) continue;
 			if (!sprInst2->collide) continue;
-			if (sprInst2->screenRect.y > pos.y) continue;
+
+			if (screenMode == ScreenMode::Vertical)
+			{
+				if (sprInst2->screenRect.y > pos.y) continue;
+
+				if (sprInst2->screenRect.bottom() > pos.y && sprInst2->screenRect.y <= pos.y)
+				{
+					closest.valid = true;
+					closest.distance = 0;
+					closest.point = pos;
+					closest.unitInst = inst;
+					closest.spriteInst = sprInst2;
+
+					return closest;
+				}
+			}
 
 			if (sprInst2->screenRect.overlaps(rc))
 			if (screenMode == ScreenMode::Vertical)
 			{
 				Vec2 col;
-
 				col.x = pos.x;
-				col.y = sprInst2->screenRect.y;
+				col.y = sprInst2->screenRect.bottom();
+
+				// for small sprites
+				bool isInsideBeam = rc.contains(sprInst2->screenRect);
+				bool isTouchingHalfBeam = false;
+				bool pixelCollided = false;
 
 				f32 relativeX = col.x - sprInst2->screenRect.x;
 
-				if (relativeX < 0 || relativeX >= sprInst2->screenRect.width) continue;
-
-				Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
-
-				bool pixelCollided = false;
-
-				for (int y = sprInst2->sprite->frameHeight - 1; y >= 0 ; y--)
+				// if the middle of the beam is outside the sprite rect
+				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
+				if (relativeX < 0 || relativeX >= sprInst2->screenRect.width)
 				{
-					u8* p = (u8*)&sprInst2->sprite->image->imageData[
-					(u32)(y + frmRc.y) * sprInst2->sprite->image->width
-					+ (u32)(relativeX + frmRc.x)];
-
-					if (p[3] == 0xff)
+					if (fabs(relativeX) <= width / 2 || (sprInst2->screenRect.width - relativeX) <= width / 2)
 					{
-						pixelCollided = true;
-						col.y += y;
-						break;
+						isTouchingHalfBeam = true;
+						col.y = sprInst2->screenRect.center().y;
+					}
+
+					continue;
+				}
+				else
+				{
+					Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
+
+					for (int y = sprInst2->sprite->frameHeight - 1; y >= 0; y--)
+					{
+						u8* p = (u8*)&sprInst2->sprite->image->imageData[
+							(u32)(y + frmRc.y) * sprInst2->sprite->image->width
+								+ (u32)(relativeX + frmRc.x)];
+
+						if (p[3] == 0xff)
+						{
+							pixelCollided = true;
+							col.y -= sprInst2->screenRect.height - y;
+							break;
+						}
 					}
 				}
 
-				if (pixelCollided)
+				if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
 				{
 					f32 dist = pos.y - col.y;
 
