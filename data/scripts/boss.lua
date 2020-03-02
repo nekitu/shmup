@@ -53,7 +53,7 @@ end
 
 local function onAppeared(unitInst)
 	print("Appeared...")
-	game.animateCameraSpeed(0, 0.1)
+  game.animateCameraSpeed(0, 0.1)
 end
 
 M.onCollide = onCollide

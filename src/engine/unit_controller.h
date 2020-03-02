@@ -14,6 +14,7 @@ struct UnitController
 
 	virtual void update(struct Game* game) = 0;
 	virtual UnitController* createNew() = 0;
+	virtual void copyFrom(UnitController* other) {};
 	virtual void initializeFromJson(const Json::Value& value) {}
 
 	static UnitController* create(const std::string& ctrlerName, struct UnitInstance* unitInst);

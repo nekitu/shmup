@@ -314,7 +314,7 @@ void PlayerController::update(struct Game* game)
 		-game->cameraPosition.y,
 		-game->cameraPosition.y + game->graphics->videoHeight);
 
-	game->cameraParallaxOffset = (game->graphics->videoWidth / 2 - unitInstance->rootSpriteInstance->transform.position.x) * 0.3f;
+	game->cameraParallaxOffset = (game->graphics->videoWidth / 2 - unitInstance->rootSpriteInstance->transform.position.x) * game->cameraParallaxScale;
 }
 
 }

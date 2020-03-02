@@ -1,0 +1,15 @@
+{
+  "name": "Trigger",
+  "type": "Unknown",
+  "speed": 0.0,
+  "autoDeleteType": "EndOfScreen",
+  "script": "scripts/trigger.lua",
+  "rootSpriteInstance": "body",
+  "spriteInstances":
+  [
+    {
+      "name": "body",
+      "sprite": "sprites/empty"
+    }
+  ]
+}

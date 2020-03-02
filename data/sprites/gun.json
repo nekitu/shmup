@@ -1,12 +1,12 @@
 {
-    "frameWidth": 66,
-    "frameHeight": 66,
-	"rotationAnims":
-	{
-		"frameCount":4,
-		"count": 36,
-		"type": "Normal",
-		"fps": 4,
-		"repeat": 0
-	}
+  "frameWidth": 66,
+  "frameHeight": 66,
+  "rotationAnims":
+  {
+    "frameCount":4,
+    "count": 361,
+    "type": "Normal",
+    "fps": 4,
+    "repeat": 0
+  }
 }

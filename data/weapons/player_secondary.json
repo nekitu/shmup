@@ -1,7 +1,7 @@
 {
 	"fireRate" : 30,
 	"fireRays" : 1,
-	"type": "Beam",
+	"type": "Projectile",
 	"beamWidth": 40,
     "fireRaysAngle" : 30,
     "direction" : "0 -1",

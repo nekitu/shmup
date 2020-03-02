@@ -29,84 +29,93 @@ void UnitInstance::updateShadowToggle()
 	shadowToggle = !shadowToggle;
 }
 
-//void UnitInstance::copyFrom(UnitInstance* other)
-//{
-//	boundingBox = other->boundingBox;
-//	currentAnimationName = other->currentAnimationName;
-//	shadow = other->shadow;
-//	name = other->name;
-//	shadowOffset = other->shadowOffset;
-//	shadowScale = other->shadowScale;
-//	speed = other->speed;
-//	type = other->type;
-//	unit = other->unit;
-//	visible = other->visible;
-//	deleteMeNow = other->deleteMeNow;
-//	deleteOnOutOfScreen = other->deleteOnOutOfScreen;
-//
-//	if (other->controller)
-//	{
-//		controller = other->controller->createNew();
-//		controller->unitInstance = this;
-//	}
-//
-//	script = other->script;
-//
-//	// map from other unit to new sprite instances
-//	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
-//
-//	// copy sprite instances
-//	for (auto& otherSprInst : other->spriteInstances)
-//	{
-//		auto sprInst = new SpriteInstance();
-//
-//		sprInst->copyFrom(otherSprInst);
-//		spriteInstances.push_back(sprInst);
-//		spriteInstMap[otherSprInst] = sprInst;
-//	}
-//
-//	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
-//
-//	// if no root specified, use first sprite instance as root
-//	if (!rootSpriteInstance && spriteInstances.size())
-//	{
-//		rootSpriteInstance = spriteInstances[0];
-//	}
-//
-//	if (other->rootSpriteInstance)
-//		rootSpriteInstance->transform = other->rootSpriteInstance->transform;
-//
-//	// copy sprite instance animations
-//	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
-//	{
-//		auto& animName = spriteInstAnim.first;
-//		auto& animMap = spriteInstAnim.second;
-//
-//		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
-//		auto& crtAnimMap = spriteInstanceAnimations[animName];
-//
-//		for (auto& anim : animMap)
-//		{
-//			AnimationInstance* newAnimInst = new AnimationInstance();
-//
-//			newAnimInst->copyFrom(anim.second);
-//			crtAnimMap[spriteInstMap[anim.first]] = newAnimInst;
-//		}
-//	}
-//
-//	// copy weapon instances
-//	for (auto& wi : other->weapons)
-//	{
-//		WeaponInstance* wiNew = new WeaponInstance();
-//
-//		wiNew->copyFrom(wi);
-//		wiNew->parentUnitInstance = this;
-//		wiNew->attachTo = spriteInstMap[wi->attachTo];
-//		weapons.push_back(wiNew);
-//	}
-//
-//	setAnimation(currentAnimationName);
-//}
+void UnitInstance::copyFrom(UnitInstance* other)
+{
+	layerIndex = other->layerIndex;
+	name = other->name;
+	currentAnimationName = other->currentAnimationName;
+	boundingBox = other->boundingBox;
+	visible = other->visible;
+	appeared = other->appeared;
+	speed = other->speed;
+	health = other->health;
+	maxHealth = other->maxHealth;
+	age = other->age;
+	stageIndex = other->stageIndex;
+	collide = other->collide;
+	shadow = other->shadow;
+	unit = other->unit;
+	deleteMeNow = other->deleteMeNow;
+
+	if (other->controllers.size())
+	{
+		for (auto ctrl : other->controllers)
+		{
+			auto ctrl2 = ctrl.second->createNew();
+			ctrl2->copyFrom(ctrl.second);
+			controllers[ctrl.first] = ctrl.second;
+		}
+	}
+
+	script = other->script;
+
+	// map from other unit to new sprite instances
+	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
+
+	// copy sprite instances
+	for (auto& otherSprInst : other->spriteInstances)
+	{
+		auto sprInst = new SpriteInstance();
+
+		sprInst->copyFrom(otherSprInst);
+		spriteInstances.push_back(sprInst);
+		spriteInstMap[otherSprInst] = sprInst;
+	}
+
+	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
+
+	// if no root specified, use first sprite instance as root
+	if (!rootSpriteInstance && spriteInstances.size())
+	{
+		rootSpriteInstance = spriteInstances[0];
+	}
+
+	if (other->rootSpriteInstance)
+		rootSpriteInstance->transform = other->rootSpriteInstance->transform;
+
+	// copy sprite instance animations
+	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
+	{
+		auto& animName = spriteInstAnim.first;
+		auto& animMap = spriteInstAnim.second;
+
+		spriteInstanceAnimations[animName] = SpriteInstanceAnimationMap();
+		auto& crtAnimMap = spriteInstanceAnimations[animName];
+
+		for (auto& anim : animMap)
+		{
+			AnimationInstance* newAnimInst = new AnimationInstance();
+
+			newAnimInst->copyFrom(anim.second);
+			crtAnimMap[spriteInstMap[anim.first]] = newAnimInst;
+		}
+	}
+
+	// copy weapon instances
+	for (auto& wi : other->weapons)
+	{
+		WeaponInstance* wiNew = new WeaponInstance();
+
+		wiNew->copyFrom(wi.second);
+		// reparent to this
+		wiNew->parentUnitInstance = this;
+		// attach to new sprite instance
+		wiNew->attachTo = spriteInstMap[wi.second->attachTo];
+		weapons[wi.first] = wiNew;
+	}
+
+	setAnimation(currentAnimationName);
+}
 
 void UnitInstance::initializeFrom(UnitResource* res)
 {

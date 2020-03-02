@@ -53,12 +53,12 @@ void WeaponInstance::spawnProjectiles(Game* game)
 	{
 		Vec2 pos = attachTo->screenRect.center();
 
-		params.direction.x = game->players[0]->rootSpriteInstance->screenRect.center().x - pos.x;
-		params.direction.y = game->players[0]->rootSpriteInstance->screenRect.center().y - pos.y;
+		params.direction.x = game->players[0].unitInstance->rootSpriteInstance->screenRect.center().x - pos.x;
+		params.direction.y = game->players[0].unitInstance->rootSpriteInstance->screenRect.center().y - pos.y;
 		params.direction.normalize();
 	}
 
-    angle = dir2deg(params.direction);
+	angle = dir2deg(params.direction);
 	f32 angleBetweenRays = params.fireRays > 1 ? params.fireRaysAngle / (f32)(params.fireRays - 1) : 0;
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
@@ -73,8 +73,8 @@ void WeaponInstance::spawnProjectiles(Game* game)
 	angle += fireAngleOffset;
 
 	for (u32 i = 0; i < params.fireRays; i++)
-    {
-        ProjectileInstance* newProj = new ProjectileInstance();
+	{
+		ProjectileInstance* newProj = new ProjectileInstance();
 
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weapon = this;
@@ -168,7 +168,32 @@ void WeaponInstance::render()
 		if ((u32)f2 > 1) f2 = 0;
 		f3 += Game::instance->deltaTime * 20;
 		if ((u32)f3 > 1) f3 = 0;
+
 	}
+
+	Game::instance->graphics->currentColor = 0;
+	Game::instance->graphics->currentColorMode = (u32)ColorMode::Add;
+	auto sprB = Game::instance->resourceLoader->loadSprite("sprites/black");
+	static f32 r1 = 30;
+	static f32 r2 = 60;
+	static f32 rotAng1 = 0;
+	static f32 angDelta = 0;
+
+	for (f32 a = angDelta; a < angDelta + M_PI * 2.0f; a += deg2rad(30))
+	{
+		Vec2 p;
+
+		p.x = sinf(a) * r1;
+		p.y = cosf(a) * r2;
+		p.rotateAround({ 0.f,0.f }, rotAng1);
+		p.x += 120;
+		p.y += 120;
+
+		Game::instance->graphics->drawQuad({ p.x, p.y, 5, 5 }, sprB->getFrameUvRect(0));
+	}
+	//r2 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
+	rotAng1 += Game::instance->deltaTime * 0.1;
+	angDelta += Game::instance->deltaTime * 0.2;
 }
 
 void WeaponInstance::debug(const std::string& info)

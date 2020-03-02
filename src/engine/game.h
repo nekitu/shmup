@@ -53,6 +53,13 @@ struct BeamCollisionInfo
 	struct SpriteInstance* spriteInst = nullptr;
 };
 
+struct PlayerStats
+{
+	u32 score = 0;
+	bool active = false;
+	struct UnitInstance* unitInstance = nullptr;
+};
+
 struct Game
 {
 	static const int maxPlayerCount = 1;
@@ -69,12 +76,11 @@ struct Game
 	struct ResourceLoader* resourceLoader = nullptr;
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
-	u32 score = 0;
+	u32 hiscore = 0;
 	u32 credit = 0;
-	bool playerActive[maxPlayerCount] = {false};
 	std::vector<UnitInstance*> unitInstances;
 	std::vector<UnitInstance*> newUnitInstances;
-	UnitInstance* players[maxPlayerCount];
+	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct MusicInstance* music = nullptr;
@@ -86,6 +92,7 @@ struct Game
 	Vec2 cameraPositionOffset;
 	f32 cameraSpeed = 11;
 	f32 cameraParallaxOffset = 0;
+	f32 cameraParallaxScale = 0.2f;
 	std::vector<Layer> layers;
 	f32 cameraSpeedAnimateSpeed = 1.0f;
 	bool animatingCameraSpeed = false;

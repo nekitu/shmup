@@ -162,13 +162,13 @@ void Game::createPlayers()
 {
 	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
-		players[i] = new UnitInstance();
-		players[i]->initializeFrom(resourceLoader->loadUnit("units/player"));
-		unitInstances.push_back(players[i]);
-		players[i]->name = "Player" + std::to_string(i + 1);
-		players[i]->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
-		players[i]->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
-		static_cast<PlayerController*>(players[i]->findController("main"))->playerIndex = i;
+		players[i].unitInstance = new UnitInstance();
+		players[i].unitInstance->initializeFrom(resourceLoader->loadUnit("units/player"));
+		unitInstances.push_back(players[i].unitInstance);
+		players[i].unitInstance->name = "Player" + std::to_string(i + 1);
+		players[i].unitInstance->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
+		players[i].unitInstance->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
+		static_cast<PlayerController*>(players[i].unitInstance->findController("main"))->playerIndex = i;
 	}
 
 	//TODO: fix later to have a single atlas pack call after loading all sprites
@@ -452,7 +452,7 @@ void Game::checkCollisions()
 	}
 }
 
-BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 width)
+BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 beamWidth)
 {
 	BeamCollisionInfo closest;
 	Rect rc;
@@ -461,11 +461,11 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 
 	if (screenMode == ScreenMode::Vertical)
 	{
-		rc.set(pos.x - width / 2, 0, width, pos.y);
+		rc.set(pos.x - beamWidth / 2, 0, beamWidth, pos.y);
 	}
 	else if (screenMode == ScreenMode::Horizontal)
 	{
-		rc.set(pos.x, pos.y - width / 2, graphics->videoWidth - pos.x, width);
+		rc.set(pos.x, pos.y - beamWidth / 2, graphics->videoWidth - pos.x, beamWidth);
 	}
 
 	for (auto unitInst : unitInstances)
@@ -493,6 +493,21 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 					return closest;
 				}
 			}
+			else if (screenMode == ScreenMode::Horizontal)
+			{
+				if (sprInst2->screenRect.right() < pos.x) continue;
+
+				if (sprInst2->screenRect.x < pos.x && sprInst2->screenRect.right() >= pos.x)
+				{
+					closest.valid = true;
+					closest.distance = 0;
+					closest.point = pos;
+					closest.unitInst = inst;
+					closest.spriteInst = sprInst2;
+
+					return closest;
+				}
+			}
 
 			if (sprInst2->screenRect.overlaps(rc))
 			if (screenMode == ScreenMode::Vertical)
@@ -506,13 +521,13 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 				bool isTouchingHalfBeam = false;
 				bool pixelCollided = false;
 
-				f32 relativeX = col.x - sprInst2->screenRect.x;
+				f32 relativeX = round(col.x - sprInst2->screenRect.x);
 
 				// if the middle of the beam is outside the sprite rect
 				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
 				if (relativeX < 0 || relativeX >= sprInst2->screenRect.width)
 				{
-					if (fabs(relativeX) <= width / 2 || (sprInst2->screenRect.width - relativeX) <= width / 2)
+					if (fabs(relativeX) <= beamWidth / 2 || (sprInst2->screenRect.width - relativeX) <= beamWidth / 2)
 					{
 						isTouchingHalfBeam = true;
 						col.y = sprInst2->screenRect.center().y;
@@ -527,8 +542,8 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 					for (int y = sprInst2->sprite->frameHeight - 1; y >= 0; y--)
 					{
 						u8* p = (u8*)&sprInst2->sprite->image->imageData[
-							(u32)(y + frmRc.y) * sprInst2->sprite->image->width
-								+ (u32)(relativeX + frmRc.x)];
+							(u32)(frmRc.y + y) * sprInst2->sprite->image->width
+								+ (u32)(frmRc.x + relativeX)];
 
 						if (p[3] == 0xff)
 						{
@@ -542,6 +557,64 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 				if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
 				{
 					f32 dist = pos.y - col.y;
+
+					if (dist < closest.distance)
+					{
+						closest.valid = true;
+						closest.distance = dist;
+						closest.point = col;
+						closest.unitInst = inst;
+						closest.spriteInst = sprInst2;
+					}
+				}
+			}
+			else if (screenMode == ScreenMode::Horizontal)
+			{
+				Vec2 col;
+				col.x = sprInst2->screenRect.x;
+				col.y = pos.y;
+
+				// for small sprites
+				bool isInsideBeam = rc.contains(sprInst2->screenRect);
+				bool isTouchingHalfBeam = false;
+				bool pixelCollided = false;
+
+				f32 relativeY = round(col.y - sprInst2->screenRect.y);
+
+				// if the middle of the beam is outside the sprite rect
+				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
+				if (relativeY < 0 || relativeY >= sprInst2->screenRect.height)
+				{
+					if (fabs(relativeY) <= beamWidth / 2 || (sprInst2->screenRect.height - relativeY) <= beamWidth / 2)
+					{
+						isTouchingHalfBeam = true;
+						col.x = sprInst2->screenRect.center().x;
+					}
+
+					continue;
+				}
+				else
+				{
+					Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
+
+					for (int x = sprInst2->sprite->frameWidth - 1; x >= 0; x--)
+					{
+						u8* p = (u8*)&sprInst2->sprite->image->imageData[
+							(u32)(frmRc.y + relativeY) * sprInst2->sprite->image->width
+								+ (u32)(frmRc.x + x)];
+
+						if (p[3] == 0xff)
+						{
+							pixelCollided = true;
+							col.x -= sprInst2->screenRect.width - x;
+							break;
+						}
+					}
+				}
+
+				if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
+				{
+					f32 dist = pos.x - col.x;
 
 					if (dist < closest.distance)
 					{

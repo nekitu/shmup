@@ -34,6 +34,7 @@ struct SpriteInstanceResource
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;
+	struct SpriteResource* hitSprite = nullptr; // spawn an unit instance on projectile/beam hit
 	std::map<std::string /*anim name*/, struct AnimationResource*> animations;
 };
 

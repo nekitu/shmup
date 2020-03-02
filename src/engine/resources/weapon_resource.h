@@ -36,6 +36,9 @@ struct WeaponResource : Resource
 	};
 
 	Parameters params;
+	struct SpriteResource* beamEndSprite = nullptr;
+	struct SpriteResource* beamBodySprite = nullptr;
+	struct SpriteResource* beamBeginSprite = nullptr;
 	struct UnitResource* projectileUnit = nullptr;
 	struct ScriptResource* script = nullptr;
 

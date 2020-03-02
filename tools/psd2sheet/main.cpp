@@ -309,8 +309,8 @@ int main(int argc, char *argv[])
 	u32 sheetImageSizeBytes = sheetWidth * sheetHeight * 4;
 	u32* imagedata = new u32[sheetImageSize];
 
-	printf("Final image sheet grid:%d sprite: %dx%d sheet:%dx%d\n",
-		sheetGridSize, (u32)maxRotateBounds.width, (u32)maxRotateBounds.height, sheetWidth, sheetHeight);
+	printf("Final image sheet grid:%d sprite: %dx%d sheet:%dx%d frames/pair: %d\n",
+		sheetGridSize, (u32)maxRotateBounds.width, (u32)maxRotateBounds.height, sheetWidth, sheetHeight, layerImages.size() / context->layer_count);
 
 	memset(imagedata, 0, sheetImageSize * 4);
 
@@ -338,9 +338,8 @@ int main(int argc, char *argv[])
             {
 				u32* src = args.rotate ? layerImages[i]->rotatedPixels : layerImages[i]->pixels;
 				u8* pixel = (u8*)&(src[y * (u32)layerImages[i]->rotatedRect.width + x]);
-
-				i32 dstX;
-				i32 dstY;
+				i32 dstX = 0;
+				i32 dstY = 0;
 
 				if (args.rotate)
 				{

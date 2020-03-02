@@ -1,15 +1,15 @@
 {
-    "frameWidth": 200,
-    "frameHeight": 282,
+    "frameWidth": 8,
+    "frameHeight": 8,
     "animations":
     {
         "default":
         {
             "start": 0,
-            "frames": 25,
+            "frames": 1,
             "type": "Normal",
-            "fps": 25,
-            "repeat": 1
+            "fps": 1,
+            "repeat": 0
         }
     }
 }

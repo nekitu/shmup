@@ -49,6 +49,12 @@
 		"layerIndex": 3,
 		"unit": "units/boss",
 		"position": "180 -510"
-	}
-	]
+	},
+  {
+    "name": "End",
+    "layerIndex": 3,
+    "unit": "units/trigger",
+    "position": "180 -810"
+  }
+]
 }
