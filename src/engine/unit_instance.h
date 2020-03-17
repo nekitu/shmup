@@ -2,6 +2,7 @@
 #include "types.h"
 #include <unordered_map>
 #include "resources/unit_resource.h"
+#include "lua_scripting.h"
 
 namespace engine
 {
@@ -38,9 +39,8 @@ struct UnitInstance
 	bool collide = true;
 	bool shadow = false;
 	struct UnitResource* unit = nullptr;
-	std::map<std::string /*name*/, struct UnitController*> controllers;
-	struct ScriptResource* script = nullptr;
-	struct SpriteInstance* rootSpriteInstance = nullptr;
+	struct ScriptClassInstance* scriptClass = nullptr;
+	struct SpriteInstance* root = nullptr;
 	struct UnitLifeStage* currentStage = nullptr;
 	std::vector<UnitLifeStage*> triggeredStages;
 	bool deleteMeNow = false;
@@ -48,13 +48,12 @@ struct UnitInstance
 	UnitInstance();
 	void copyFrom(UnitInstance* other);
 	void initializeFrom(UnitResource* res);
-	void load(struct ResourceLoader* loader, const Json::Value& json);
-	void update(struct Game* game);
-	void render(struct Graphics* gfx);
-	void computeBoundingBox();
-	void computeHealth();
+	virtual void load(struct ResourceLoader* loader, const Json::Value& json);
+	virtual void update(struct Game* game);
+	virtual void render(struct Graphics* gfx);
+	virtual void computeBoundingBox();
+	virtual void computeHealth();
 	void setAnimation(const std::string& animName);
-	struct UnitController* findController(const std::string& cname);
 	struct SpriteInstance* findSpriteInstance(const std::string& sname);
 
 	bool checkPixelCollision(struct UnitInstance* other, std::vector<SpriteInstanceCollision>& collisions);

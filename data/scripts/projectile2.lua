@@ -1,20 +1,27 @@
-local M = {}
+local C = {}
 
-local function onUpdate(unit)
+function C:init(unit)
+  self.unit = unit
 end
 
-local function onCollide(unitInst1, unitInst2)
-if true then return end
-  local colCenter = Vec2(0, 0)
-  if unitInst1.unit.type == 4 and unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, colCenter) then
-    unitInst1.deleteMeNow = true
-  	if unitInst2.unit.type == 5 then unitInst2.deleteMeNow = true end
+function C:onUpdate()
+end
+
+function C:onCollide(other)
+  if true then return end
+  local colCenter = Vec2()
+  if self.unit.unitResource.type == 4 and self.unit.root:checkPixelCollision(other.root, colCenter) then
+    self.unit.deleteMeNow = true
+  	if other.unitResource.type == 5 then other.deleteMeNow = true end
 	local uinst = game.spawn("units/small_spark", "expl", colCenter)
-	unitInst2.rootSpriteInstance:hit(5)
+	other.root:hit(5)
   end
 end
 
-M.onCollide = onCollide
-M.onUpdate = onUpdate
-
-return M
+return function(unit)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(unit)
+  return o
+end

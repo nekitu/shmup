@@ -3,8 +3,8 @@
     "type": "Enemy",
     "speed": 0,
     "autoDeleteType": "EndOfScreen",
-    "rootSpriteInstance": "body",
-    "script":"scripts/turret_expl.lua",
+    "root": "body",
+    "script":"scripts/turret_expl",
     "spriteInstances":
     [
         {

@@ -14,7 +14,11 @@ void SpriteInstance::copyFrom(SpriteInstance* other)
 {
 	name = other->name;
 	sprite = other->sprite;
-	transform = other->transform;
+	position = other->position;
+	scale = other->scale;
+	verticalFlip = other->verticalFlip;
+	horizontalFlip = other->horizontalFlip;
+	rotation = other->rotation;
 	orderIndex = other->orderIndex;
 	visible = other->visible;
 	shadow = other->shadow;
@@ -23,7 +27,7 @@ void SpriteInstance::copyFrom(SpriteInstance* other)
 	defaultColor = other->defaultColor;
 	color = other->color;
 	colorMode = other->colorMode;
-		
+
 	hitColor = other->hitColor;
 	hitOldColorMode = other->hitOldColorMode;
 	hitColorFlashSpeed = other->hitColorFlashSpeed;
@@ -45,7 +49,11 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 {
 	name = res->name;
 	sprite = res->sprite;
-	transform = res->transform;
+	position = res->position;
+	scale = res->scale;
+	verticalFlip = res->verticalFlip;
+	horizontalFlip = res->horizontalFlip;
+	rotation = res->rotation;
 	orderIndex = res->orderIndex;
 	defaultColor = color = res->color;
 	colorMode = res->colorMode;
@@ -190,7 +198,7 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		return false;
 
 	Rect partRc;
-	
+
 	partRc.x = std::fmaxf(screenRect.x, other->screenRect.x);
 	partRc.y = std::fmaxf(screenRect.y, other->screenRect.y);
 	partRc.width  = floorf(fminf(screenRect.x + screenRect.width,  other->screenRect.x + other->screenRect.width) - partRc.x);
@@ -205,7 +213,7 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 		auto frmRc = spr->sprite->getSheetFramePixelRect(spr->animationFrame);
 		pixels.resize(localRc.width * localRc.height);
 		int i = 0;
-		f32 step = 1.0f / spr->transform.scale;
+		f32 step = 1.0f / spr->scale;
 		f32 srcx = 0;
 		f32 srcy = 0;
 		f32 rcx = floorf(frmRc.width * (localRc.x / spr->screenRect.width));

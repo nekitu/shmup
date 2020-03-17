@@ -1,15 +1,15 @@
 {
-    "name": "SmallSpark",
-    "type": "PlayerProjectile",
-    "autoDeleteType": "OutOfScreen",
-    "script": "scripts/small_spark.lua",
-    "rootSpriteInstance": "body",
-    "spriteInstances":
-    [
-        {
-            "name": "body",
-            "scale": 0.2,
-            "sprite": "sprites/small_spark"
-        }
-    ]
+  "name": "SmallSpark",
+  "type": "PlayerProjectile",
+  "autoDeleteType": "OutOfScreen",
+  "script": "scripts/small_spark",
+  "root": "body",
+  "spriteInstances":
+  [
+    {
+      "name": "body",
+      "scale": 0.2,
+      "sprite": "sprites/small_spark"
+    }
+  ]
 }

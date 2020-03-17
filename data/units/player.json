@@ -1,106 +1,106 @@
 {
-    "name": "StellarEagle1",
-	"type": "Player",
-	"speed": 180.0,
-    "script": "scripts/player.lua",
-    "shadow": true,
-    "shadowOffset": "40 40",
-    "shadowScale": 0.4,
-    "controllers":
-	[
-        { "name": "main", "class": "Player" },
-        { "name": "screenFx", "class": "ScreenFx" },
-        { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
-        { "name": "gunR_follow", "class": "Follow", "follower":"gunR", "follow": "body", "speed":10},
-        { "name": "gunLtrail_follow", "class": "Follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
-        { "name": "gunRtrail_follow", "class": "Follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
-	],
-	"rootSpriteInstance": "body",
-    "animations":
+  "name": "StellarEagle1",
+  "type": "Player",
+  "speed": 180.0,
+  "script": "scripts/player",
+  "shadow": true,
+  "shadowOffset": "40 40",
+  "shadowScale": 0.4,
+  "controllers":
+  [
+    { "name": "main", "class": "Player" },
+    { "name": "screenFx", "class": "ScreenFx" },
+    { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
+    { "name": "gunR_follow", "class": "Follow", "follower":"gunR", "follow": "body", "speed":10},
+    { "name": "gunLtrail_follow", "class": "Follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
+    { "name": "gunRtrail_follow", "class": "Follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
+  ],
+  "root": "body",
+  "animations":
+  {
+    "stage0_intro":
     {
-        "stage0_intro":
-        {
-        },
-        "stage0_outro":
-        {
-        }
     },
-    "spriteInstances":
-    [
+    "stage0_outro":
+    {
+    }
+  },
+  "spriteInstances":
+  [
+    {
+      "name": "body",
+      "sprite": "sprites/player",
+      "position": "0 0",
+      "scale": 1.0,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 1 0.4 1"
+    },
+    {
+      "name": "gunL",
+      "sprite": "sprites/enemy",
+      "position": "-40 0",
+      "scale": 0.15,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 1 0.4 1",
+      "weapons":
+      {
+        "gunL":
         {
-            "name": "body",
-            "sprite": "sprites/player",
-            "position": "0 0",
-            "scale": 1.0,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 1 0.4 1"
-        },
-        {
-            "name": "gunL",
-            "sprite": "sprites/enemy",
-            "position": "-40 0",
-            "scale": 0.15,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 1 0.4 1",
-            "weapons":
-            {
-                "gunL":
-                {
-                    "position": "0 0",
-                    "weapon": "weapons/player_secondary",
-                    "active": true
-                }
-            }
-        },
-        {
-            "name": "gunR",
-            "sprite": "sprites/enemy",
-            "position": "40 0",
-            "scale": 0.1,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 1 0.4 1",
-            "weapons":
-            {
-                "gunR":
-                {
-                    "position": "0 0",
-                    "weapon": "weapons/player_secondary",
-                    "active": true
-                }
-            }
-        },
-        {
-            "name": "gunRtrail",
-            "sprite": "sprites/fire",
-            "position": "0 20",
-            "scale": 0.5,
-            "visible": false,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-			"hitColor": "1 1 0.4 1"
-        },
-        {
-            "name": "gunLtrail",
-            "sprite": "sprites/fire",
-            "position": "0 20",
-            "visible": false,
-            "scale": 0.5,
-            "rotation": 0,
-            "horizontalFlip": false,
-            "verticalFlip": false,
-			"color": "0 0 0 1",
-            "hitColor": "1 1 0.4 1"
+          "position": "0 0",
+          "weapon": "weapons/player_secondary",
+          "active": true
         }
-    ]
+      }
+    },
+    {
+      "name": "gunR",
+      "sprite": "sprites/enemy",
+      "position": "40 0",
+      "scale": 0.1,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 1 0.4 1",
+      "weapons":
+      {
+        "gunR":
+        {
+          "position": "0 0",
+          "weapon": "weapons/player_secondary",
+          "active": true
+        }
+      }
+    },
+    {
+      "name": "gunRtrail",
+      "sprite": "sprites/fire",
+      "position": "0 20",
+      "scale": 0.5,
+      "visible": false,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 1 0.4 1"
+    },
+    {
+      "name": "gunLtrail",
+      "sprite": "sprites/fire",
+      "position": "0 20",
+      "visible": false,
+      "scale": 0.5,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 1 0.4 1"
+    }
+  ]
 }

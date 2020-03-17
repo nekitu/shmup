@@ -69,4 +69,18 @@ namespace engine
 typedef u32 Rgba32;
 typedef std::vector<u32> UnicodeString;
 
+enum class ColorMode
+{
+	Add,
+	Sub,
+	Mul
+};
+
+enum class AlphaMode
+{
+	Mask,
+	Blend
+};
+
+
 }

@@ -2,7 +2,7 @@
     "name": "FireFromBoss",
     "type": "EnemyProjectile",
     "autoDeleteType": "OutOfScreen",
-    "script": "scripts/projectile2.lua",
+    "script": "scripts/projectile2",
     "spriteInstances":
     [
         {

@@ -1,36 +1,39 @@
-local M = {}
+local C = {}
 
-local function onUpdate(unitInst)
-  --print("Updating "..unitInst.name.."  a:"..tostring(unitInst.rootSpriteInstance.transform.scale))
-  --unitInst.rootSpriteInstance.transform.rotation = unitInst.rootSpriteInstance.transform.rotation + 1
-  --unitInst.rootSpriteInstance.transform.scale = 5
-  --unitInst:fire()
-    local w = unitInst:findWeapon("gun1")
+function C:init(unit)
+  self.unit = unit
+end
 
-    if unitInst.appeared then
+function C:onUpdate()
+    local w = self.unit:findWeapon("gun1")
+
+    if self.unit.appeared then
         w.active = true
     end
 
-    unitInst.rootSpriteInstance:setFrameAnimationFromAngle(w.angle - 180)
-    unitInst.rootSpriteInstance.animationFrame = unitInst.rootSpriteInstance:getFrameFromAngle(w.angle - 180)
+    self.unit.root:setFrameAnimationFromAngle(w.angle - 180)
+    self.unit.root.animationFrame = self.unit.root:getFrameFromAngle(w.angle - 180)
 
-    if unitInst.health == 0 then
-        unitInst.deleteMeNow = true
-        local uinst = game.spawn("units/turret_expl", "expl2", unitInst.rootSpriteInstance.transform.position)
+    if self.unit.health == 0 then
+        self.unit.deleteMeNow = true
+        local uinst = game.spawn("units/turret_expl", "expl2", self.unit.root.position)
         uinst.layerIndex = unitInst.layerIndex
-        game.shakeCamera(game.player1, "screenFx", Vec2(2, 2), 0.5, 70)
-        game.fadeScreen(game.player1, "screenFx", Color(1,1,1,1), 0, 0.1, true)
+        game.shakeCamera(Vec2(2, 2), 0.5, 70)
+        game.fadeScreen(Color(1,1,1,1), 0, 0.1, true)
     end
 end
 
-local function onCollide(unitInst1, unitInst2)
-  local pos = Vec2(0, 0)
-  if unitInst1.rootSpriteInstance:checkPixelCollision(unitInst2.rootSpriteInstance, pos) then
-    unitInst1.rootSpriteInstance:hit(1)
+function C:onCollide(other)
+  local pos = Vec2()
+  if self.unit.root:checkPixelCollision(other.root, pos) then
+    self.unit.root:hit(1)
   end
 end
 
-M.onCollide = onCollide
-M.onUpdate = onUpdate
-
-return M
+return function(unit)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(unit)
+  return o
+end

@@ -7,6 +7,7 @@ namespace engine
 struct Layer
 {
 	f32 parallaxScale = 1.0f;
+	bool cameraScroll = true; // if true, the layer is scrolled, if false, the layer is not scrolled by camera position, used for enemies/bosses
 };
 
 struct LevelResource : Resource

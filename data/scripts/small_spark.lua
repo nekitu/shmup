@@ -9,7 +9,10 @@ end
 local function onCollide(unitInst1, unitInst2)
 end
 
-M.onCollide = onCollide
-M.onUpdate = onUpdate
-
-return M
+return function(unit)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(unit)
+  return o
+end

@@ -1,26 +1,27 @@
 #pragma once
 #include "types.h"
 #include "resource.h"
-
-extern "C"
-{
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
-}
-
-#include "luaintf/LuaIntf.h"
+#include "lua_scripting.h"
 
 namespace engine
 {
+struct ScriptClassInstance
+{
+	struct ScriptResource* script = nullptr;
+	LuaIntf::LuaRef classInstance;
+	void* object = nullptr;
+
+	LuaIntf::LuaRef getFunction(const std::string& funcName);
+};
+
 struct ScriptResource : Resource
 {
 	std::string code;
-	LuaIntf::LuaRef M;
+	std::vector<ScriptClassInstance*> classInstances;
 
 	bool load(Json::Value& json) override;
 	void unload();
-	LuaIntf::LuaRef getFunction(const std::string& funcName);
+	ScriptClassInstance* createClassInstance(void* obj = nullptr);
 };
 
 extern bool initializeLua();

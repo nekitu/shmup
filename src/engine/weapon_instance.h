@@ -11,6 +11,7 @@ struct WeaponInstance
 	struct WeaponResource* weaponResource = nullptr;
 	struct UnitInstance* parentUnitInstance = nullptr;
 	struct SpriteInstance* attachTo = nullptr;
+	struct ScriptClassInstance* scriptClass = nullptr;
 
 	void copyFrom(WeaponInstance* other);
 	void fire();

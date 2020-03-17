@@ -3,8 +3,8 @@
   "type": "Unknown",
   "speed": 0.0,
   "autoDeleteType": "EndOfScreen",
-  "script": "scripts/trigger.lua",
-  "rootSpriteInstance": "body",
+  "script": "scripts/trigger",
+  "root": "body",
   "spriteInstances":
   [
     {

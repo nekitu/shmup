@@ -1,9 +1,16 @@
-local M = {}
+local C = {}
 
-local function onFire(weaponInstance)
-  --weaponInstance:debug("COCOA!!!!")
+function C:init(weapon)
+  self.weapon = weapon
 end
 
-M.onFire = onFire
+function C:onFire()
+end
 
-return M
+return function(obj)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(obj)
+  return o
+end

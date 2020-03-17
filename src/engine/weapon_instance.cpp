@@ -2,7 +2,6 @@
 #include "game.h"
 #include "projectile_instance.h"
 #include "sprite_instance.h"
-#include "unit_controller.h"
 #include "utils.h"
 #include "graphics.h"
 #include "resources/script_resource.h"
@@ -24,6 +23,11 @@ void WeaponInstance::initializeFrom(struct WeaponResource* res)
 {
 	weaponResource = res;
 	params = res->params;
+
+	if (res->script)
+	{
+		scriptClass = res->script->createClassInstance(this);
+	}
 }
 
 void WeaponInstance::fire()
@@ -34,9 +38,9 @@ void WeaponInstance::fire()
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
 
-	if (weaponResource->script)
+	if (scriptClass)
 	{
-		auto f = weaponResource->script->getFunction("onFire");
+		auto f = scriptClass->getFunction("onFire");
 
 		if (f.isFunction())
 		{
@@ -53,8 +57,8 @@ void WeaponInstance::spawnProjectiles(Game* game)
 	{
 		Vec2 pos = attachTo->screenRect.center();
 
-		params.direction.x = game->players[0].unitInstance->rootSpriteInstance->screenRect.center().x - pos.x;
-		params.direction.y = game->players[0].unitInstance->rootSpriteInstance->screenRect.center().y - pos.y;
+		params.direction.x = game->players[0].unitInstance->root->screenRect.center().x - pos.x;
+		params.direction.y = game->players[0].unitInstance->root->screenRect.center().y - pos.y;
 		params.direction.normalize();
 	}
 
@@ -79,17 +83,15 @@ void WeaponInstance::spawnProjectiles(Game* game)
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weapon = this;
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
-		Vec2 pos = attachTo->transform.position;
+		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->notRelativeToRoot)
-			pos += parentUnitInstance->rootSpriteInstance->transform.position;
-		newProj->rootSpriteInstance->transform.position = pos + params.position + params.offset + offRadius;
+		if (attachTo != parentUnitInstance->root && !attachTo->notRelativeToRoot)
+			pos += parentUnitInstance->root->position;
+		newProj->root->position = pos + params.position + params.offset + offRadius;
 		auto rads = deg2rad(angle);
 		newProj->velocity.x = sinf(rads);
 		newProj->velocity.y = cosf(rads);
         newProj->velocity.normalize();
-		newProj->controllers["main"] = new ProjectileController();
-		newProj->controllers["main"]->unitInstance = newProj;
 		newProj->layerIndex = parentUnitInstance->layerIndex;
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
@@ -107,10 +109,10 @@ void WeaponInstance::update(struct Game* game)
 
 	if (attachTo && weaponResource->params.type == WeaponResource::Type::Beam)
 	{
-		Vec2 pos = attachTo->transform.position;
+		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnitInstance->rootSpriteInstance && !attachTo->notRelativeToRoot)
-			pos += parentUnitInstance->rootSpriteInstance->transform.position;
+		if (attachTo != parentUnitInstance->root && !attachTo->notRelativeToRoot)
+			pos += parentUnitInstance->root->position;
 
 		pos = Game::instance->worldToScreen(pos, parentUnitInstance->layerIndex);
 
@@ -132,9 +134,9 @@ void WeaponInstance::update(struct Game* game)
 		spawnProjectiles(game);
     }
 
-	if (weaponResource && weaponResource->script)
+	if (scriptClass)
 	{
-		auto func = weaponResource->script->getFunction("onUpdate");
+		auto func = scriptClass->getFunction("onUpdate");
 
 		if (func.isFunction())
 		{
@@ -191,7 +193,8 @@ void WeaponInstance::render()
 
 		Game::instance->graphics->drawQuad({ p.x, p.y, 5, 5 }, sprB->getFrameUvRect(0));
 	}
-	//r2 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
+	r1 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
+	r2 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
 	rotAng1 += Game::instance->deltaTime * 0.1;
 	angDelta += Game::instance->deltaTime * 0.2;
 }

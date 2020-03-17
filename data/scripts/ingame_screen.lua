@@ -1,9 +1,24 @@
-local M = {}
+local C = {}
 
-function M.onRender(layerIndex)
+function C:init()
 end
 
-function M.onUpdate()
+function C:onUpdate()
 end
 
-return M
+function C:onRender(layerIndex)
+end
+
+function C:onScreenEnter()
+end
+
+function C:onScreenLeave()
+end
+
+return function(unit)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(unit)
+  return o
+end

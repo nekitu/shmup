@@ -7,7 +7,7 @@ int main(int argc, char** args)
 	engine::Game game;
 
 	//TODO: load from cfg file
-	game.windowWidth = 1000;
+	game.windowWidth = 800;
 	game.windowHeight = 800;
 	game.windowTitle = "Stellar Eagle";
 	game.fullscreen = false;

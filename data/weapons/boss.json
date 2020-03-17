@@ -1,13 +1,13 @@
 {
-	"fireRate" : 11,
-	"fireRays" : 10,
-    "fireRaysAngle" : 360,
-    "direction" : "0 1",
-    "offsetRadius": 10,
-    "fireRaysRotationSpeed": 310,
-    "initialProjectileSpeed": 150,
-    "minProjectileSpeed": 150,
-    "projectileAcceleration": 0,
-	"projectileUnit" : "units/projectile/boss_fire",
-	"script": "scripts/weapon_primary.lua"
+  "fireRate" : 11,
+  "fireRays" : 10,
+  "fireRaysAngle" : 360,
+  "direction" : "0 1",
+  "offsetRadius": 10,
+  "fireRaysRotationSpeed": 310,
+  "initialProjectileSpeed": 150,
+  "minProjectileSpeed": 150,
+  "projectileAcceleration": 0,
+  "projectileUnit" : "units/projectile/boss_fire",
+  "script": "scripts/weapon_primary"
 }

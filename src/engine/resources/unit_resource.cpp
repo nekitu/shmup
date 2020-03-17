@@ -16,7 +16,7 @@ bool UnitResource::load(Json::Value& json)
 {
 	name = json["name"].asString();
 	auto typeStr = json["type"].asString();
-	
+
 	if (typeStr == "Enemy")
 		type = Type::Enemy;
 
@@ -36,7 +36,7 @@ bool UnitResource::load(Json::Value& json)
 	parallaxScale = json.get("parallaxScale", parallaxScale).asFloat();
 	visible = json.get("visible", visible).asBool();
 	collide = json.get("collide", collide).asBool();
-	rootSpriteInstanceName = json.get("rootSpriteInstance", "").asString();
+	rootName = json.get("root", "").asString();
 	script = loader->loadScript(json.get("script", "").asString());
 	shadowScale = json.get("shadowScale", shadowScale).asFloat();
 	shadow = json.get("shadow", shadow).asBool();
@@ -46,9 +46,6 @@ bool UnitResource::load(Json::Value& json)
 	if (autoDeleteTypeStr == "None") autoDeleteType = AutoDeleteType::None;
 	if (autoDeleteTypeStr == "OutOfScreen") autoDeleteType = AutoDeleteType::OutOfScreen;
 	if (autoDeleteTypeStr == "EndOfScreen") autoDeleteType = AutoDeleteType::EndOfScreen;
-
-	// load controllers json
-	controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));
 
 	// load stages
 	auto stagesJson = json.get("stages", Json::Value(Json::ValueType::arrayValue));
@@ -75,11 +72,11 @@ bool UnitResource::load(Json::Value& json)
 		sprInst->sprite = sprRes;
 		sprInst->name = sprJson["name"].asString();
 		sprInst->animationName = sprJson.get("animationName", "default").asString();
-		sprInst->transform.position.parse(sprJson.get("position", "0 0").asString());
-		sprInst->transform.rotation = sprJson.get("rotation", 0).asInt();
-		sprInst->transform.scale = sprJson.get("scale", 1.0f).asFloat();
-		sprInst->transform.horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
-		sprInst->transform.verticalFlip = sprJson.get("verticalFlip", false).asBool();
+		sprInst->position.parse(sprJson.get("position", "0 0").asString());
+		sprInst->rotation = sprJson.get("rotation", 0).asInt();
+		sprInst->scale = sprJson.get("scale", 1.0f).asFloat();
+		sprInst->horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
+		sprInst->verticalFlip = sprJson.get("verticalFlip", false).asBool();
 		sprInst->orderIndex = i;
 		sprInst->collide = sprJson.get("collide", true).asBool();
 		sprInst->shadow = sprJson.get("shadow", sprInst->shadow).asBool();

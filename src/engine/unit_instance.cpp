@@ -1,5 +1,4 @@
 #include "unit_instance.h"
-#include "unit_controller.h"
 #include "utils.h"
 #include "sprite_instance.h"
 #include "resources/sprite_resource.h"
@@ -21,7 +20,6 @@ u64 UnitInstance::lastId = 1;
 UnitInstance::UnitInstance()
 {
 	id = lastId++;
-	//printf("CRT UID %lld\n", id);
 }
 
 void UnitInstance::updateShadowToggle()
@@ -46,18 +44,7 @@ void UnitInstance::copyFrom(UnitInstance* other)
 	shadow = other->shadow;
 	unit = other->unit;
 	deleteMeNow = other->deleteMeNow;
-
-	if (other->controllers.size())
-	{
-		for (auto ctrl : other->controllers)
-		{
-			auto ctrl2 = ctrl.second->createNew();
-			ctrl2->copyFrom(ctrl.second);
-			controllers[ctrl.first] = ctrl.second;
-		}
-	}
-
-	script = other->script;
+	scriptClass = other->unit->script->createClassInstance(this);
 
 	// map from other unit to new sprite instances
 	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
@@ -72,16 +59,22 @@ void UnitInstance::copyFrom(UnitInstance* other)
 		spriteInstMap[otherSprInst] = sprInst;
 	}
 
-	rootSpriteInstance = spriteInstMap[other->rootSpriteInstance];
+	root = spriteInstMap[other->root];
 
 	// if no root specified, use first sprite instance as root
-	if (!rootSpriteInstance && spriteInstances.size())
+	if (!root && spriteInstances.size())
 	{
-		rootSpriteInstance = spriteInstances[0];
+		root = spriteInstances[0];
 	}
 
-	if (other->rootSpriteInstance)
-		rootSpriteInstance->transform = other->rootSpriteInstance->transform;
+	if (other->root)
+	{
+		root->position = other->root->position;
+		root->scale = other->root->scale;
+		root->rotation = other->root->rotation;
+		root->verticalFlip = other->root->verticalFlip;
+		root->horizontalFlip = other->root->horizontalFlip;
+	}
 
 	// copy sprite instance animations
 	for (auto& spriteInstAnim : other->spriteInstanceAnimations)
@@ -123,7 +116,7 @@ void UnitInstance::initializeFrom(UnitResource* res)
 	name = res->name;
 	speed = res->speed;
 	visible = res->visible;
-	script = res->script;
+	scriptClass = res->script->createClassInstance(this);
 	collide = res->collide;
 	shadow = res->shadow;
 
@@ -142,15 +135,15 @@ void UnitInstance::initializeFrom(UnitResource* res)
 
 	std::sort(spriteInstances.begin(), spriteInstances.end(), [](const SpriteInstance* a, const SpriteInstance* b) { return a->orderIndex < b->orderIndex; });
 
-	if (res->rootSpriteInstanceName.size())
+	if (res->rootName.size())
 	{
-		rootSpriteInstance = spriteInstMap[res->spriteInstances[res->rootSpriteInstanceName]];
+		root = spriteInstMap[res->spriteInstances[res->rootName]];
 	}
 
 	// if no root specified, use first sprite instance as root
-	if (!rootSpriteInstance && spriteInstances.size())
+	if (!root && spriteInstances.size())
 	{
-		rootSpriteInstance = spriteInstances[0];
+		root = spriteInstances[0];
 	}
 
 	// copy sprite instance animations
@@ -182,28 +175,6 @@ void UnitInstance::initializeFrom(UnitResource* res)
 		weaponInst->params.position = weaponInstRes.second->localPosition;
 		weapons[weaponInstRes.first] = weaponInst;
 	}
-
-	for (auto ctrlerJson : res->controllersJson)
-	{
-		auto controller = UnitController::create(ctrlerJson.get("class", "").asString(), this);
-
-		if (controller)
-		{
-			controller->name = ctrlerJson.get("name", "").asString();
-
-			if (controller->name.empty())
-			{
-				printf("WARNING: all controllers must have a name! (class: %s in unit %s) skipping this controller, not added.",
-					ctrlerJson.get("class", "").asCString(),
-					name.c_str());
-			}
-			else
-			{
-				controllers[controller->name] = controller;
-				controller->initializeFromJson(ctrlerJson);
-			}
-		}
-	}
 }
 
 void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
@@ -226,7 +197,7 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 	shadow = json.get("shadow", visible).asBool();
 	speed = json.get("speed", speed).asFloat();
 	layerIndex = json.get("layerIndex", layerIndex).asInt();
-	rootSpriteInstance->transform.position.parse(json.get("position", "0 0").asString());
+	root->position.parse(json.get("position", "0 0").asString());
 	stageIndex = 0;
 }
 
@@ -245,17 +216,16 @@ void UnitInstance::update(Game* game)
 
 			triggeredStages.push_back(stage);
 
-			auto func = unit->script->getFunction("onStageChange");
+			if (scriptClass)
+			{
+				auto func = scriptClass->getFunction("onStageChange");
 
-			if (func.isFunction()) func.call(this, currentStage ? currentStage->name : "", stage->name);
+				if (func.isFunction()) func.call(this, currentStage ? currentStage->name : "", stage->name);
+			}
 
 			currentStage = stage;
+			break;
 		}
-	}
-
-	for (auto controller : controllers)
-	{
-		controller.second->update(game);
 	}
 
 	if (spriteInstanceAnimationMap)
@@ -307,9 +277,9 @@ void UnitInstance::update(Game* game)
 
 	age += game->deltaTime;
 
-	if (script)
+	if (scriptClass)
 	{
-		auto func = script->getFunction("onUpdate");
+		auto func = scriptClass->getFunction("onUpdate");
 		if (func.isFunction()) func.call(this);
 	}
 }
@@ -340,14 +310,14 @@ void UnitInstance::setAnimation(const std::string& animName)
 
 void UnitInstance::computeBoundingBox()
 {
-	if (rootSpriteInstance)
+	if (root)
 	{
-		if (rootSpriteInstance->transform.rotation != 0)
+		if (root->rotation != 0)
 		{
-			boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
-			boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
-			boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
-			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+			boundingBox.width = root->sprite->frameWidth * root->scale;
+			boundingBox.height = root->sprite->frameHeight * root->scale;
+			boundingBox.x = root->position.x - boundingBox.width / 2;
+			boundingBox.y = root->position.y - boundingBox.height / 2;
 
 			Vec2 v0(boundingBox.topLeft());
 			Vec2 v1(boundingBox.topRight());
@@ -355,7 +325,7 @@ void UnitInstance::computeBoundingBox()
 			Vec2 v3(boundingBox.bottomLeft());
 
 			Vec2 center = boundingBox.center();
-			auto angle = deg2rad(rootSpriteInstance->transform.rotation);
+			auto angle = deg2rad(root->rotation);
 
 			v0.rotateAround(center, angle);
 			v1.rotateAround(center, angle);
@@ -370,43 +340,43 @@ void UnitInstance::computeBoundingBox()
 		}
 		else
 		{
-			boundingBox.width = rootSpriteInstance->sprite->frameWidth * rootSpriteInstance->transform.scale;
-			boundingBox.height = rootSpriteInstance->sprite->frameHeight * rootSpriteInstance->transform.scale;
-			boundingBox.x = rootSpriteInstance->transform.position.x - boundingBox.width / 2;
-			boundingBox.y = rootSpriteInstance->transform.position.y - boundingBox.height / 2;
+			boundingBox.width = root->sprite->frameWidth * root->scale;
+			boundingBox.height = root->sprite->frameHeight * root->scale;
+			boundingBox.x = root->position.x - boundingBox.width / 2;
+			boundingBox.y = root->position.y - boundingBox.height / 2;
 		}
 
 		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
 
-		rootSpriteInstance->screenRect = boundingBox;
+		root->screenRect = boundingBox;
 
-		rootSpriteInstance->screenRect.x = roundf(rootSpriteInstance->screenRect.x);
-		rootSpriteInstance->screenRect.y = roundf(rootSpriteInstance->screenRect.y);
-		rootSpriteInstance->screenRect.width = roundf(rootSpriteInstance->screenRect.width);
-		rootSpriteInstance->screenRect.height = roundf(rootSpriteInstance->screenRect.height);
+		root->screenRect.x = roundf(root->screenRect.x);
+		root->screenRect.y = roundf(root->screenRect.y);
+		root->screenRect.width = roundf(root->screenRect.width);
+		root->screenRect.height = roundf(root->screenRect.height);
 	}
 
 	// compute bbox for the rest of the sprite instances
 	for (auto sprInst : spriteInstances)
 	{
-		if (!sprInst->visible || sprInst == rootSpriteInstance) continue;
+		if (!sprInst->visible || sprInst == root) continue;
 
 		Vec2 pos;
 
 		// if relative to root sprite instance
 		if (!sprInst->notRelativeToRoot)
 		{
-			pos = rootSpriteInstance->transform.position;
+			pos = root->position;
 		}
 
-		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
-		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
+		f32 mirrorV = sprInst->verticalFlip ? -1 : 1;
+		f32 mirrorH = sprInst->horizontalFlip ? -1 : 1;
 
-		pos.x += sprInst->transform.position.x * mirrorH;
-		pos.y += sprInst->transform.position.y * mirrorV;
+		pos.x += sprInst->position.x * mirrorH;
+		pos.y += sprInst->position.y * mirrorV;
 
-		f32 renderW = sprInst->sprite->frameWidth * sprInst->transform.scale * rootSpriteInstance->transform.scale;
-		f32 renderH = sprInst->sprite->frameHeight * sprInst->transform.scale * rootSpriteInstance->transform.scale;
+		f32 renderW = sprInst->sprite->frameWidth * sprInst->scale * root->scale;
+		f32 renderH = sprInst->sprite->frameHeight * sprInst->scale * root->scale;
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
@@ -421,7 +391,7 @@ void UnitInstance::computeBoundingBox()
 			roundf(renderH)
 		};
 
-		if (sprInst->transform.rotation != 0)
+		if (sprInst->rotation != 0)
 		{
 			Vec2 v0(spriteRc.topLeft());
 			Vec2 v1(spriteRc.topRight());
@@ -429,7 +399,7 @@ void UnitInstance::computeBoundingBox()
 			Vec2 v3(spriteRc.bottomLeft());
 
 			Vec2 center = spriteRc.center();
-			auto angle = deg2rad(sprInst->transform.rotation);
+			auto angle = deg2rad(sprInst->rotation);
 
 			v0.rotateAround(center, angle);
 			v1.rotateAround(center, angle);
@@ -466,9 +436,9 @@ void UnitInstance::computeBoundingBox()
 		{
 			appeared = true;
 
-			if (unit->script)
+			if (scriptClass)
 			{
-				auto func = unit->script->getFunction("onAppeared");
+				auto func = scriptClass->getFunction("onAppeared");
 
 				if (func.isFunction())
 				{
@@ -492,16 +462,16 @@ void UnitInstance::render(Graphics* gfx)
 
 		if (!sprInst->notRelativeToRoot)
 		{
-			pos = sprInst != rootSpriteInstance ? rootSpriteInstance->transform.position : Vec2();
+			pos = sprInst != root ? root->position : Vec2();
 		}
 
-		f32 mirrorV = sprInst->transform.verticalFlip ? -1 : 1;
-		f32 mirrorH = sprInst->transform.horizontalFlip ? -1 : 1;
+		f32 mirrorV = sprInst->verticalFlip ? -1 : 1;
+		f32 mirrorH = sprInst->horizontalFlip ? -1 : 1;
 
-		if (sprInst != rootSpriteInstance)
+		if (sprInst != root)
 		{
-			if (rootSpriteInstance->transform.verticalFlip) mirrorV *= -1;
-			if (rootSpriteInstance->transform.horizontalFlip) mirrorH *= -1;
+			if (root->verticalFlip) mirrorV *= -1;
+			if (root->horizontalFlip) mirrorH *= -1;
 		}
 
 		Rect uvRc = sprInst->sprite->getFrameUvRect(sprInst->animationFrame);
@@ -536,15 +506,15 @@ void UnitInstance::render(Graphics* gfx)
 		gfx->currentColor = 0;
 		gfx->currentColorMode = (u32)ColorMode::Mul;
 
-		if (sprInst->transform.rotation > 0)
+		if (sprInst->rotation > 0)
 		{
 			if (sprInst->sprite->image->rotated)
 			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->shadowRect, sprInst->uvRect, sprInst->transform.rotation);
+				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->shadowRect, sprInst->uvRect, sprInst->rotation);
 			}
 			else
 			{
-				gfx->drawRotatedQuad(sprInst->shadowRect, sprInst->uvRect, sprInst->transform.rotation);
+				gfx->drawRotatedQuad(sprInst->shadowRect, sprInst->uvRect, sprInst->rotation);
 			}
 		}
 		else
@@ -568,15 +538,15 @@ void UnitInstance::render(Graphics* gfx)
 		gfx->currentColor = sprInst->color.getRgba();
 		gfx->currentColorMode = (u32)sprInst->colorMode;
 
-		if (sprInst->transform.rotation > 0)
+		if (sprInst->rotation > 0)
 		{
 			if (sprInst->sprite->image->rotated)
 			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->screenRect, sprInst->uvRect, sprInst->transform.rotation);
+				gfx->drawRotatedQuadWithTexCoordRotated90(sprInst->screenRect, sprInst->uvRect, sprInst->rotation);
 			}
 			else
 			{
-				gfx->drawRotatedQuad(sprInst->screenRect, sprInst->uvRect, sprInst->transform.rotation);
+				gfx->drawRotatedQuad(sprInst->screenRect, sprInst->uvRect, sprInst->rotation);
 			}
 		}
 		else
@@ -596,13 +566,6 @@ void UnitInstance::render(Graphics* gfx)
 	{
 		weapon.second->render();
 	}
-}
-
-UnitController* UnitInstance::findController(const std::string& cname)
-{
-	auto iter = controllers.find(cname);
-	if (iter == controllers.end()) return nullptr;
-	return iter->second;
 }
 
 SpriteInstance* UnitInstance::findSpriteInstance(const std::string& sname)

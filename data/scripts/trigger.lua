@@ -1,17 +1,20 @@
-local M = {}
+local C = {}
 
-local function onUpdate(unitInst)
+function C:init(unit)
+  self.unit = unit
 end
 
-local function onCollide(unitInst1, unitInst2)
+function C:onUpdate()
 end
 
-local function onAppeared(unitInst)
-  game.fadeScreen(game.player1, "screenFx", Color(0,0,0,1), game.ColorMode_Mul, 3, false)
+function C:onAppeared()
+  game.fadeScreen(Color(0,0,0,1), game.ColorMode_Mul, 3, false)
 end
 
-M.onCollide = onCollide
-M.onUpdate = onUpdate
-M.onAppeared = onAppeared
-
-return M
+return function(unit)
+  local o = {}
+  setmetatable(o, C)
+  C.__index = C
+  o:init(unit)
+  return o
+end

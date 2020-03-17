@@ -8,13 +8,6 @@
 
 namespace engine
 {
-enum class ColorMode
-{
-	Add,
-	Sub,
-	Mul
-};
-
 struct SpriteFrameAnimation
 {
 	enum class Type
@@ -36,7 +29,7 @@ struct SpriteResource : Resource
 {
 	struct AtlasImage* image = nullptr;
 	struct ImageAtlas* atlas = nullptr;
-	
+
 	u32 frameCount = 0;
 	u32 frameWidth = 0;
 	u32 frameHeight = 0;

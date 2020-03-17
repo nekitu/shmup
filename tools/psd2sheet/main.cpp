@@ -120,12 +120,19 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 
 		if (result.count("help"))
 		{
-			std::cout << options.help({ "" }) << std::endl;
+			std::cout << "Help: " << options.help({ "" }) << std::endl;
 			exit(0);
 		}
 
-		args.filename = result["file"].as<std::string>();
-		args.outFilename = result["outfile"].as<std::string>();
+		if (result.count("file"))
+		{
+			args.filename = result["file"].as<std::string>();
+		}
+
+		if (result.count("outfile"))
+		{
+			args.outFilename = result["outfile"].as<std::string>();
+		}
 
 		return result;
 
@@ -374,7 +381,7 @@ int main(int argc, char *argv[])
             sheetRow++;
         }
     }
-    
+
     write_png(args.outFilename.c_str(), sheetWidth, sheetHeight, (u32*)imagedata);
     delete []imagedata;
 	psd_image_free(context);

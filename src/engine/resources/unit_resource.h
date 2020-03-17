@@ -5,7 +5,6 @@
 #include "types.h"
 #include "vec2.h"
 #include "color.h"
-#include "transform.h"
 #include "rect.h"
 #include "resource.h"
 #include "resources/sprite_resource.h"
@@ -15,7 +14,7 @@ namespace engine
 enum class AutoDeleteType
 {
 	None,
-	OutOfScreen, // delete when out of screen, any side
+	OutOfScreen, // delete when out of screen, any side, used for projectiles
 	EndOfScreen // delete when exits screen, depending on screen mode vertical/horizontal
 };
 
@@ -24,7 +23,11 @@ struct SpriteInstanceResource
 	struct SpriteResource* sprite = nullptr;
 	std::string name;
 	std::string animationName = "default";
-	Transform transform;
+	Vec2 position;
+	f32 scale = 1.0f;
+	bool verticalFlip = false;
+	bool horizontalFlip = false;
+	f32 rotation = 0;
 	u32 orderIndex = 0;
 	bool collide = true;
 	bool visible = true;
@@ -77,8 +80,7 @@ struct UnitResource : Resource
 	bool visible = true;
 	AutoDeleteType autoDeleteType = AutoDeleteType::EndOfScreen;
 	bool collide = true;
-	std::string rootSpriteInstanceName;
-	Json::Value controllersJson;
+	std::string rootName;
 	struct ScriptResource* script = nullptr;
 	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> spriteInstances;
 	std::vector<UnitLifeStage*> stages;

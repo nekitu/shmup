@@ -9,7 +9,9 @@
 #include "vec2.h"
 #include "rect.h"
 #include "utils.h"
+#include "color.h"
 #include "resources/level_resource.h"
+#include "lua_scripting.h"
 
 namespace engine
 {
@@ -60,6 +62,22 @@ struct PlayerStats
 	struct UnitInstance* unitInstance = nullptr;
 };
 
+struct ScreenFx
+{
+	Vec2 shakeForce;
+	f32 shakeDuration, shakeTimer = 0;
+	u32 shakeCounter = 0;
+	u32 shakeCount = 0;
+	bool doingShake = false;
+
+	f32 fadeDuration, fadeTimer = 0;
+	Color fadeColor;
+	ColorMode fadeColorMode = ColorMode::Add;
+	f32 fadeTimerDir = 1;
+	bool fadeRevertBackAfter = false;
+	bool doingFade = false;
+};
+
 struct Game
 {
 	static const int maxPlayerCount = 1;
@@ -70,6 +88,7 @@ struct Game
 	bool vSync = true;
 	std::string dataRoot = "../data/";
 	bool exitGame = false;
+	bool editing = false;
 	SDL_Window* window = nullptr;
 	SDL_GLContext glContext = 0;
 	struct Graphics* graphics = nullptr;
@@ -87,6 +106,7 @@ struct Game
 	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
 	u32 currentLevelIndex = 0;
 	struct ScriptResource* currentMainScript = nullptr;
+	struct ScriptClassInstance* scriptClass;
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset;
@@ -98,6 +118,7 @@ struct Game
 	bool animatingCameraSpeed = false;
 	f32 cameraSpeedAnimateTime = 0;
 	f32 oldCameraSpeed = 0, newCameraSpeed = 0;
+	ScreenFx screenFx;
 
 	Game();
 	~Game();
@@ -107,7 +128,7 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
-	BeamCollisionInfo checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 width);
+	BeamCollisionInfo checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 beamWidth);
 	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
 	Vec2 screenToWorld(const Vec2& pos, u32 layerIndex);
 	Rect worldToScreen(const Rect& rc, u32 layerIndex);
@@ -116,6 +137,9 @@ struct Game
 	void mainLoop();
 	void computeDeltaTime();
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
+	void shakeCamera(const Vec2& force, f32 duration, u32 count);
+	void fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter);
+	void updateScreenFx();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
 	bool isPlayerMoveLeft(u32 playerIndex);
 	bool isPlayerMoveRight(u32 playerIndex);
@@ -131,7 +155,6 @@ struct Game
 	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
 	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
 	struct WeaponInstance* createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst);
-	struct UnitController* createUnitController(const std::string& name);
 };
 
 }

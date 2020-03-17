@@ -2,7 +2,6 @@
 #include <string>
 #include "types.h"
 #include "vec2.h"
-#include "transform.h"
 #include "resources/sprite_resource.h"
 #include "color.h"
 
@@ -12,7 +11,11 @@ struct SpriteInstance
 {
 	std::string name;
 	struct SpriteResource* sprite = nullptr;
-	Transform transform;
+	Vec2 position;
+	f32 scale = 1.0f;
+	bool verticalFlip = false;
+	bool horizontalFlip = false;
+	f32 rotation = 0;
 	Vec2 screenPosition;
 	Rect screenRect;
 	Rect uvRect;

@@ -54,12 +54,14 @@ in vec2 inPOSITION;\
 in vec2 inTEXCOORD0;\
 in uint inCOLOR;\
 in uint inColorMode;\
+in uint inAlphaMode;\
 in uint inTEXINDEX;\
 \
 uniform mat4 mvp;\
 out vec2 outTEXCOORD;\
 out vec4 outCOLOR;\
 flat out uint outColorMode;\
+flat out uint outAlphaMode;\
 flat out uint outTEXINDEX;\
 \
 void main()\
@@ -70,6 +72,7 @@ void main()\
     vec4 color = vec4(float(inCOLOR & uint(0x000000FF))/255.0, float((inCOLOR & uint(0x0000FF00)) >> uint(8))/255.0, float((inCOLOR & uint(0x00FF0000)) >> uint(16))/255.0, float((inCOLOR & uint(0xFF000000))>> uint(24))/255.0);\
     outCOLOR = color;\
     outColorMode = inColorMode;\
+    outAlphaMode = inAlphaMode;\
     outTEXINDEX = inTEXINDEX;\
     return;\
 }\
@@ -84,13 +87,14 @@ uniform sampler2DArray diffuseSampler;\
 in vec2 outTEXCOORD;\
 in vec4 outCOLOR;\
 flat in uint outColorMode;\
+flat in uint outAlphaMode;\
 flat in uint outTEXINDEX;\
 out vec4 finalCOLOR;\
 \
 void main()\
 {\
 	vec4 texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
-	if (texelColor.a < 1) discard;\
+	if (outAlphaMode == 0 && texelColor.a < 1) discard;\
 	if (outColorMode == 0U)\
 		finalCOLOR = texelColor + outCOLOR;\
 	else if (outColorMode == 1U)\
@@ -106,7 +110,6 @@ static const char* blitRTPixelShaderSource =
 uniform sampler2D diffuseSampler;\
 \
 in vec2 outTEXCOORD;\
-flat in uint outColorMode;\
 in vec4 outCOLOR;\
 flat in uint outTEXINDEX;\
 out vec4 finalCOLOR;\
@@ -114,13 +117,7 @@ out vec4 finalCOLOR;\
 void main()\
 {\
     vec4 texelColor = texture2D(diffuseSampler, outTEXCOORD);\
-	if (texelColor.a < 1) discard;\
-	if (outColorMode == 0U)\
-		finalCOLOR = texelColor + outCOLOR;\
-	else if (outColorMode == 1U)\
-		finalCOLOR = texelColor - outCOLOR;\
-	else if (outColorMode == 2U)\
-		finalCOLOR = texelColor * outCOLOR;\
+	finalCOLOR = texelColor;\
 }\
 ";
 
@@ -145,7 +142,7 @@ void Graphics::createScreenRenderTarget()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTargetTextureId, 0);
-	
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
 		printf("Framebuffer is complete!\n");
@@ -199,8 +196,6 @@ void Graphics::blitRenderTarget()
 	Rect rc = { round((game->windowWidth - newWidth) / 2.0f),
 		round((game->windowHeight - newHeight) / 2.0f),
 		round(newWidth), round(newHeight) };
-	currentColor = renderTargetColor;
-	currentColorMode = (u32)renderTargetColorMode;
 	drawQuad(rc, { 0, 1, 1, -1 });
 	endFrame();
 	glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
@@ -315,7 +310,7 @@ void Graphics::endFrame()
 	offsetSum += sizeof(f32) * 2;
 
 	attrLoc = glGetAttribLocation(currentGpuProgram->program, "inTEXCOORD0");
-	
+
 	if (attrLoc != ~0)
 	{
 		OGL_CHECK_ERROR;
@@ -345,6 +340,21 @@ void Graphics::endFrame()
 	}
 
 	attrLoc = glGetAttribLocation(currentGpuProgram->program, "inColorMode");
+
+	if (attrLoc != ~0)
+	{
+		OGL_CHECK_ERROR;
+		glEnableVertexAttribArray(attrLoc);
+		OGL_CHECK_ERROR;
+		glVertexAttribIPointer(attrLoc, 1, GL_UNSIGNED_INT, stride, OGL_VBUFFER_OFFSET(offsetSum));
+		OGL_CHECK_ERROR;
+
+		if (glVertexAttribDivisor) glVertexAttribDivisor(attrLoc, 0);
+		OGL_CHECK_ERROR;
+		offsetSum += sizeof(u32);
+	}
+
+	attrLoc = glGetAttribLocation(currentGpuProgram->program, "inAlphaMode");
 
 	if (attrLoc != ~0)
 	{
@@ -408,6 +418,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.topLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -415,6 +426,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.topRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -422,6 +434,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.bottomLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -431,6 +444,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.topRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -438,6 +452,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.bottomRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -445,6 +460,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].uv = uvRect.bottomLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -470,6 +486,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t3;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -477,6 +494,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t0;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -484,6 +502,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t2;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -493,6 +512,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t0;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -500,6 +520,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t1;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -507,6 +528,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].uv = t2;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -551,6 +573,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t3;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -558,6 +581,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t0;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -565,6 +589,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t2;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -574,6 +599,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t0;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -581,6 +607,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t1;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -588,6 +615,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].uv = t2;
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -657,6 +685,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.topLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -664,6 +693,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.topRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -671,6 +701,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.bottomLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -680,6 +711,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.topRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -687,6 +719,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.bottomRight();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -694,6 +727,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].uv = uvRect.bottomLeft();
 	vertices[i].color = currentColor;
 	vertices[i].colorMode = currentColorMode;
+	vertices[i].alphaMode = currentAlphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 

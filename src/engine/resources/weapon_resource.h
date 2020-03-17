@@ -3,6 +3,7 @@
 #include "resource.h"
 #include "vec2.h"
 #include "json/value.h"
+#include "lua_scripting.h"
 
 namespace engine
 {
@@ -41,6 +42,7 @@ struct WeaponResource : Resource
 	struct SpriteResource* beamBeginSprite = nullptr;
 	struct UnitResource* projectileUnit = nullptr;
 	struct ScriptResource* script = nullptr;
+	LuaIntf::LuaRef scriptClassInstance;
 
 	bool load(Json::Value& json) override;
 };

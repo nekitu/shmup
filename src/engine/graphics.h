@@ -33,9 +33,8 @@ struct Graphics
 	f32 vertexCountGrowFactor = 1.5f;
 	u32 currentColor = 0;
 	u32 currentColorMode = 0;
+	u32 currentAlphaMode = 0;
 	u32 atlasTextureIndex = 0;
-	u32 renderTargetColor = 0;
-	ColorMode renderTargetColorMode = ColorMode::Add;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;

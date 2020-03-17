@@ -135,7 +135,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 	}
 
 	Json::Value json;
-	
+
 	if (!loadJson(fullFilename + ".json", json))
 	{
 		return nullptr;
@@ -166,7 +166,7 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 	}
 
 	Json::Value json;
-	
+
 	if (!loadJson(fullFilename + ".json", json))
 	{
 		return nullptr;

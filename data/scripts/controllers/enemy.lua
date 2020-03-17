@@ -4,10 +4,9 @@ function C:init(unit)
   self.unit = unit
 end
 
-function C:onUpdate()
-  if self.unit.age > 10 then
-    self.unit.deleteMeNow = true
-  end
+function C:update()
+  if not self.unit.root then return end
+  self.unit.root.position.y = self.unit.root.position.y + self.unit.speed * game.deltaTime
 end
 
 return function(unit)

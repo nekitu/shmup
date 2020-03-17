@@ -9,7 +9,7 @@
 #include "sprite_instance.h"
 #include "game.h"
 #include "graphics.h"
-#include "unit_controller.h"
+#include "projectile_instance.h"
 
 namespace engine
 {
@@ -18,40 +18,93 @@ static lua_State* L = nullptr;
 bool ScriptResource::load(Json::Value& json)
 {
 	code = readTextFile(loader->root + fileName);
-	luaL_loadstring(L, code.c_str());
-	auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
-	
-	if (result)
+	auto res = luaL_loadstring(L, code.c_str());
+
+	// if we already have some class instances, recreate them with the new script
+	for (auto& ci : classInstances)
 	{
-		printf("Lua error: %s\n", lua_tostring(L, -1));
-		return false;
+		lua_pushlightuserdata(L, ci->object);
+
+		//TODO: cant we store the creator function only ? do we have to call the entire code ?
+		auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
+
+		if (result)
+		{
+			printf("Lua error: %s\n", lua_tostring(L, -1));
+			continue;
+		}
+
+		if (lua_istable(L, -1)) {
+			ci->classInstance = LuaIntf::LuaRef::popFromStack(L);
+		}
+		else
+		{
+			printf("Lua: Please return C class table in %s\n", fileName.c_str());
+		}
 	}
 
-	if (lua_istable(L, -1)) {
-		M = LuaIntf::LuaRef::popFromStack(L);
-	}
-	else
-	{
-		printf("Lua: Please return M table in %s\n", fileName.c_str());
-	}
-
-	return true;
+	return res == 0;
 }
 
 void ScriptResource::unload()
 {
-	M = LuaIntf::LuaRef();
+	code = "";
+
+	for (auto& ci : classInstances)
+	{
+		ci->classInstance = LuaIntf::LuaRef();
+	}
 }
 
-LuaIntf::LuaRef ScriptResource::getFunction(const std::string& funcName)
+ScriptClassInstance* ScriptResource::createClassInstance(void* obj)
 {
-	if (M.has(funcName))
+	if (obj)
 	{
-		auto f = M.get(funcName);
+		lua_pushlightuserdata(L, obj);
+	}
+
+	auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
+
+	if (result)
+	{
+		printf("Lua error: %s\n", lua_tostring(L, -1));
+		return nullptr;
+	}
+
+	LuaIntf::LuaRef inst;
+
+	if (lua_istable(L, -1)) {
+		inst = LuaIntf::LuaRef::popFromStack(L);
+	}
+	else
+	{
+		printf("Lua: Please return C class table in %s\n", fileName.c_str());
+		return nullptr;
+	}
+
+	ScriptClassInstance* classInst = new ScriptClassInstance();
+
+	classInst->script = this;
+	classInst->classInstance = inst;
+	classInst->object = obj;
+
+	classInstances.push_back(classInst);
+
+	return classInst;
+}
+
+LuaIntf::LuaRef ScriptClassInstance::getFunction(const std::string& funcName)
+{
+	if (!script)
+		return LuaIntf::LuaRef();
+
+	if (classInstance.has(funcName))
+	{
+		auto f = classInstance.get(funcName);
 
 		if (!f.isFunction())
 		{
-			printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), fileName.c_str());
+			printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), script->fileName.c_str());
 			return LuaIntf::LuaRef::fromPtr(L, nullptr);
 		}
 
@@ -60,6 +113,7 @@ LuaIntf::LuaRef ScriptResource::getFunction(const std::string& funcName)
 
 	return LuaIntf::LuaRef();
 }
+
 
 void engine_log(const char* str)
 {
@@ -73,52 +127,61 @@ bool initializeLua()
 
 	auto LUA = LuaIntf::LuaBinding(L);
 
-	LUA.beginModule("game")
-		.addVariable("deltaTime", &Game::instance->deltaTime)
-		.addFunction("log", engine_log)
-		.addVariable("cameraSpeed", &Game::instance->cameraSpeed)
-		.addVariable("hiscore", &Game::instance->hiscore)
-		.addVariableRef("player1", &Game::instance->players[0].unitInstance)
-		.addVariableRef("player2", &Game::instance->players[1].unitInstance)
-		.addVariable("credit", &Game::instance->credit)
-		.addFunction("shakeCamera", [](UnitInstance* inst, const std::string& ctrlName, const Vec2& force, f32 duration, u32 count)
+	LuaIntf::LuaContext l(L);
+
+	l.setGlobal("game", Game::instance);
+	l.setGlobal("ColorMode_Add", ColorMode::Add);
+	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
+	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
+
+	LUA.beginClass<Game>("game")
+		.addVariable("deltaTime", &Game::deltaTime)
+		//.addFunction("log", &engine_log)
+		.addVariable("cameraSpeed", &Game::cameraSpeed)
+		.addVariable("hiscore", &Game::hiscore)
+		.addFunction("player1", [](Game* g) { return g->players[0].unitInstance; })
+		.addFunction("player2", [](Game* g) { return g->players[1].unitInstance; })
+		.addVariable("credit", &Game::credit)
+		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
+		.addFunction("changeLevel", &Game::changeLevel)
+		.addFunction("loadNextLevel", [](Game* g) { g->changeLevel(~0); })
+		.addFunction("spawn", [](Game* g, const std::string& unit, const std::string& name, const Vec2& position)
 			{
-				auto ctrl = static_cast<ScreenFxController*>(inst->findController(ctrlName));
-				if (ctrl)
-				{
-					ctrl->shakeCamera(force, duration, count);
-				}
-			})
-		.addFunction("fadeScreen", [](UnitInstance* inst, const std::string& ctrlName, const Color& color, u32 colorMode, f32 duration, bool revertBackAfter)
-			{
-				auto ctrl = static_cast<ScreenFxController*>(inst->findController(ctrlName));
-				if (ctrl)
-				{
-					ctrl->fadeScreen(color, (ColorMode)colorMode, duration, revertBackAfter);
-				}
-			})
-				.addFunction("animateCameraSpeed", [](f32 towards, f32 speed)
-			{
-				Game::instance->animateCameraSpeed(towards, speed);
-			})
-		.addConstant("ColorMode_Add", ColorMode::Add)
-		.addConstant("ColorMode_Sub", ColorMode::Sub)
-		.addConstant("ColorMode_Mul", ColorMode::Mul)
-		.addFunction("changeLevel", [](int index) { Game::instance->changeLevel(index); })
-		.addFunction("loadNextLevel", []() { Game::instance->changeLevel(~0); })
-		.addFunction("spawn", [](const std::string& unit, const std::string& name, const Vec2& position)
-			{
-				auto uinst = Game::instance->createUnitInstance(Game::instance->resourceLoader->loadUnit(unit));
+				auto uinst = g->createUnitInstance(Game::instance->resourceLoader->loadUnit(unit));
 				uinst->name = name;
-				uinst->rootSpriteInstance->transform.position = position;
+				uinst->root->position = position;
 				return uinst;
 			}
 		)
-		.addFunction("loadFont", [](const std::string& filename) { return Game::instance->resourceLoader->loadFont(filename); })
-		.addFunction("loadSprite", [](const std::string& filename) { return Game::instance->resourceLoader->loadSprite(filename); })
+		.addFunction("loadFont", [](Game* g, const std::string& filename) { return g->resourceLoader->loadFont(filename); })
+		.addFunction("loadSprite", [](Game* g, const std::string& filename) { return g->resourceLoader->loadSprite(filename); })
+		.addVariable("cameraParallaxOffset", &Game::cameraParallaxOffset)
+		.addVariable("cameraParallaxScale", &Game::cameraParallaxScale)
+		.addVariableRef("cameraParallaxOffset", &Game::cameraPosition)
+		.addVariableRef("cameraParallaxOffset", &Game::cameraPositionOffset)
+		.addVariable("cameraSpeed", &Game::cameraSpeed)
+		.addVariable("cameraSpeedAnimateSpeed", &Game::cameraSpeedAnimateSpeed)
+		.addVariable("cameraSpeedAnimateTime", &Game::cameraSpeedAnimateTime)
+		.addVariable("animatingCameraSpeed", &Game::animatingCameraSpeed)
+		.addFunction("isPlayerMoveUp", &Game::isPlayerMoveUp)
+		.addFunction("isPlayerMoveDown", &Game::isPlayerMoveDown)
+		.addFunction("isPlayerMoveLeft", &Game::isPlayerMoveLeft)
+		.addFunction("isPlayerMoveRight", &Game::isPlayerMoveRight)
+		.addFunction("isPlayerFire1", &Game::isPlayerFire1)
+		.addFunction("isPlayerFire2", &Game::isPlayerFire2)
+		.addFunction("isPlayerFire3", &Game::isPlayerFire3)
+		.endClass();
+
+	LUA.beginModule("util")
+		.addFunction("clampValue", [](f32& val, f32 minVal, f32 maxVal)
+			{
+				return clampValue(val, minVal, maxVal);
+			})
 		.endModule();
 
 	LUA.beginModule("gfx")
+		.addVariable("videoWidth", &Game::instance->graphics->videoWidth)
+		.addVariable("videoHeight", &Game::instance->graphics->videoHeight)
 		.addFunction("drawText", [](FontResource* font, const Vec2& pos, const std::string& text)
 			{
 				Game::instance->graphics->drawText(font, pos, text);
@@ -165,7 +228,7 @@ bool initializeLua()
 		.addVariable("health", &UnitInstance::health)
 		.addVariable("stage", &UnitInstance::currentStage)
 		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow)
-		.addVariable("rootSpriteInstance", &UnitInstance::rootSpriteInstance)
+		.addVariable("root", &UnitInstance::root)
 		.addFunction("findWeapon",
 			[](UnitInstance* uinst, const std::string& weaponName)
 			{
@@ -203,6 +266,14 @@ bool initializeLua()
 			})
 		.endClass();
 
+	LUA.beginExtendClass<ProjectileInstance, UnitInstance>("ProjectileInstance")
+		.addVariableRef("weapon", &ProjectileInstance::weapon)
+		.addVariableRef("velocity", &ProjectileInstance::velocity)
+		.addVariable("minSpeed", &ProjectileInstance::minSpeed)
+		.addVariable("maxSpeed", &ProjectileInstance::maxSpeed)
+		.addVariable("acceleration", &ProjectileInstance::acceleration)
+		.endClass();
+
 	LUA.beginClass<Color>("Color")
 		.addConstructor(LUA_ARGS(f32, f32, f32, f32))
 		.addVariable("r", &Color::r)
@@ -212,13 +283,36 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<Vec2>("Vec2")
-		.addConstructor(LUA_ARGS(f32, f32))
+		.addConstructor(LUA_ARGS(LuaIntf::_opt<f32>, LuaIntf::_opt<f32>))
 		.addVariable("x", &Vec2::x)
 		.addVariable("y", &Vec2::y)
 		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
+		.addFunction("normalize", &Vec2::normalize)
+		.addFunction("getLength", &Vec2::getLength)
+		.addFunction("__add", [](Vec2* v1, Vec2* v2) { return *v1 + *v2; })
+		.addFunction("__sub", [](Vec2* v1, Vec2* v2) { return *v1 - *v2; })
+		.addFunction("__mul", [](Vec2* v1, Vec2* v2) { return *v1 * *v2; })
+		.addFunction("__div", [](Vec2* v1, Vec2* v2) { return *v1 / *v2; })
+		.addFunction("add", [](Vec2* v1, Vec2* v2) { *v1 += *v2; return v1; })
+		.addFunction("sub", [](Vec2* v1, Vec2* v2) { *v1 -= *v2; return v1; })
+		.addFunction("mul", [](Vec2* v1, Vec2* v2) { *v1 *= *v2; return v1; })
+		.addFunction("div", [](Vec2* v1, Vec2* v2) { *v1 /= *v2; return v1; })
+		.addFunction("addReturn", [](Vec2* v1, Vec2* v2) { return *v1 + *v2; })
+		.addFunction("subReturn", [](Vec2* v1, Vec2* v2) { return *v1 - *v2; })
+		.addFunction("mulReturn", [](Vec2* v1, Vec2* v2) { return *v1 * *v2; })
+		.addFunction("divReturn", [](Vec2* v1, Vec2* v2) { return *v1 / *v2; })
+		.addFunction("addScalar", [](Vec2* v1, f32 val) { *v1 += val; return v1; })
+		.addFunction("subScalar", [](Vec2* v1, f32 val) { *v1 -= val; return v1; })
+		.addFunction("mulScalar", [](Vec2* v1, f32 val) { *v1 *= val; return v1; })
+		.addFunction("divScalar", [](Vec2* v1, f32 val) { *v1 /= val; return v1; })
+		.addFunction("addScalarReturn", [](Vec2* v1, f32 val) { return *v1 + val; })
+		.addFunction("subScalarReturn", [](Vec2* v1, f32 val) { return *v1 - val; })
+		.addFunction("mulScalarReturn", [](Vec2* v1, f32 val) { return *v1 * val; })
+		.addFunction("divScalarReturn", [](Vec2* v1, f32 val) { return *v1 / val; })
 		.endClass();
 
 	LUA.beginClass<Rect>("Rect")
+		.addConstructor(LUA_ARGS(LuaIntf::_opt<f32>, LuaIntf::_opt<f32>, LuaIntf::_opt<f32>, LuaIntf::_opt<f32>))
 		.addVariable("x", &Rect::x)
 		.addVariable("y", &Rect::y)
 		.addVariable("width", &Rect::width)
@@ -226,18 +320,15 @@ bool initializeLua()
 		.addFunction("center", &Rect::center)
 		.endClass();
 
-	LUA.beginClass<Transform>("Transform")
-		.addVariableRef("position", &Transform::position)
-		.addVariable("rotation", &Transform::rotation)
-		.addVariable("scale", &Transform::scale)
-		.addVariable("verticalFlip", &Transform::verticalFlip)
-		.addVariable("horizontalFlip", &Transform::horizontalFlip)
-		.endClass();
-
 	LUA.beginClass<SpriteInstance>("SpriteInstance")
-		.addVariableRef("transform", &SpriteInstance::transform)
+		.addVariableRef("position", &SpriteInstance::position)
+		.addVariable("rotation", &SpriteInstance::rotation)
+		.addVariable("scale", &SpriteInstance::scale)
+		.addVariable("verticalFlip", &SpriteInstance::verticalFlip)
+		.addVariable("horizontalFlip", &SpriteInstance::horizontalFlip)
+		.addVariableRef("screenPosition", &SpriteInstance::screenPosition)
 		.addVariableRef("sprite", &SpriteInstance::sprite)
-		.addVariable("animationFrame", &SpriteInstance::animationFrame)
+		.addVariable("frame", &SpriteInstance::animationFrame)
 		.addVariable("screenRect", &SpriteInstance::screenRect)
 		.addFunction("setFrameAnimation", &SpriteInstance::setFrameAnimation)
 		.addFunction("setFrameAnimationFromAngle", &SpriteInstance::setFrameAnimationFromAngle)

@@ -2,14 +2,14 @@
   "name": "Turret",
   "type": "Enemy",
   "speed": 0.0,
-	"controllers":
-	[
-		{ "name": "main", "class": "SimpleEnemy" }
-	],
+  "controllers":
+  [
+    { "name": "main", "class": "SimpleEnemy" }
+  ],
   "healthPoints": 1000,
   "autoDeleteType": "EndOfScreen",
-  "script": "scripts/turret.lua",
-  "rootSpriteInstance": "body",
+  "script": "scripts/turret",
+  "root": "body",
   "stages":
   [
     {
@@ -17,12 +17,12 @@
       "triggerOnHealth": 100
     },
     {
-        "name":"stage1",
-        "triggerOnHealth": 50
+      "name":"stage1",
+      "triggerOnHealth": 50
     },
     {
-        "name":"stage2",
-        "triggerOnHealth": 10
+      "name":"stage2",
+      "triggerOnHealth": 10
     }
   ],
   "animations":
@@ -62,5 +62,5 @@
         }
       }
     }
-]
+  ]
 }

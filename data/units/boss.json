@@ -2,25 +2,25 @@
   "name": "UltraBoss9000",
   "type": "Enemy",
   "speed": 0.0,
-	"controllers":
-	[
-		{ "name": "main", "class": "SimpleEnemy" }
-	],
-  "script": "scripts/boss.lua",
-  "rootSpriteInstance": "body",
+  "controllers":
+  [
+    { "name": "main", "class": "SimpleEnemy" }
+  ],
+  "script": "scripts/boss",
+  "root": "body",
   "stages":
   [
     {
-        "name":"stage0",
-        "triggerOnHealth": 100
+      "name":"stage0",
+      "triggerOnHealth": 100
     },
     {
-        "name":"stage1",
-        "triggerOnHealth": 50
+      "name":"stage1",
+      "triggerOnHealth": 50
     },
     {
-        "name":"stage2",
-        "triggerOnHealth": 0
+      "name":"stage2",
+      "triggerOnHealth": 0
     }
   ],
   "animations":

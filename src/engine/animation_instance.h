@@ -2,6 +2,7 @@
 #include "types.h"
 #include "resources/animation_resource.h"
 #include <unordered_map>
+#include "lua_scripting.h"
 
 namespace engine
 {
@@ -15,7 +16,7 @@ struct AnimationInstance
 	bool active = true;
 	std::vector<AnimationKey*> triggeredKeyEvents;
 	std::unordered_map<AnimationTrack*, u32> previousTrackKeys;
-	struct ScriptResource* scriptResource;
+	struct ScriptClassInstance* scriptClass = nullptr;
 	std::string keyEventScriptCallback;
 
 	void copyFrom(AnimationInstance* other);

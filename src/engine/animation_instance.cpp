@@ -14,7 +14,7 @@ void AnimationInstance::copyFrom(AnimationInstance* other)
 	active = other->active;
 	triggeredKeyEvents = other->triggeredKeyEvents;
 	previousTrackKeys = other->previousTrackKeys;
-	scriptResource = other->scriptResource;
+	scriptClass = other->scriptClass;
 	keyEventScriptCallback = other->keyEventScriptCallback;
 }
 
@@ -41,9 +41,9 @@ void AnimationInstance::triggerKeyEvent(AnimationKey* key)
 {
 	triggeredKeyEvents.push_back(key);
 
-	if (scriptResource)
+	if (scriptClass)
 	{
-		auto func = scriptResource->getFunction(keyEventScriptCallback);
+		auto func = scriptClass->getFunction(keyEventScriptCallback);
 		if (func.isFunction()) func.call(key->eventName, key->time, key->value);
 	}
 }
@@ -84,7 +84,7 @@ void AnimationInstance::update(f32 deltaTime)
 			pingPongDirection = 1.0f;
 			updateRepeatCount();
 		}
-		
+
 		if (currentTime > animation->totalTime)
 		{
 			currentTime = animation->totalTime;
@@ -108,12 +108,12 @@ f32 AnimationInstance::animate(AnimationTrack::Type trackType)
 
 void AnimationInstance::animateSpriteInstance(SpriteInstance* sprInst)
 {
-	sprInst->transform.position.x = animate(AnimationTrack::Type::PositionX);
-	sprInst->transform.position.y = animate(AnimationTrack::Type::PositionY);
-	sprInst->transform.rotation = animate(AnimationTrack::Type::Rotation);
-	sprInst->transform.scale = animate(AnimationTrack::Type::Scale);
-	sprInst->transform.verticalFlip = animate(AnimationTrack::Type::VerticalFlip);
-	sprInst->transform.horizontalFlip = animate(AnimationTrack::Type::HorizontalFlip);
+	sprInst->position.x = animate(AnimationTrack::Type::PositionX);
+	sprInst->position.y = animate(AnimationTrack::Type::PositionY);
+	sprInst->rotation = animate(AnimationTrack::Type::Rotation);
+	sprInst->scale = animate(AnimationTrack::Type::Scale);
+	sprInst->verticalFlip = animate(AnimationTrack::Type::VerticalFlip);
+	sprInst->horizontalFlip = animate(AnimationTrack::Type::HorizontalFlip);
 	sprInst->visible = animate(AnimationTrack::Type::Visible);
 	sprInst->color.r = animate(AnimationTrack::Type::ColorR);
 	sprInst->color.g = animate(AnimationTrack::Type::ColorG);

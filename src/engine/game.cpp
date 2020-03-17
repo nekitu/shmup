@@ -10,7 +10,6 @@
 #include "image_atlas.h"
 #include <SDL_mixer.h>
 #include "animation_instance.h"
-#include "unit_controller.h"
 #include "resources/sound_resource.h"
 #include "resources/music_resource.h"
 #include "resources/unit_resource.h"
@@ -101,7 +100,7 @@ bool Game::initialize()
 		printf("FATAL ERROR: Cannot initialize GLEW. Error: %s\n", glewGetErrorString(errGlew));
 		return false;
 	}
-	
+
 	int result = 0;
 	int flags = MIX_INIT_MP3;
 
@@ -150,6 +149,7 @@ bool Game::initialize()
 	Mix_VolumeMusic(1);
 
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen.lua");
+	scriptClass = currentMainScript->createClassInstance(this);
 	preloadSprites();
 }
 
@@ -166,9 +166,9 @@ void Game::createPlayers()
 		players[i].unitInstance->initializeFrom(resourceLoader->loadUnit("units/player"));
 		unitInstances.push_back(players[i].unitInstance);
 		players[i].unitInstance->name = "Player" + std::to_string(i + 1);
-		players[i].unitInstance->rootSpriteInstance->transform.position.x = graphics->videoWidth / 2;
-		players[i].unitInstance->rootSpriteInstance->transform.position.y = graphics->videoHeight / 2;
-		static_cast<PlayerController*>(players[i].unitInstance->findController("main"))->playerIndex = i;
+		players[i].unitInstance->root->position.x = graphics->videoWidth / 2;
+		players[i].unitInstance->root->position.y = graphics->videoHeight / 2;
+		//static_cast<PlayerController*>(players[i].unitInstance->findController("main"))->playerIndex = i;
 	}
 
 	//TODO: fix later to have a single atlas pack call after loading all sprites
@@ -262,9 +262,13 @@ void Game::mainLoop()
 		computeDeltaTime();
 		handleInputEvents();
 
-		if (currentMainScript)
-		if (currentMainScript->getFunction("onUpdate").isFunction())
-			currentMainScript->getFunction("onUpdate").call(deltaTime);
+		if (scriptClass)
+		{
+			if (scriptClass->getFunction("onUpdate").isFunction())
+			{
+				scriptClass->getFunction("onUpdate").call(deltaTime);
+			}
+		}
 
 		if (animatingCameraSpeed)
 		{
@@ -327,10 +331,10 @@ void Game::mainLoop()
 			inst->render(graphics);
 		}
 
-		if (currentMainScript)
+		if (scriptClass)
 		{
-			if (currentMainScript->getFunction("onRender").isFunction())
-				currentMainScript->getFunction("onRender").call(0);
+			if (scriptClass->getFunction("onRender").isFunction())
+				scriptClass->getFunction("onRender").call(0);
 		}
 
 		static FontResource* fnt = nullptr;
@@ -432,18 +436,19 @@ void Game::checkCollisions()
 
 	for (auto& cp : collisionPairs)
 	{
-		if (cp.first->script)
+		if (cp.first->scriptClass)
 		{
-			auto func = cp.first->script->getFunction("onCollide");
+			auto func = cp.first->scriptClass->getFunction("onCollide");
+
 			if (func.isFunction())
 			{
 				func.call(cp.first, cp.second);
 			}
 		}
 
-		if (cp.second->script)
+		if (cp.second->scriptClass)
 		{
-			auto func2 = cp.second->script->getFunction("onCollide");
+			auto func2 = cp.first->scriptClass->getFunction("onCollide");
 			if (func2.isFunction())
 			{
 				func2.call(cp.second, cp.first);
@@ -726,6 +731,101 @@ void Game::animateCameraSpeed(f32 towardsSpeed, f32 animSpeed)
 	newCameraSpeed = towardsSpeed;
 }
 
+void Game::shakeCamera(const Vec2& force, f32 duration, u32 count)
+{
+	screenFx.doingShake = true;
+	screenFx.shakeTimer = 0;
+	screenFx.shakeForce = force;
+	screenFx.shakeCount = screenFx.shakeCounter = count;
+	screenFx.shakeDuration = duration;
+}
+
+void Game::fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter)
+{
+	screenFx.doingFade = true;
+	screenFx.fadeTimer = 0;
+	screenFx.fadeTimerDir = 1;
+	screenFx.fadeColor = color;
+	screenFx.fadeDuration = duration;
+	screenFx.fadeColorMode = colorMode;
+	screenFx.fadeRevertBackAfter = revertBackAfter;
+}
+
+void Game::updateScreenFx()
+{
+	if (screenFx.doingShake)
+	{
+		f32 slice = screenFx.shakeDuration / (f32)screenFx.shakeCount;
+		screenFx.shakeTimer += deltaTime;
+
+		if (screenFx.shakeTimer >= slice && !screenFx.shakeCounter)
+		{
+			screenFx.doingShake = false;
+			cameraPositionOffset.clear();
+		}
+		else
+			if (screenFx.shakeTimer >= slice && screenFx.shakeCounter)
+			{
+				screenFx.shakeTimer = 0;
+				f32 x = screenFx.shakeForce.x * (f32)screenFx.shakeCounter / (f32)screenFx.shakeCount;
+				f32 y = screenFx.shakeForce.y * (f32)screenFx.shakeCounter / (f32)screenFx.shakeCount;
+				cameraPositionOffset.x = randomFloat(-x, x);
+				cameraPositionOffset.y = randomFloat(-y, y);
+				screenFx.shakeCounter--;
+			}
+	}
+
+	if (screenFx.doingFade)
+	{
+		screenFx.fadeTimer += deltaTime * screenFx.fadeTimerDir * 1.0 / screenFx.fadeDuration;
+
+		if (screenFx.fadeTimer >= 1 && screenFx.fadeTimerDir > 0)
+		{
+			if (screenFx.fadeRevertBackAfter)
+			{
+				screenFx.fadeTimer = 1;
+				screenFx.fadeTimerDir = -1;
+				screenFx.fadeRevertBackAfter = false;
+			}
+			else
+			{
+				screenFx.doingFade = false;
+				screenFx.fadeTimer = 1;
+				//game->graphics->renderTargetColor = fadeColor.getRgba();
+			}
+		}
+		else if (screenFx.fadeTimerDir < 0 && screenFx.fadeTimer < 0)
+		{
+			screenFx.doingFade = false;
+			//game->graphics->renderTargetColor = Color(0, 0, 0, 1).getRgba();
+			//game->graphics->renderTargetColorMode = ColorMode::Add;
+		}
+		else
+		{
+			Color c = screenFx.fadeColor;
+
+			if (screenFx.fadeColorMode == ColorMode::Add
+				|| screenFx.fadeColorMode == ColorMode::Sub)
+			{
+				c.r *= screenFx.fadeTimer;
+				c.g *= screenFx.fadeTimer;
+				c.b *= screenFx.fadeTimer;
+				c.a = 1;
+			}
+			else if (screenFx.fadeColorMode == ColorMode::Mul)
+			{
+				c.r = 1.0 + screenFx.fadeTimer * (c.r - 1.0f);
+				c.g = 1.0 + screenFx.fadeTimer * (c.g - 1.0f);
+				c.b = 1.0 + screenFx.fadeTimer * (c.b - 1.0f);
+				c.a = 1;
+			}
+
+			//game->graphics->renderTargetColor = c.getRgba();
+			//game->graphics->renderTargetColorMode = fadeColorMode;
+		}
+	}
+}
+
 bool Game::isPlayerMoveLeft(u32 playerIndex)
 {
 	return controls[(u32)(playerIndex ? InputControl::Player2_MoveLeft : InputControl::Player1_MoveLeft)];
@@ -861,31 +961,6 @@ WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename,
 	weaponInst->initializeFrom(weaponRes);
 
 	return weaponInst;
-}
-
-UnitController* Game::createUnitController(const std::string& name)
-{
-	if (name == "player")
-	{
-		return new PlayerController(this);
-	}
-	else if (name == "simple_enemy")
-	{
-		return new SimpleEnemyController();
-	}
-	else if (name == "projectile")
-	{
-		return new ProjectileController();
-	}
-
-	else if (name == "background")
-	{
-		return new BackgroundController();
-	}
-
-	std::cout << "Unknown unit controller type: " << name << std::endl;
-
-	return nullptr;
 }
 
 }
