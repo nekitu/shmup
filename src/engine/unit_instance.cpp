@@ -44,7 +44,7 @@ void UnitInstance::copyFrom(UnitInstance* other)
 	shadow = other->shadow;
 	unit = other->unit;
 	deleteMeNow = other->deleteMeNow;
-	scriptClass = other->unit->script->createClassInstance(this);
+	scriptClass = other->unit->script ? other->unit->script->createClassInstance(this) : nullptr;
 
 	// map from other unit to new sprite instances
 	std::map<SpriteInstance*, SpriteInstance*> spriteInstMap;
@@ -116,7 +116,7 @@ void UnitInstance::initializeFrom(UnitResource* res)
 	name = res->name;
 	speed = res->speed;
 	visible = res->visible;
-	scriptClass = res->script->createClassInstance(this);
+	scriptClass = res->script ? res->script->createClassInstance(this) : nullptr;
 	collide = res->collide;
 	shadow = res->shadow;
 

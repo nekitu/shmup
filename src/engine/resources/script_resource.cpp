@@ -17,7 +17,7 @@ static lua_State* L = nullptr;
 
 bool ScriptResource::load(Json::Value& json)
 {
-	code = readTextFile(loader->root + fileName);
+	code = readTextFile(loader->root + fileName + ".lua");
 	auto res = luaL_loadstring(L, code.c_str());
 
 	// if we already have some class instances, recreate them with the new script
@@ -63,11 +63,13 @@ ScriptClassInstance* ScriptResource::createClassInstance(void* obj)
 		lua_pushlightuserdata(L, obj);
 	}
 
+	auto res = luaL_loadstring(L, code.c_str());
+
 	auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
 
 	if (result)
 	{
-		printf("Lua error: %s\n", lua_tostring(L, -1));
+		printf("createClassInstance: Lua error: %s\n", lua_tostring(L, -1));
 		return nullptr;
 	}
 
@@ -128,11 +130,6 @@ bool initializeLua()
 	auto LUA = LuaIntf::LuaBinding(L);
 
 	LuaIntf::LuaContext l(L);
-
-	l.setGlobal("game", Game::instance);
-	l.setGlobal("ColorMode_Add", ColorMode::Add);
-	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
-	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
 
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
@@ -342,6 +339,11 @@ bool initializeLua()
 		.addVariable("b", &SpriteInstanceCollision::b)
 		.addVariable("collisionCenter", &SpriteInstanceCollision::collisionCenter)
 		.endClass();
+
+	l.setGlobal("game", Game::instance);
+	l.setGlobal("ColorMode_Add", ColorMode::Add);
+	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
+	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
 
 	return true;
 }

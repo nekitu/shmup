@@ -94,7 +94,7 @@ out vec4 finalCOLOR;\
 void main()\
 {\
 	vec4 texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
-	if (outAlphaMode == 0 && texelColor.a < 1) discard;\
+	if (outAlphaMode == 0U && texelColor.a < 1) discard;\
 	if (outColorMode == 0U)\
 		finalCOLOR = texelColor + outCOLOR;\
 	else if (outColorMode == 1U)\
