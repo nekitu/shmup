@@ -1,6 +1,7 @@
 local C = {}
 
-function C:init()
+function C:init(unit)
+  self.unit = unit
 end
 
 function C:onUpdate()

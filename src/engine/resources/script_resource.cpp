@@ -39,7 +39,7 @@ bool ScriptResource::load(Json::Value& json)
 		}
 		else
 		{
-			printf("Lua: Please return C class table in %s\n", fileName.c_str());
+			printf("Lua: Please return a class table in '%s'\n", fileName.c_str());
 		}
 	}
 
@@ -58,9 +58,10 @@ void ScriptResource::unload()
 
 ScriptClassInstance* ScriptResource::createClassInstance(void* obj)
 {
-	if (obj)
+	if (code.empty())
 	{
-		lua_pushlightuserdata(L, obj);
+		printf("No code in: '%s'\n", fileName.c_str());
+		return nullptr;
 	}
 
 	auto res = luaL_loadstring(L, code.c_str());
@@ -75,12 +76,17 @@ ScriptClassInstance* ScriptResource::createClassInstance(void* obj)
 
 	LuaIntf::LuaRef inst;
 
-	if (lua_istable(L, -1)) {
-		inst = LuaIntf::LuaRef::popFromStack(L);
+	auto cfunc = LuaIntf::LuaRef::popFromStack(L);
+
+	printf("Creating instance '%s'\n", fileName.c_str());
+
+	if (cfunc.isFunction())
+	{
+		inst = cfunc.call<LuaIntf::LuaRef>(LuaIntf::LuaRef::fromPtr(L, obj));
 	}
 	else
 	{
-		printf("Lua: Please return C class table in %s\n", fileName.c_str());
+		printf("Lua: Please return class table in '%s'\n", fileName.c_str());
 		return nullptr;
 	}
 
@@ -140,6 +146,8 @@ bool initializeLua()
 		.addFunction("player2", [](Game* g) { return g->players[1].unitInstance; })
 		.addVariable("credit", &Game::credit)
 		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
+		.addFunction("shakeCamera", &Game::shakeCamera)
+		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeLevel", &Game::changeLevel)
 		.addFunction("loadNextLevel", [](Game* g) { g->changeLevel(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unit, const std::string& name, const Vec2& position)
@@ -220,7 +228,7 @@ bool initializeLua()
 		.addVariable("name", &UnitInstance::name, true)
 		.addVariable("layerIndex", &UnitInstance::layerIndex)
 		.addVariable("appeared", &UnitInstance::appeared)
-		.addVariable("unit", &UnitInstance::unit, false)
+		.addVariable("unitResource", &UnitInstance::unit, false)
 		.addVariable("age", &UnitInstance::age, false)
 		.addVariable("health", &UnitInstance::health)
 		.addVariable("stage", &UnitInstance::currentStage)

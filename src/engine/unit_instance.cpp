@@ -220,7 +220,9 @@ void UnitInstance::update(Game* game)
 			{
 				auto func = scriptClass->getFunction("onStageChange");
 
-				if (func.isFunction()) func.call(this, currentStage ? currentStage->name : "", stage->name);
+				scriptClass->classInstance.dispatch("onStateChange", scriptClass->classInstance, currentStage ? currentStage->name : "", stage->name);
+
+				//if (func.isFunction()) func.call(scriptClass->classInstance, currentStage ? currentStage->name : "", stage->name);
 			}
 
 			currentStage = stage;
@@ -280,7 +282,7 @@ void UnitInstance::update(Game* game)
 	if (scriptClass)
 	{
 		auto func = scriptClass->getFunction("onUpdate");
-		if (func.isFunction()) func.call(this);
+		if (func.isFunction()) func.call(LuaIntf::LuaRef::fromPtr(getLuaState(),this));
 	}
 }
 

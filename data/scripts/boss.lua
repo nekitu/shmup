@@ -1,15 +1,27 @@
 local C = {}
 
+function C:init(unit)
+  self.unit = unit
+  print("Set unit: " .. tostring(self.unit))
+end
+
 function C:onStageChange(old, new)
-	print("Change stage to "..new .. " from " .. old)
-	if new == "stage0" then
-		print("ACTIVATING MAGEBALAST")
-		self.unit:findWeapon("gun1").active = true
-	end
-	if new == "stage1" then
-		self.unit:findWeapon("gun2").active = true
+  print("Change stage to '".. new .. "' from '" .. old .. "'")
+  if new == "stage0" then
+    print("ACTIVATING MEGABLAST "..tostring(self).. " " ..tostring(self.unit))
+    print(self.unit.name)
+    local wp = self.unit:findWeapon("gun1")
+    print("Ok wp.")
+    if wp then
+      wp.active = true
+      print("Changed weapon.")
+    end
+  end
+  if new == "stage1" then
+    self.unit:findWeapon("gun2").active = true
     print("ACTIVATING LAST RESORT SWORD")
   end
+  print("Changed.")
 end
 
 function C:onUpdate()
