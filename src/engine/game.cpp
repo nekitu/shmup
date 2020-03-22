@@ -266,7 +266,7 @@ void Game::mainLoop()
 		{
 			if (scriptClass->getFunction("onUpdate").isFunction())
 			{
-				scriptClass->getFunction("onUpdate").call(deltaTime);
+				scriptClass->getFunction("onUpdate").call(scriptClass->classInstance, deltaTime);
 			}
 		}
 
@@ -334,7 +334,7 @@ void Game::mainLoop()
 		if (scriptClass)
 		{
 			if (scriptClass->getFunction("onRender").isFunction())
-				scriptClass->getFunction("onRender").call(0);
+				scriptClass->getFunction("onRender").call(scriptClass->classInstance, 0);
 		}
 
 		static FontResource* fnt = nullptr;
@@ -442,16 +442,17 @@ void Game::checkCollisions()
 
 			if (func.isFunction())
 			{
-				func.call(cp.first, cp.second);
+				func.call(cp.first->scriptClass->classInstance, cp.second);
 			}
 		}
 
 		if (cp.second->scriptClass)
 		{
-			auto func2 = cp.first->scriptClass->getFunction("onCollide");
-			if (func2.isFunction())
+			auto func = cp.second->scriptClass->getFunction("onCollide");
+
+			if (func.isFunction())
 			{
-				func2.call(cp.second, cp.first);
+				func.call(cp.second->scriptClass->classInstance, cp.first);
 			}
 		}
 	}

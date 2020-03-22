@@ -2,14 +2,15 @@ local C = {}
 
 function C:init(unit)
   self.unit = unit
+  self.name = "LOLODOLO"
   print("Set unit: " .. tostring(self.unit))
 end
 
 function C:onStageChange(old, new)
+  print(self.name)
   print("Change stage to '".. new .. "' from '" .. old .. "'")
   if new == "stage0" then
     print("ACTIVATING MEGABLAST "..tostring(self).. " " ..tostring(self.unit))
-    print(self.unit.name)
     local wp = self.unit:findWeapon("gun1")
     print("Ok wp.")
     if wp then
@@ -26,11 +27,11 @@ end
 
 function C:onUpdate()
 	if self.unit.health == 0 then
-    self.unit.deleteMeNow = true
-    local uinst = game.spawn("units/turret_expl", "expl2", self.unit.root.position)
-    uinst.layerIndex = self.unit.layerIndex
-		game.animateCameraSpeed(110, 0.6)
-		game.shakeCamera(Vec2(10, 10), 3, 200)
+    --self.unit.deleteMeNow = true
+    --local uinst = game:spawn("units/turret_expl", "expl2", self.unit.root.position)
+    --uinst.layerIndex = self.unit.layerIndex
+		--game:animateCameraSpeed(110, 0.6)
+		--game:shakeCamera(Vec2(10, 10), 3, 200)
 	end
 end
 
@@ -46,7 +47,7 @@ end
 
 function C:onAppeared()
 	print("Appeared...")
-  game.animateCameraSpeed(0, 0.1)
+  game:animateCameraSpeed(0, 0.1)
 end
 
 return function(unit)

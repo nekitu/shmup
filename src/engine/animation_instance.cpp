@@ -44,7 +44,7 @@ void AnimationInstance::triggerKeyEvent(AnimationKey* key)
 	if (scriptClass)
 	{
 		auto func = scriptClass->getFunction(keyEventScriptCallback);
-		if (func.isFunction()) func.call(key->eventName, key->time, key->value);
+		if (func.isFunction()) func.call(scriptClass->classInstance, key->eventName, key->time, key->value);
 	}
 }
 

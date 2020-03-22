@@ -1,12 +1,16 @@
-local M = {}
+local C = {}
 
-local function onUpdate(unit)
-  if unit.age > 0.5 then
-    unit.deleteMeNow = true
+function C:init(unit)
+  self.unit = unit
+end
+
+function C:onUpdate(unit)
+  if self.unit.age > 0.5 then
+    self.unit.deleteMeNow = true
   end
 end
 
-local function onCollide(unitInst1, unitInst2)
+function C:onCollide(other)
 end
 
 return function(unit)

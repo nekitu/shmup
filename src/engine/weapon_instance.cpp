@@ -140,7 +140,7 @@ void WeaponInstance::update(struct Game* game)
 
 		if (func.isFunction())
 		{
-			func.call(this);
+			func.call(scriptClass->classInstance);
 		}
 	}
 }

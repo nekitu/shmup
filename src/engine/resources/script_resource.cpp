@@ -56,51 +56,6 @@ void ScriptResource::unload()
 	}
 }
 
-ScriptClassInstance* ScriptResource::createClassInstance(void* obj)
-{
-	if (code.empty())
-	{
-		printf("No code in: '%s'\n", fileName.c_str());
-		return nullptr;
-	}
-
-	auto res = luaL_loadstring(L, code.c_str());
-
-	auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
-
-	if (result)
-	{
-		printf("createClassInstance: Lua error: %s\n", lua_tostring(L, -1));
-		return nullptr;
-	}
-
-	LuaIntf::LuaRef inst;
-
-	auto cfunc = LuaIntf::LuaRef::popFromStack(L);
-
-	printf("Creating instance '%s'\n", fileName.c_str());
-
-	if (cfunc.isFunction())
-	{
-		inst = cfunc.call<LuaIntf::LuaRef>(LuaIntf::LuaRef::fromPtr(L, obj));
-	}
-	else
-	{
-		printf("Lua: Please return class table in '%s'\n", fileName.c_str());
-		return nullptr;
-	}
-
-	ScriptClassInstance* classInst = new ScriptClassInstance();
-
-	classInst->script = this;
-	classInst->classInstance = inst;
-	classInst->object = obj;
-
-	classInstances.push_back(classInst);
-
-	return classInst;
-}
-
 LuaIntf::LuaRef ScriptClassInstance::getFunction(const std::string& funcName)
 {
 	if (!script)
@@ -162,8 +117,8 @@ bool initializeLua()
 		.addFunction("loadSprite", [](Game* g, const std::string& filename) { return g->resourceLoader->loadSprite(filename); })
 		.addVariable("cameraParallaxOffset", &Game::cameraParallaxOffset)
 		.addVariable("cameraParallaxScale", &Game::cameraParallaxScale)
-		.addVariableRef("cameraParallaxOffset", &Game::cameraPosition)
-		.addVariableRef("cameraParallaxOffset", &Game::cameraPositionOffset)
+		.addVariableRef("cameraPosition", &Game::cameraPosition)
+		.addVariableRef("cameraPositionOffset", &Game::cameraPositionOffset)
 		.addVariable("cameraSpeed", &Game::cameraSpeed)
 		.addVariable("cameraSpeedAnimateSpeed", &Game::cameraSpeedAnimateSpeed)
 		.addVariable("cameraSpeedAnimateTime", &Game::cameraSpeedAnimateTime)
@@ -231,6 +186,7 @@ bool initializeLua()
 		.addVariable("unitResource", &UnitInstance::unit, false)
 		.addVariable("age", &UnitInstance::age, false)
 		.addVariable("health", &UnitInstance::health)
+		.addVariable("speed", &UnitInstance::speed)
 		.addVariable("stage", &UnitInstance::currentStage)
 		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow)
 		.addVariable("root", &UnitInstance::root)
@@ -247,6 +203,18 @@ bool initializeLua()
 				return (WeaponInstance*)nullptr;
 			}
 		)
+		.addFunction("getWeapons", [](UnitInstance* thisObj)
+			{
+				LuaIntf::LuaRef wpns = LuaIntf::LuaRef::createTable(getLuaState());
+				int i = 1;
+				for (auto& wpn : thisObj->weapons)
+				{
+					wpns.set(i, wpn.second);
+					++i;
+				}
+
+				return wpns;
+			})
 		.addFunction("checkPixelCollision", [](UnitInstance* thisObj, UnitInstance* other, LuaIntf::LuaRef& collisions)
 			{
 				std::vector<SpriteInstanceCollision> cols;
@@ -352,7 +320,7 @@ bool initializeLua()
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
-
+	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 	return true;
 }
 

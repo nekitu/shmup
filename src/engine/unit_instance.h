@@ -46,8 +46,8 @@ struct UnitInstance
 	bool deleteMeNow = false;
 
 	UnitInstance();
-	void copyFrom(UnitInstance* other);
-	void initializeFrom(UnitResource* res);
+	virtual void copyFrom(UnitInstance* other);
+	virtual void initializeFrom(UnitResource* res);
 	virtual void load(struct ResourceLoader* loader, const Json::Value& json);
 	virtual void update(struct Game* game);
 	virtual void render(struct Graphics* gfx);

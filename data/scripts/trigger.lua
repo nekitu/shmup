@@ -8,7 +8,7 @@ function C:onUpdate()
 end
 
 function C:onAppeared()
-  game.fadeScreen(Color(0,0,0,1), game.ColorMode_Mul, 3, false)
+  game:fadeScreen(Color(0,0,0,1), ColorMode_Mul, 3, false)
 end
 
 return function(unit)
