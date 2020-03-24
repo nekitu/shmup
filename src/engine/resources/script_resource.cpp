@@ -11,6 +11,11 @@
 #include "graphics.h"
 #include "projectile_instance.h"
 
+namespace LuaIntf
+{
+	LUA_USING_LIST_TYPE(std::vector)
+}
+
 namespace engine
 {
 static lua_State* L = nullptr;

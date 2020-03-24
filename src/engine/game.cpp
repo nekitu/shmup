@@ -513,25 +513,41 @@ void Game::checkCollisions()
 			{
 				cp.second->deleteMeNow = true;
 			}
-		}
 
-		if (cp.first->scriptClass)
-		{
-			auto func = cp.first->scriptClass->getFunction("onCollide");
-
-			if (func.isFunction())
+			if (cp.first->scriptClass || cp.second->scriptClass)
 			{
-				func.call(cp.first->scriptClass->classInstance, cp.second);
-			}
-		}
+				LuaIntf::LuaRef colsTbl = LuaIntf::LuaRef::createTable(getLuaState());
 
-		if (cp.second->scriptClass)
-		{
-			auto func = cp.second->scriptClass->getFunction("onCollide");
+				for (int i = 0; i < pixelCols.size(); i++)
+				{
+					LuaIntf::LuaRef col = LuaIntf::LuaRef::createTable(getLuaState());
 
-			if (func.isFunction())
-			{
-				func.call(cp.second->scriptClass->classInstance, cp.first);
+					col.set("a", pixelCols[i].a);
+					col.set("b", pixelCols[i].b);
+					col.set("collisionCenter", pixelCols[i].collisionCenter);
+
+					colsTbl.set(i + 1, col);
+				}
+
+				if (cp.first->scriptClass)
+				{
+					auto func = cp.first->scriptClass->getFunction("onCollide");
+
+					if (func.isFunction())
+					{
+						func.call(cp.first->scriptClass->classInstance, cp.second, colsTbl);
+					}
+				}
+
+				if (cp.second->scriptClass)
+				{
+					auto func = cp.second->scriptClass->getFunction("onCollide");
+
+					if (func.isFunction())
+					{
+						func.call(cp.second->scriptClass->classInstance, cp.first, colsTbl);
+					}
+				}
 			}
 		}
 	}

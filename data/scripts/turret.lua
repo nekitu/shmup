@@ -23,11 +23,8 @@ function C:onUpdate()
     end
 end
 
-function C:onCollide(other)
-  local pos = Vec2(0, 0)
-  if self.unit.root:checkPixelCollision(other.root, pos) then
-    self.unit.root:hit(1)
-  end
+function C:onCollide(other, colPairs)
+  self.unit.root:hit(1)
 end
 
 return function(unit)
