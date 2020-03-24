@@ -1,3 +1,4 @@
+#pragma once
 #include "types.h"
 #include "resources/weapon_resource.h"
 #include "game.h"

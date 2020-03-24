@@ -8,16 +8,14 @@ function C:init(unit)
 end
 
 function C:onUpdate()
-  for _, c in ipairs(self.controllers) do
-    c:update()
-  end
 end
 
 function C:onCollide(other)
-	local pos = Vec2(0, 0)
-		if self.unit.root:checkPixelCollision(other.root, pos) then
-		other.root:hit(1)
-	end
+  local pos = Vec2(0, 0)
+  if self.unit.root:checkPixelCollision(other.root, pos) then
+    other.root:hit(1)
+    print("HIT")
+  end
 end
 
 return function(unit)

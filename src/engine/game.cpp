@@ -23,6 +23,7 @@
 #include "music_instance.h"
 #include "sound_instance.h"
 #include "weapon_instance.h"
+#include "projectile_instance.h"
 #include <filesystem>
 
 namespace engine
@@ -148,7 +149,7 @@ bool Game::initialize()
 	music->play();
 	Mix_VolumeMusic(1);
 
-	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen.lua");
+	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
 	scriptClass = currentMainScript->createClassInstance(this);
 	preloadSprites();
 }
@@ -270,6 +271,8 @@ void Game::mainLoop()
 			}
 		}
 
+		updateScreenFx();
+
 		if (animatingCameraSpeed)
 		{
 			cameraSpeedAnimateTime += deltaTime * cameraSpeedAnimateSpeed;
@@ -301,14 +304,23 @@ void Game::mainLoop()
 			unitInstances[i]->update(this);
 		}
 
+		for (u32 i = 0; i < lastProjectileIndex; i++)
+		{
+			if (projectiles[i].used)
+			{
+				projectiles[i].update(this);
+			}
+		}
+
 		// add the new created instances
 		unitInstances.insert(unitInstances.end(), newUnitInstances.begin(), newUnitInstances.end());
 		newUnitInstances.clear();
 
 		UnitInstance::updateShadowToggle();
 
-		auto iter = unitInstances.begin();
 		checkCollisions();
+
+		auto iter = unitInstances.begin();
 
 		while (iter != unitInstances.end())
 		{
@@ -322,6 +334,14 @@ void Game::mainLoop()
 			++iter;
 		}
 
+		for (u32 i = 0; i < lastProjectileIndex; i++)
+		{
+			if (projectiles[i].deleteMeNow && projectiles[i].used)
+			{
+				releaseProjectileInstance(&projectiles[i]);
+			}
+		}
+
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
@@ -331,44 +351,25 @@ void Game::mainLoop()
 			inst->render(graphics);
 		}
 
+		for (u32 i = 0; i < lastProjectileIndex; i++)
+		{
+			auto& projInst = projectiles[i];
+
+			if (projInst.used)
+			{
+				projInst.render(graphics);
+			}
+		}
+
 		if (scriptClass)
 		{
-			if (scriptClass->getFunction("onRender").isFunction())
-				scriptClass->getFunction("onRender").call(scriptClass->classInstance, 0);
+			auto func = scriptClass->getFunction("onRender");
+
+			if (func.isFunction())
+			{
+				func.call(scriptClass->classInstance, 0);
+			}
 		}
-
-		static FontResource* fnt = nullptr;
-
-		//TODO: remove
-		if (!fnt) fnt = resourceLoader->loadFont("fonts/default");
-		static f32 time = 0;
-
-		graphics->currentColorMode = (u32)ColorMode::Mul;
-		graphics->currentColor = Color::red.getRgba();
-		graphics->drawText(fnt, { 90, 2 }, "HISCORE");
-		graphics->currentColorMode = (u32)ColorMode::Add;
-		graphics->currentColor = Color::green.getRgba();
-		graphics->drawText(fnt, { 90, 12 }, "OOOOOOO");
-
-		if (time > 0.2 && time < 1)
-		{
-			graphics->currentColorMode = (u32)ColorMode::Mul;
-			graphics->currentColor = Color::red.getRgba();
-			graphics->drawText(fnt, { 8, 17 }, "   PLEASE");
-			graphics->currentColorMode = (u32)ColorMode::Add;
-			graphics->currentColor = Color::black.getRgba();
-			graphics->drawText(fnt, { 10, 25 }, "INSERT COIN");
-
-			graphics->currentColorMode = (u32)ColorMode::Add;
-			graphics->currentColor = Color::sky.getRgba();
-			graphics->drawText(fnt, { 135, 17 }, "   PLEASE");
-			graphics->currentColorMode = (u32)ColorMode::Add;
-			graphics->currentColor = Color::black.getRgba();
-			graphics->drawText(fnt, { 140, 25 }, "INSERT COIN");
-		}
-
-		time += deltaTime;
-		if (time > 1) time = 0;
 
 		graphics->endFrame();
 
@@ -382,6 +383,7 @@ void Game::checkCollisions()
 {
 	std::unordered_map<UnitInstance*, UnitInstance*> collisionPairs;
 
+	// check normal units
 	for (auto unitInst : unitInstances)
 	{
 		if (!unitInst->collide) continue;
@@ -429,6 +431,57 @@ void Game::checkCollisions()
 				if (!exists1 && !exists2)
 				{
 					collisionPairs[unitInst] = unitInst2;
+				}
+			}
+		}
+	}
+
+	// check projectiles vs normal units
+	for (u32 i = 0; i < lastProjectileIndex; i++)
+	{
+		ProjectileInstance& unitInst = projectiles[i];
+
+		if (!unitInst.collide || !unitInst.used) continue;
+
+		for (auto unitInst2 : unitInstances)
+		{
+			if (!unitInst2->collide) continue;
+
+			if (&unitInst == unitInst2
+				|| unitInst.unit->type == unitInst2->unit->type) continue;
+
+			if (unitInst2->unit->type == UnitResource::Type::Enemy &&
+				unitInst.unit->type == UnitResource::Type::EnemyProjectile)
+			{
+				continue;
+			}
+
+			if (unitInst2->unit->type == UnitResource::Type::Player &&
+				unitInst.unit->type == UnitResource::Type::PlayerProjectile)
+			{
+				continue;
+			}
+
+			if (unitInst.boundingBox.overlaps(unitInst2->boundingBox))
+			{
+				auto iter1 = collisionPairs.find(&unitInst);
+				auto iter2 = collisionPairs.find(unitInst2);
+				bool exists1 = false;
+				bool exists2 = false;
+
+				if (iter1 != collisionPairs.end() && iter1->second == unitInst2)
+				{
+					exists1 = true;
+				}
+
+				if (iter2 != collisionPairs.end() && iter2->second == &unitInst)
+				{
+					exists2 = true;
+				}
+
+				if (!exists1 && !exists2)
+				{
+					collisionPairs[&unitInst] = unitInst2;
 				}
 			}
 		}
@@ -902,6 +955,8 @@ void Game::deleteNonPersistentUnitInstances()
 bool Game::changeLevel(i32 index)
 {
 	deleteNonPersistentUnitInstances();
+	projectiles.clear();
+	projectiles.resize(maxProjectileCount);
 
 	if (index == -1)
 	{
@@ -962,6 +1017,31 @@ WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename,
 	weaponInst->initializeFrom(weaponRes);
 
 	return weaponInst;
+}
+
+ProjectileInstance* Game::newProjectileInstance()
+{
+	for (u32 i = 0; i < maxProjectileCount; i++)
+	{
+		if (!projectiles[i].used)
+		{
+			ProjectileInstance* inst = &projectiles[i];
+
+			inst->used = true;
+
+			if (lastProjectileIndex < i + 1)
+				lastProjectileIndex = i + 1;
+
+			return inst;
+		}
+	}
+
+	return nullptr;
+}
+
+void Game::releaseProjectileInstance(ProjectileInstance* inst)
+{
+	inst->used = false;
 }
 
 }

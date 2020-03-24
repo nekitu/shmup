@@ -12,6 +12,7 @@
 #include "color.h"
 #include "resources/level_resource.h"
 #include "lua_scripting.h"
+#include "projectile_instance.h"
 
 namespace engine
 {
@@ -81,6 +82,7 @@ struct ScreenFx
 struct Game
 {
 	static const int maxPlayerCount = 1;
+	static const int maxProjectileCount = 100000;
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
 	ScreenMode screenMode = ScreenMode::Vertical;
@@ -99,6 +101,7 @@ struct Game
 	u32 credit = 0;
 	std::vector<UnitInstance*> unitInstances;
 	std::vector<UnitInstance*> newUnitInstances;
+	std::vector<ProjectileInstance> projectiles;
 	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
@@ -119,6 +122,8 @@ struct Game
 	f32 cameraSpeedAnimateTime = 0;
 	f32 oldCameraSpeed = 0, newCameraSpeed = 0;
 	ScreenFx screenFx;
+
+	u32 lastProjectileIndex = 0;
 
 	Game();
 	~Game();
@@ -155,6 +160,8 @@ struct Game
 	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
 	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
 	struct WeaponInstance* createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst);
+	struct ProjectileInstance* newProjectileInstance();
+	void releaseProjectileInstance(ProjectileInstance* inst);
 };
 
 }

@@ -2,7 +2,6 @@
     "name": "Fire",
     "type": "PlayerProjectile",
     "autoDeleteType": "OutOfScreen",
-    "script": "scripts/projectile1",
     "root": "body",
     "spriteInstances":
     [

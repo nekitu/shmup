@@ -17,6 +17,7 @@ struct UnitInstance
 {
 	// members related to unit resource instantiation
 	typedef std::map<struct SpriteInstance*, struct AnimationInstance*> SpriteInstanceAnimationMap;
+
 	std::vector<struct SpriteInstance*> spriteInstances;
 	std::map<std::string /*animation name*/, SpriteInstanceAnimationMap> spriteInstanceAnimations;
 	std::map<std::string /*weapon instance name*/, struct WeaponInstance*> weapons;
@@ -46,6 +47,7 @@ struct UnitInstance
 	bool deleteMeNow = false;
 
 	UnitInstance();
+	void reset();
 	virtual void copyFrom(UnitInstance* other);
 	virtual void initializeFrom(UnitResource* res);
 	virtual void load(struct ResourceLoader* loader, const Json::Value& json);

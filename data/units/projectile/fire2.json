@@ -1,8 +1,7 @@
 {
-    "name": "Fire",
+    "name": "Fire2",
     "type": "PlayerProjectile",
     "autoDeleteType": "OutOfScreen",
-    "script": "scripts/projectile1",
     "spriteInstances":
     [
         {

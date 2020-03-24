@@ -78,8 +78,7 @@ void WeaponInstance::spawnProjectiles(Game* game)
 
 	for (u32 i = 0; i < params.fireRays; i++)
 	{
-		ProjectileInstance* newProj = new ProjectileInstance();
-
+		auto newProj = Game::instance->newProjectileInstance();
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weapon = this;
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
@@ -87,19 +86,19 @@ void WeaponInstance::spawnProjectiles(Game* game)
 
 		if (attachTo != parentUnitInstance->root && !attachTo->notRelativeToRoot)
 			pos += parentUnitInstance->root->position;
+
 		newProj->root->position = pos + params.position + params.offset + offRadius;
 		auto rads = deg2rad(angle);
 		newProj->velocity.x = sinf(rads);
 		newProj->velocity.y = cosf(rads);
-        newProj->velocity.normalize();
+		newProj->velocity.normalize();
 		newProj->layerIndex = parentUnitInstance->layerIndex;
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
-		game->newUnitInstances.push_back(newProj);
-        angle += angleBetweenRays;
-    }
+		angle += angleBetweenRays;
+	}
 }
 
 void WeaponInstance::update(struct Game* game)

@@ -3,7 +3,7 @@
   "fireRays" : 3,
   "type": "Projectile",
   "beamWidth": 40,
-  "fireRaysAngle" : 30,
+  "fireRaysAngle" : 10,
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,

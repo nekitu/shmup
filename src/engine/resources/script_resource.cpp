@@ -133,20 +133,21 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginModule("util")
-		.addFunction("clampValue", [](f32& val, f32 minVal, f32 maxVal)
+		.addFunction("clampValue", [](f32 val, f32 minVal, f32 maxVal)
 			{
-				return clampValue(val, minVal, maxVal);
+				clampValue(val, minVal, maxVal);
+				return val;
 			})
 		.endModule();
 
-	LUA.beginModule("gfx")
-		.addVariable("videoWidth", &Game::instance->graphics->videoWidth)
-		.addVariable("videoHeight", &Game::instance->graphics->videoHeight)
-		.addFunction("drawText", [](FontResource* font, const Vec2& pos, const std::string& text)
-			{
-				Game::instance->graphics->drawText(font, pos, text);
-			})
-		.endModule();
+	LUA.beginClass<Graphics>("Graphics")
+		.addVariable("videoWidth", &Graphics::videoWidth)
+		.addVariable("videoHeight", &Graphics::videoHeight)
+		.addVariable("currentColor", &Graphics::currentColor)
+		.addVariable("currentColorMode", &Graphics::currentColorMode)
+		.addVariable("currentAlphaMode", &Graphics::currentAlphaMode)
+		.addFunction("drawText", &Graphics::drawText)
+		.endClass();
 
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
 		.addVariableRef("direction", &WeaponResource::Parameters::direction)
@@ -253,6 +254,11 @@ bool initializeLua()
 		.addVariable("g", &Color::g)
 		.addVariable("b", &Color::b)
 		.addVariable("a", &Color::a)
+		.addStaticVariableRef("red", &Color::red)
+		.addStaticVariableRef("green", &Color::green)
+		.addStaticVariableRef("black", &Color::black)
+		.addStaticVariableRef("sky", &Color::sky)
+		.addFunction("getRgba", &Color::getRgba)
 		.endClass();
 
 	LUA.beginClass<Vec2>("Vec2")
@@ -317,6 +323,7 @@ bool initializeLua()
 		.endClass();
 
 	l.setGlobal("game", Game::instance);
+	l.setGlobal("gfx", Game::instance->graphics);
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);

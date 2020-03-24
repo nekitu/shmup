@@ -22,7 +22,7 @@ function C:update()
     end
   end
 
-  if game:isPlayerFire1(self.playerIndex) then
+  if not game:isPlayerFire1(self.playerIndex) then
     self.isFirePressed = false
   end
 
@@ -36,7 +36,7 @@ function C:update()
     end
   end
 
-  local moveDir = Vec2(0,0)
+  local moveDir = Vec2()
   if game:isPlayerMoveLeft(self.playerIndex) then
     moveDir.x = -1
   end
@@ -51,10 +51,11 @@ function C:update()
   end
   moveDir:normalize()
   self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
-  util.clampValue(self.unit.root.position.x, game.cameraParallaxOffset * (-1), gfx.videoWidth - game.cameraParallaxOffset)
-  util.clampValue(self.unit.root.position.y, game.cameraPosition.y * (-1), gfx.videoHeight - game.cameraPosition.y)
+  self.unit.root.position.x = util.clampValue(self.unit.root.position.x, game.cameraParallaxOffset * (-1), gfx.videoWidth - game.cameraParallaxOffset)
+  self.unit.root.position.y = util.clampValue(self.unit.root.position.y, game.cameraPosition.y * (-1), gfx.videoHeight - game.cameraPosition.y)
   game.cameraParallaxOffset = (gfx.videoWidth / 2 - self.unit.root.position.x) * game.cameraParallaxScale
-
+  collectgarbage()
+  collectgarbage("count")
 end
 
 return function(unit)

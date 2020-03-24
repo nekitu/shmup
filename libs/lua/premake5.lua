@@ -5,12 +5,14 @@ project "lua"
   }
   includedirs  {
     'src',
+    'luajit/src',
     'luaintf'
   }
   files {
-    "src/**.c",
-    "src/**.h"
+    "lua/src/**.c",
+    "lua/src/**.h"
   }
   removefiles {
-    'src/luac.c' -- remove the command line utility from the build
+    'src/luac.c', -- remove the command line utility from the build
+    'luajit/src/host/**.c'
   }

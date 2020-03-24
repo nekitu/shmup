@@ -22,6 +22,35 @@ UnitInstance::UnitInstance()
 	id = lastId++;
 }
 
+void UnitInstance::reset()
+{
+	for (auto spr : spriteInstances) delete spr;
+
+	for (auto sprAnim : spriteInstanceAnimations)
+	{
+		for (auto sprAnimInst : sprAnim.second)
+		{
+			delete sprAnimInst.second;
+		}
+	}
+
+	for (auto wpn : weapons) delete wpn.second;
+
+	spriteInstanceAnimations.clear();
+	spriteInstances.clear();
+	weapons.clear();
+	triggeredStages.clear();
+	root = nullptr;
+	currentStage = nullptr;
+	unit = nullptr;
+	scriptClass = nullptr;
+	deleteMeNow = false;
+	age = 0;
+	spriteInstanceAnimationMap = nullptr;
+	appeared = false;
+	stageIndex = 0;
+}
+
 void UnitInstance::updateShadowToggle()
 {
 	shadowToggle = !shadowToggle;
@@ -29,6 +58,7 @@ void UnitInstance::updateShadowToggle()
 
 void UnitInstance::copyFrom(UnitInstance* other)
 {
+	reset();
 	layerIndex = other->layerIndex;
 	name = other->name;
 	currentAnimationName = other->currentAnimationName;
@@ -112,6 +142,7 @@ void UnitInstance::copyFrom(UnitInstance* other)
 
 void UnitInstance::initializeFrom(UnitResource* res)
 {
+	reset();
 	unit = res;
 	name = res->name;
 	speed = res->speed;
