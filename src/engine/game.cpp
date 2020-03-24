@@ -371,6 +371,13 @@ void Game::mainLoop()
 			}
 		}
 
+		if (screenFx.doingFade)
+		{
+			graphics->currentColor = screenFx.currentFadeColor.getRgba();
+			graphics->currentColorMode = (u32)screenFx.fadeColorMode;
+			graphics->drawQuad({ 0, 0, graphics->videoWidth, graphics->videoHeight }, graphics->atlas->whiteImage->uvRect);
+		}
+
 		graphics->endFrame();
 
 		// display the render target contents in the main backbuffer
@@ -487,8 +494,27 @@ void Game::checkCollisions()
 		}
 	}
 
+	std::vector<SpriteInstanceCollision> pixelCols;
+
 	for (auto& cp : collisionPairs)
 	{
+		pixelCols.clear();
+
+		if (cp.first->checkPixelCollision(cp.second, pixelCols))
+		{
+			if (cp.first->unit->type == UnitResource::Type::EnemyProjectile
+				|| cp.first->unit->type == UnitResource::Type::PlayerProjectile)
+			{
+				cp.first->deleteMeNow = true;
+			}
+
+			if (cp.second->unit->type == UnitResource::Type::EnemyProjectile
+				|| cp.second->unit->type == UnitResource::Type::PlayerProjectile)
+			{
+				cp.second->deleteMeNow = true;
+			}
+		}
+
 		if (cp.first->scriptClass)
 		{
 			auto func = cp.first->scriptClass->getFunction("onCollide");
@@ -845,37 +871,32 @@ void Game::updateScreenFx()
 			{
 				screenFx.doingFade = false;
 				screenFx.fadeTimer = 1;
-				//game->graphics->renderTargetColor = fadeColor.getRgba();
+				screenFx.currentFadeColor = screenFx.fadeColor;
 			}
 		}
 		else if (screenFx.fadeTimerDir < 0 && screenFx.fadeTimer < 0)
 		{
 			screenFx.doingFade = false;
-			//game->graphics->renderTargetColor = Color(0, 0, 0, 1).getRgba();
-			//game->graphics->renderTargetColorMode = ColorMode::Add;
 		}
 		else
 		{
-			Color c = screenFx.fadeColor;
+			screenFx.currentFadeColor = screenFx.fadeColor;
 
 			if (screenFx.fadeColorMode == ColorMode::Add
 				|| screenFx.fadeColorMode == ColorMode::Sub)
 			{
-				c.r *= screenFx.fadeTimer;
-				c.g *= screenFx.fadeTimer;
-				c.b *= screenFx.fadeTimer;
-				c.a = 1;
+				screenFx.currentFadeColor.r *= screenFx.fadeTimer;
+				screenFx.currentFadeColor.g *= screenFx.fadeTimer;
+				screenFx.currentFadeColor.b *= screenFx.fadeTimer;
+				screenFx.currentFadeColor.a = 1;
 			}
 			else if (screenFx.fadeColorMode == ColorMode::Mul)
 			{
-				c.r = 1.0 + screenFx.fadeTimer * (c.r - 1.0f);
-				c.g = 1.0 + screenFx.fadeTimer * (c.g - 1.0f);
-				c.b = 1.0 + screenFx.fadeTimer * (c.b - 1.0f);
-				c.a = 1;
+				screenFx.currentFadeColor.r = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.r - 1.0f);
+				screenFx.currentFadeColor.g = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.g - 1.0f);
+				screenFx.currentFadeColor.b = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.b - 1.0f);
+				screenFx.currentFadeColor.a = 1;
 			}
-
-			//game->graphics->renderTargetColor = c.getRgba();
-			//game->graphics->renderTargetColorMode = fadeColorMode;
 		}
 	}
 }

@@ -73,6 +73,7 @@ struct ScreenFx
 
 	f32 fadeDuration, fadeTimer = 0;
 	Color fadeColor;
+	Color currentFadeColor;
 	ColorMode fadeColorMode = ColorMode::Add;
 	f32 fadeTimerDir = 1;
 	bool fadeRevertBackAfter = false;

@@ -5,6 +5,7 @@ function C:init(unit)
 end
 
 function C:onStageChange(old, new)
+  if not self.unit.appeared then return end
   if new == "stage0" then
     print("ACTIVATING MEGABLAST "..tostring(self).. " " ..tostring(self.unit))
     local wp = self.unit:findWeapon("gun1")
@@ -40,6 +41,10 @@ end
 
 function C:onAppeared()
   game:animateCameraSpeed(0, 0.1)
+  local wp = self.unit:findWeapon("gun1")
+  if wp then
+    wp.active = true
+  end
 end
 
 return function(unit)

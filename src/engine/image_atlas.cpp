@@ -13,6 +13,7 @@ ImageAtlas::ImageAtlas(u32 textureWidth, u32 textureHeight)
 {
 	id = atlasId++;
 	create(textureWidth, textureHeight);
+	addWhiteImage();
 }
 
 ImageAtlas::~ImageAtlas()
