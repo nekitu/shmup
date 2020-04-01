@@ -5,73 +5,116 @@
 
 namespace engine
 {
+#define CALL_LUA_FUNC2(scriptClass, name, ...)\
+		if (scriptClass)\
+		{\
+			auto func = scriptClass->getFunction(name);\
+			if (func.isFunction())\
+			{\
+				try\
+				{\
+					func.call(scriptClass->classInstance, __VA_ARGS__);\
+				}\
+				catch (LuaIntf::LuaException e)\
+				{\
+					LOG_ERROR("{0}: {1}", scriptClass->script->fileName, e.what());\
+				}\
+			}\
+		}
+
+#define CALL_LUA_FUNC(name, ...) CALL_LUA_FUNC2(scriptClass, name, __VA_ARGS__)
+
 extern bool initializeLua();
 extern void shutdownLua();
 extern lua_State* getLuaState();
 
-struct ScriptClassInstance
+struct ScriptClassInstanceBase
 {
 	struct ScriptResource* script = nullptr;
 	LuaIntf::LuaRef classInstance;
-	void* object = nullptr;
 
+	virtual bool createInstance() = 0;
 	LuaIntf::LuaRef getFunction(const std::string& funcName);
+	virtual ~ScriptClassInstanceBase();
 };
 
-struct ScriptResource : Resource
+template<typename T>
+struct ScriptClassInstance : ScriptClassInstanceBase
 {
-	std::string code;
-	std::vector<ScriptClassInstance*> classInstances;
+	T* object = nullptr;
 
-	bool load(Json::Value& json) override;
-	void unload();
+	ScriptClassInstance(T* obj) { object = obj; }
 
-	template<typename T>
-	ScriptClassInstance* createClassInstance(T* obj)
+	bool createInstance() override
 	{
-		if (code.empty())
+		if (script->code.empty())
 		{
-			printf("No code in: '%s'\n", fileName.c_str());
-			return nullptr;
+			LOG_WARN("No code in: '{0}'", script->fileName);
+			return false;
 		}
 
-		auto res = luaL_loadstring(getLuaState(), code.c_str());
+		auto res = luaL_loadstring(getLuaState(), script->code.c_str());
+
+		if (res != 0)
+		{
+			std::string str = lua_tostring(getLuaState(), -1);
+			replaceAll(str, "\r", " ");
+			LOG_ERROR("createClassInstance: Lua error: {0}", str);
+			return false;
+		}
 
 		auto result = lua_pcall(getLuaState(), 0, LUA_MULTRET, 0);
 
 		if (result)
 		{
-			printf("createClassInstance: Lua error: %s\n", lua_tostring(getLuaState(), -1));
-			return nullptr;
+			std::string str = lua_tostring(getLuaState(), -1);
+			replaceAll(str, "\r", " ");
+			LOG_ERROR("createClassInstance: Lua error: {0}", str);
+			return false;
 		}
-
-		LuaIntf::LuaRef inst;
 
 		auto cfunc = LuaIntf::LuaRef::popFromStack(getLuaState());
 
-		//printf("Creating instance '%s'\n", fileName.c_str());
-
 		if (cfunc.isFunction())
 		{
-			inst = cfunc.call<LuaIntf::LuaRef>(obj);
+			try
+			{
+				classInstance = cfunc.call<LuaIntf::LuaRef>(object);
+			}
+			catch (LuaIntf::LuaException e)
+			{
+				LOG_ERROR("Lua Error in {0}: {1}", script->fileName, e.what());
+			}
 		}
 		else
 		{
-			printf("Lua: Please return class table in '%s'\n", fileName.c_str());
-			return nullptr;
+			LOG_ERROR("Lua: Please return class table in '{0}'", script->fileName);
+			return false;
 		}
 
-		ScriptClassInstance* classInst = new ScriptClassInstance();
+		return true;
+	}
+};
+
+struct ScriptResource : Resource
+{
+	std::string code;
+	std::vector<ScriptClassInstanceBase*> classInstances;
+
+	bool load(Json::Value& json) override;
+	void unload();
+
+	template<typename T>
+	ScriptClassInstanceBase* createClassInstance(T* obj)
+	{
+		ScriptClassInstanceBase* classInst = new ScriptClassInstance(obj);
 
 		classInst->script = this;
-		classInst->classInstance = inst;
-		classInst->object = obj;
-
+		classInst->createInstance();
 		classInstances.push_back(classInst);
 
 		return classInst;
 	}
-
 };
 
 }

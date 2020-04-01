@@ -100,14 +100,14 @@ u32 singleUtf8ToUtf32(const char* glyph)
 
 bool loadJson(const std::string& fullFilename, Json::Value& root)
 {
-	printf("Loading \"%s\"\n", fullFilename.c_str());
+	LOG_INFO("Loading \"{0}\"", fullFilename);
 	Json::Reader reader;
 	auto json = readTextFile(fullFilename);
 	bool ok = reader.parse(json, root);
 
 	if (!ok)
 	{
-		printf("ERROR: in '%s' %s", fullFilename.c_str(),reader.getFormatedErrorMessages().c_str());
+		LOG_ERROR("JSON error in '{0}' {1}", fullFilename, reader.getFormatedErrorMessages());
 		return false;
 	}
 

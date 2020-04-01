@@ -15,6 +15,7 @@ project "psd2sheet"
     add_sources_from("./zlib")
     files { "../../src/engine/utils.cpp" }
     link_jsoncpp()
+    link_spdlog()
 
 
     filter {"system:linux"}

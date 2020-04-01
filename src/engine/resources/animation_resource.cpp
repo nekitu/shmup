@@ -9,7 +9,7 @@ f32 AnimationTrack::animate(f32 atTime, AnimationInstance* animInstance)
 	u32 key1Index = animInstance->previousTrackKeys[this];
 	AnimationKey* key1 = &keys[key1Index];
 	AnimationKey* key2 = nullptr;
-	
+
 	for (u32 i = key1Index, iCount = keys.size(); i < iCount - 1; i++)
 	{
 		if (atTime >= keys[i].time && atTime <= keys[i + 1].time)
@@ -47,9 +47,9 @@ bool AnimationResource::load(Json::Value& json)
 	repeatCount = json.get("repeatCount", repeatCount).asUInt();
 	auto typeStr = json.get("type", "Normal").asString();
 
-	if (typeStr == "Normal") type = Type::Normal;
-	if (typeStr == "Reversed") type = Type::Reversed;
-	if (typeStr == "PingPong") type = Type::PingPong;
+	if (typeStr == "Normal") animationType = AnimationType::Normal;
+	if (typeStr == "Reversed") animationType = AnimationType::Reversed;
+	if (typeStr == "PingPong") animationType = AnimationType::PingPong;
 
 	auto tracksJson = json.get("tracks", Json::Value(Json::ValueType::arrayValue));
 

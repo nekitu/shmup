@@ -16,7 +16,7 @@ struct AnimationInstance
 	bool active = true;
 	std::vector<AnimationKey*> triggeredKeyEvents;
 	std::unordered_map<AnimationTrack*, u32> previousTrackKeys;
-	struct ScriptClassInstance* scriptClass = nullptr;
+	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	std::string keyEventScriptCallback;
 
 	void copyFrom(AnimationInstance* other);

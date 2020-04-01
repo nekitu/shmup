@@ -46,13 +46,21 @@ std::string Game::makeFullDataPath(const std::string relativeDataFilename)
 
 bool Game::initialize()
 {
+#ifdef _DEBUG
+	spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+	LOG_DEBUG("Debug mode enabled");
+#endif
+
+	// change log pattern
+	spdlog::set_pattern("[%^%L%$] %v");
+
 	SDL_SetMainReady();
 
 	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
 	if (err != 0)
 	{
-		printf("SDL initialize error: %s\n", SDL_GetError());
+		LOG_ERROR("SDL initialize error: {0}", SDL_GetError());
 		return false;
 	}
 
@@ -74,12 +82,12 @@ bool Game::initialize()
 		windowHeight = h;
 	}
 
-	printf("Creating GL context...");
+	LOG_INFO("Creating GL context...");
 	glContext = SDL_GL_CreateContext(window);
 
 	if (!glContext)
 	{
-		printf("Cannot create GL context for SDL: %s\n", SDL_GetError());
+		LOG_ERROR("Cannot create GL context for SDL: {0}", SDL_GetError());
 		return false;
 	}
 
@@ -90,15 +98,15 @@ bool Game::initialize()
 
 	GLenum errGlew = 0;
 	glewExperimental = GL_TRUE;
-	printf("Initializing GLEW...");
+	LOG_INFO("Initializing GLEW...");
 
 	errGlew = glewInit();
 
-	printf("Initializing game...");
+	LOG_INFO("Initializing game...");
 
 	if (errGlew != GLEW_OK)
 	{
-		printf("FATAL ERROR: Cannot initialize GLEW. Error: %s\n", glewGetErrorString(errGlew));
+		LOG_ERROR("Cannot initialize GLEW. Error: {0}", glewGetErrorString(errGlew));
 		return false;
 	}
 
@@ -106,8 +114,8 @@ bool Game::initialize()
 	int flags = MIX_INIT_MP3;
 
 	if (flags != (result = Mix_Init(flags))) {
-		printf("Could not initialize mixer (result: %d).\n", result);
-		printf("Mix_Init: %s\n", Mix_GetError());
+		LOG_ERROR("Could not initialize mixer (result: {0})", result);
+		LOG_ERROR("Mix_Init: {0}", Mix_GetError());
 		exit(1);
 	}
 
@@ -263,13 +271,7 @@ void Game::mainLoop()
 		computeDeltaTime();
 		handleInputEvents();
 
-		if (scriptClass)
-		{
-			if (scriptClass->getFunction("onUpdate").isFunction())
-			{
-				scriptClass->getFunction("onUpdate").call(scriptClass->classInstance, deltaTime);
-			}
-		}
+		CALL_LUA_FUNC("onUpdate", deltaTime);
 
 		updateScreenFx();
 
@@ -294,10 +296,18 @@ void Game::mainLoop()
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
 
-		if (isControlDown(InputControl::ReloadScripts))
+		static bool reloadKeyDown = false;
+
+		bool reload = isControlDown(InputControl::ReloadScripts);
+
+		if (!reloadKeyDown && reload)
 		{
+			reloadKeyDown = true;
 			resourceLoader->reloadScripts();
 		}
+
+		if (!reload)
+			reloadKeyDown = false;
 
 		for (u32 i = 0; i < unitInstances.size(); i++)
 		{
@@ -361,15 +371,7 @@ void Game::mainLoop()
 			}
 		}
 
-		if (scriptClass)
-		{
-			auto func = scriptClass->getFunction("onRender");
-
-			if (func.isFunction())
-			{
-				func.call(scriptClass->classInstance, 0);
-			}
-		}
+		CALL_LUA_FUNC("onRender", 0)
 
 		if (screenFx.doingFade)
 		{
@@ -402,18 +404,18 @@ void Game::checkCollisions()
 			if (unitInst == unitInst2
 				|| unitInst->unit->type == unitInst2->unit->type) continue;
 
-			if ((unitInst->unit->type == UnitResource::Type::Enemy &&
-				unitInst2->unit->type == UnitResource::Type::EnemyProjectile)
-				|| (unitInst2->unit->type == UnitResource::Type::Enemy &&
-					unitInst->unit->type == UnitResource::Type::EnemyProjectile))
+			if ((unitInst->unit->unitType == UnitType::Enemy &&
+				unitInst2->unit->unitType == UnitType::EnemyProjectile)
+				|| (unitInst2->unit->unitType == UnitType::Enemy &&
+					unitInst->unit->unitType == UnitType::EnemyProjectile))
 			{
 				continue;
 			}
 
-			if ((unitInst->unit->type == UnitResource::Type::Player &&
-				unitInst2->unit->type == UnitResource::Type::PlayerProjectile)
-				|| (unitInst2->unit->type == UnitResource::Type::Player &&
-					unitInst->unit->type == UnitResource::Type::PlayerProjectile))
+			if ((unitInst->unit->unitType == UnitType::Player &&
+				unitInst2->unit->unitType == UnitType::PlayerProjectile)
+				|| (unitInst2->unit->unitType == UnitType::Player &&
+					unitInst->unit->unitType == UnitType::PlayerProjectile))
 			{
 				continue;
 			}
@@ -455,16 +457,16 @@ void Game::checkCollisions()
 			if (!unitInst2->collide) continue;
 
 			if (&unitInst == unitInst2
-				|| unitInst.unit->type == unitInst2->unit->type) continue;
+				|| unitInst.unit->unitType == unitInst2->unit->unitType) continue;
 
-			if (unitInst2->unit->type == UnitResource::Type::Enemy &&
-				unitInst.unit->type == UnitResource::Type::EnemyProjectile)
+			if (unitInst2->unit->unitType == UnitType::Enemy &&
+				unitInst.unit->unitType == UnitType::EnemyProjectile)
 			{
 				continue;
 			}
 
-			if (unitInst2->unit->type == UnitResource::Type::Player &&
-				unitInst.unit->type == UnitResource::Type::PlayerProjectile)
+			if (unitInst2->unit->unitType == UnitType::Player &&
+				unitInst.unit->unitType == UnitType::PlayerProjectile)
 			{
 				continue;
 			}
@@ -502,14 +504,14 @@ void Game::checkCollisions()
 
 		if (cp.first->checkPixelCollision(cp.second, pixelCols))
 		{
-			if (cp.first->unit->type == UnitResource::Type::EnemyProjectile
-				|| cp.first->unit->type == UnitResource::Type::PlayerProjectile)
+			if (cp.first->unit->unitType == UnitType::EnemyProjectile
+				|| cp.first->unit->unitType == UnitType::PlayerProjectile)
 			{
 				cp.first->deleteMeNow = true;
 			}
 
-			if (cp.second->unit->type == UnitResource::Type::EnemyProjectile
-				|| cp.second->unit->type == UnitResource::Type::PlayerProjectile)
+			if (cp.second->unit->unitType == UnitType::EnemyProjectile
+				|| cp.second->unit->unitType == UnitType::PlayerProjectile)
 			{
 				cp.second->deleteMeNow = true;
 			}
@@ -525,29 +527,11 @@ void Game::checkCollisions()
 					col.set("a", pixelCols[i].a);
 					col.set("b", pixelCols[i].b);
 					col.set("collisionCenter", pixelCols[i].collisionCenter);
-
 					colsTbl.set(i + 1, col);
 				}
 
-				if (cp.first->scriptClass)
-				{
-					auto func = cp.first->scriptClass->getFunction("onCollide");
-
-					if (func.isFunction())
-					{
-						func.call(cp.first->scriptClass->classInstance, cp.second, colsTbl);
-					}
-				}
-
-				if (cp.second->scriptClass)
-				{
-					auto func = cp.second->scriptClass->getFunction("onCollide");
-
-					if (func.isFunction())
-					{
-						func.call(cp.second->scriptClass->classInstance, cp.first, colsTbl);
-					}
-				}
+				CALL_LUA_FUNC2(cp.first->scriptClass, "onCollide", cp.second, colsTbl)
+				CALL_LUA_FUNC2(cp.second->scriptClass, "onCollide", cp.first, colsTbl)
 			}
 		}
 	}
@@ -767,7 +751,7 @@ Rect Game::screenToWorld(const Rect& rc, u32 layerIndex)
 
 void Game::preloadSprites()
 {
-	printf("Preloading sprites...\n");
+	LOG_INFO("Preloading sprites...");
 
 	auto recursiveSearch = [](const std::string& currentPath)
 	{
@@ -800,10 +784,10 @@ void Game::preloadSprites()
 
 	recursiveSearch(dataRoot + "sprites");
 
-	printf("Packing atlas sprites...\n");
+	LOG_INFO("Packing atlas sprites...");
 	graphics->atlas->pack();
 
-	printf("Computing sprite params after packing...\n");
+	LOG_INFO("Computing sprite params after packing...");
 
 	for (auto sprite : resourceLoader->sprites)
 	{
@@ -964,7 +948,7 @@ bool Game::loadLevels()
 	for (u32 i = 0; i < listJson.size(); i++)
 	{
 		Json::Value& lvlInfoJson = listJson[i];
-		printf("Level: %s in %s\n", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
+		LOG_INFO("Level: {0} in {1}", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
 		levels.push_back(std::make_pair(lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asString()));
 	}
 
@@ -977,7 +961,7 @@ void Game::deleteNonPersistentUnitInstances()
 
 	while (iter != unitInstances.end())
 	{
-		if ((*iter)->unit->type != UnitResource::Type::Player)
+		if ((*iter)->unit->unitType != UnitType::Player)
 		{
 			delete *iter;
 			iter = unitInstances.erase(iter);
@@ -1002,7 +986,7 @@ bool Game::changeLevel(i32 index)
 
 	if (index >= levels.size())
 	{
-		printf("ERROR: Level index out of range %d\n", index);
+		LOG_ERROR("Level index out of range {0}", index);
 		return false;
 	}
 

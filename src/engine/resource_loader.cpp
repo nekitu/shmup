@@ -10,6 +10,8 @@
 #include "resources/animation_resource.h"
 #include "resources/font_resource.h"
 #include "image_atlas.h"
+#include "weapon_instance.h"
+#include "game.h"
 #include <json/json.h>
 #include "utils.h"
 
@@ -19,7 +21,7 @@ namespace engine
 {\
 	if (filename.size() == 0)\
 	{\
-		printf("%s: Empty filename\n", where);\
+		LOG_ERROR("{0}: Empty filename", where);\
 	}\
 }
 
@@ -41,18 +43,57 @@ void ResourceLoader::unload(struct Resource* res)
 
 void ResourceLoader::reloadScripts()
 {
+	LOG_INFO("Unloading script instances...");
+
 	for (auto res : scripts)
 	{
 		res->unload();
 	}
 
+	LOG_INFO("Shutdown Lua...");
 	shutdownLua();
+	LOG_INFO("Initializing Lua...");
 	initializeLua();
+
+	Json::Value json;
+
+	LOG_INFO("Recreating Lua class instances...");
 
 	for (auto res : scripts)
 	{
-		Json::Value json;
 		res->load(json);
+	}
+
+	reloadWeapons();
+}
+
+void ResourceLoader::reloadWeapons()
+{
+	Json::Value json;
+
+	LOG_INFO("Recreating weapons...");
+
+	for (auto res : resources)
+	{
+		if (res.second->type == ResourceType::Weapon)
+		{
+			std::string fullFilename = root + res.first;
+
+			if (!loadJson(fullFilename + ".json", json))
+			{
+				continue;
+			}
+
+			res.second->load(json);
+		}
+	}
+
+	for (auto unit : Game::instance->unitInstances)
+	{
+		for (auto wpn : unit->weapons)
+		{
+			wpn.second->initializeFrom(wpn.second->weaponResource);
+		}
 	}
 }
 
@@ -79,6 +120,7 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 
 	SpriteResource* res = new SpriteResource();
 
+	res->type = ResourceType::Sprite;
 	res->loader = this;
 	res->atlas = atlas;
 	res->fileName = filename;
@@ -112,6 +154,7 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 
 	SoundResource* res = new SoundResource();
 
+	res->type = ResourceType::Sound;
 	res->loader = this;
 	res->fileName = fullFilename;
 	res->load(json);
@@ -143,6 +186,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 
 	MusicResource* res = new MusicResource();
 
+	res->type = ResourceType::Music;
 	res->loader = this;
 	res->fileName = fullFilename;
 	res->load(json);
@@ -174,6 +218,7 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 
 	UnitResource* res = new UnitResource();
 
+	res->type = ResourceType::Unit;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
@@ -205,6 +250,7 @@ LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 
 	LevelResource* res = new LevelResource();
 
+	res->type = ResourceType::Level;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
@@ -236,6 +282,7 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 
 	WeaponResource* res = new WeaponResource();
 
+	res->type = ResourceType::Weapon;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
@@ -261,6 +308,7 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 	Json::Value json;
 	ScriptResource* res = new ScriptResource();
 
+	res->type = ResourceType::Script;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
@@ -290,6 +338,7 @@ AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 
 	AnimationResource* res = new AnimationResource();
 
+	res->type = ResourceType::Animation;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);
@@ -318,6 +367,7 @@ FontResource* ResourceLoader::loadFont(const std::string& filename)
 
 	FontResource* res = new FontResource();
 
+	res->type = ResourceType::Font;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);

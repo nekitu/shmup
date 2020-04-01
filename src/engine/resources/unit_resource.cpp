@@ -18,19 +18,19 @@ bool UnitResource::load(Json::Value& json)
 	auto typeStr = json["type"].asString();
 
 	if (typeStr == "Enemy")
-		type = Type::Enemy;
+		unitType = UnitType::Enemy;
 
 	if (typeStr == "Item")
-		type = Type::Item;
+		unitType = UnitType::Item;
 
 	if (typeStr == "Player")
-		type = Type::Player;
+		unitType = UnitType::Player;
 
 	if (typeStr == "EnemyProjectile")
-		type = Type::EnemyProjectile;
+		unitType = UnitType::EnemyProjectile;
 
 	if (typeStr == "PlayerProjectile")
-		type = Type::PlayerProjectile;
+		unitType = UnitType::PlayerProjectile;
 
 	speed = json.get("speed", speed).asFloat();
 	parallaxScale = json.get("parallaxScale", parallaxScale).asFloat();

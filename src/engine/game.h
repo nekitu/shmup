@@ -110,7 +110,7 @@ struct Game
 	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
 	u32 currentLevelIndex = 0;
 	struct ScriptResource* currentMainScript = nullptr;
-	struct ScriptClassInstance* scriptClass;
+	struct ScriptClassInstanceBase* scriptClass;
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset;

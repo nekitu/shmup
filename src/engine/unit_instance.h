@@ -40,13 +40,14 @@ struct UnitInstance
 	bool collide = true;
 	bool shadow = false;
 	struct UnitResource* unit = nullptr;
-	struct ScriptClassInstance* scriptClass = nullptr;
+	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	struct SpriteInstance* root = nullptr;
 	struct UnitLifeStage* currentStage = nullptr;
 	std::vector<UnitLifeStage*> triggeredStages;
 	bool deleteMeNow = false;
 
 	UnitInstance();
+	virtual ~UnitInstance();
 	void reset();
 	virtual void copyFrom(UnitInstance* other);
 	virtual void initializeFrom(UnitResource* res);

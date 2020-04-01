@@ -40,12 +40,7 @@ void AnimationInstance::reset()
 void AnimationInstance::triggerKeyEvent(AnimationKey* key)
 {
 	triggeredKeyEvents.push_back(key);
-
-	if (scriptClass)
-	{
-		auto func = scriptClass->getFunction(keyEventScriptCallback);
-		if (func.isFunction()) func.call(scriptClass->classInstance, key->eventName, key->time, key->value);
-	}
+	CALL_LUA_FUNC(keyEventScriptCallback, key->eventName, key->time, key->value);
 }
 
 void AnimationInstance::update(f32 deltaTime)
@@ -53,9 +48,9 @@ void AnimationInstance::update(f32 deltaTime)
 	if (!active)
 		return;
 
-	switch (animation->type)
+	switch (animation->animationType)
 	{
-	case AnimationResource::Type::Normal:
+	case AnimationType::Normal:
 		currentTime += deltaTime * timeScale * animation->speed;
 
 		if (currentTime > animation->totalTime)
@@ -65,7 +60,7 @@ void AnimationInstance::update(f32 deltaTime)
 		}
 
 		break;
-	case AnimationResource::Type::Reversed:
+	case AnimationType::Reversed:
 		currentTime -= deltaTime * timeScale * animation->speed;
 
 		if (currentTime < 0)
@@ -75,7 +70,7 @@ void AnimationInstance::update(f32 deltaTime)
 		}
 
 		break;
-	case AnimationResource::Type::PingPong:
+	case AnimationType::PingPong:
 		currentTime += deltaTime * timeScale * pingPongDirection * animation->speed;
 
 		if (currentTime < 0)

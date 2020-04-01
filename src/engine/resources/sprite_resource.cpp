@@ -12,7 +12,7 @@ AtlasImage* SpriteResource::loadImage(const std::string& filename)
 	int comp = 0;
 
 	stbi_uc* data = stbi_load(filename.c_str(), &width, &height, &comp, 4);
-	printf("Loaded image: %s %dx%d\n", filename.c_str(), width, height);
+	LOG_INFO("Loaded image: {0} {1}x{2}", filename, width, height);
 
 	if (!data)
 		return nullptr;
@@ -90,7 +90,7 @@ Rect SpriteResource::getSheetFramePixelRect(u32 frame)
 bool SpriteResource::load(Json::Value& json)
 {
 	auto imageFilename = fileName + ".png";
-	
+
 	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
 	color.parse(json.get("color", color.toString()).asString());

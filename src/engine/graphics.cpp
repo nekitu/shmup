@@ -42,7 +42,7 @@ void checkErrorGL(const char* where)
 
 	if (err != GL_NO_ERROR)
 	{
-		printf("[%s] OpenGL: code#%d: %s\n", where, err, str.c_str());
+		LOG_ERROR("[{0}] OpenGL: code#{1}: {2}", where, err, str);
 	}
 }
 
@@ -145,7 +145,7 @@ void Graphics::createScreenRenderTarget()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
-		printf("Framebuffer is complete!\n");
+		LOG_INFO("Framebuffer is complete!");
 	}
 }
 

@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <cstdint>
 #include <vector>
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 namespace engine
 {
@@ -65,6 +67,12 @@ namespace engine
 #endif
 
 #define BIT(n) (1<<n)
+
+#define LOG_INFO(...) spdlog::info(__VA_ARGS__)
+#define LOG_ERROR(...) spdlog::error(__VA_ARGS__)
+#define LOG_DEBUG(...) spdlog::debug(__VA_ARGS__)
+#define LOG_WARN(...) spdlog::warn(__VA_ARGS__)
+#define LOG_CRITICAL(...) spdlog::critical(__VA_ARGS__)
 
 typedef u32 Rgba32;
 typedef std::vector<u32> UnicodeString;

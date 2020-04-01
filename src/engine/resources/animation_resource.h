@@ -49,19 +49,19 @@ struct AnimationTrack
 	f32 animate(f32 atTime, struct AnimationInstance* animInstance);
 };
 
+enum class AnimationType
+{
+	Normal,
+	Reversed,
+	PingPong
+};
+
 struct AnimationResource : Resource
 {
-	enum class Type
-	{
-		Normal,
-		Reversed,
-		PingPong
-	};
-
 	std::map<AnimationTrack::Type, AnimationTrack*> tracks;
 	f32 speed = 1.0f;
 	f32 totalTime = 0.0f;
-	Type type = Type::Normal;
+	AnimationType animationType = AnimationType::Normal;
 	u32 repeatCount = 0; /// zero means infinite
 
 	virtual bool load(Json::Value& json) override;

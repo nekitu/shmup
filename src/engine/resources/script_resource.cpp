@@ -20,6 +20,15 @@ namespace engine
 {
 static lua_State* L = nullptr;
 
+ScriptClassInstanceBase::~ScriptClassInstanceBase()
+{
+	if (script)
+	{
+		auto iter = std::find(script->classInstances.begin(), script->classInstances.end(), this);
+		if (iter != script->classInstances.end()) script->classInstances.erase(iter);
+	}
+}
+
 bool ScriptResource::load(Json::Value& json)
 {
 	code = readTextFile(loader->root + fileName + ".lua");
@@ -28,24 +37,7 @@ bool ScriptResource::load(Json::Value& json)
 	// if we already have some class instances, recreate them with the new script
 	for (auto& ci : classInstances)
 	{
-		lua_pushlightuserdata(L, ci->object);
-
-		//TODO: cant we store the creator function only ? do we have to call the entire code ?
-		auto result = lua_pcall(L, 0, LUA_MULTRET, 0);
-
-		if (result)
-		{
-			printf("Lua error: %s\n", lua_tostring(L, -1));
-			continue;
-		}
-
-		if (lua_istable(L, -1)) {
-			ci->classInstance = LuaIntf::LuaRef::popFromStack(L);
-		}
-		else
-		{
-			printf("Lua: Please return a class table in '%s'\n", fileName.c_str());
-		}
+		ci->createInstance();
 	}
 
 	return res == 0;
@@ -61,9 +53,9 @@ void ScriptResource::unload()
 	}
 }
 
-LuaIntf::LuaRef ScriptClassInstance::getFunction(const std::string& funcName)
+LuaIntf::LuaRef ScriptClassInstanceBase::getFunction(const std::string& funcName)
 {
-	if (!script)
+	if (!script || !getLuaState() || !classInstance.isValid())
 		return LuaIntf::LuaRef();
 
 	if (classInstance.has(funcName))
@@ -72,7 +64,7 @@ LuaIntf::LuaRef ScriptClassInstance::getFunction(const std::string& funcName)
 
 		if (!f.isFunction())
 		{
-			printf("Could not find the function '%s' in script '%s'\n", funcName.c_str(), script->fileName.c_str());
+			spdlog::error("Could not find the function '%s' in script '%s'\n", funcName.c_str(), script->fileName.c_str());
 			return LuaIntf::LuaRef::fromPtr(L, nullptr);
 		}
 
@@ -82,10 +74,9 @@ LuaIntf::LuaRef ScriptClassInstance::getFunction(const std::string& funcName)
 	return LuaIntf::LuaRef();
 }
 
-
 void engine_log(const char* str)
 {
-	printf("LOG: %s\n", str);
+	LOG_INFO("{0}", str);
 }
 
 bool initializeLua()
@@ -166,10 +157,14 @@ bool initializeLua()
 		.addFunction("debug", &WeaponInstance::debug)
 		.endClass();
 
-	LUA.beginClass<UnitResource>("UnitResource")
+	LUA.beginClass<Resource>("Resource")
+		.addVariable("type", &Resource::type)
+		.endClass();
+
+	LUA.beginExtendClass<UnitResource, Resource>("UnitResource")
 		.addVariable("name", &UnitResource::name)
 		.addVariable("fileName", &UnitResource::fileName)
-		.addVariable("type", &UnitResource::type)
+		.addVariable("unitType", &UnitResource::unitType)
 		.endClass();
 
 	LUA.beginExtendClass<SpriteResource, UnitResource>("SpriteResource")

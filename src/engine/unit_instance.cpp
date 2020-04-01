@@ -22,6 +22,11 @@ UnitInstance::UnitInstance()
 	id = lastId++;
 }
 
+UnitInstance::~UnitInstance()
+{
+	delete scriptClass;
+}
+
 void UnitInstance::reset()
 {
 	for (auto spr : spriteInstances) delete spr;
@@ -43,6 +48,7 @@ void UnitInstance::reset()
 	root = nullptr;
 	currentStage = nullptr;
 	unit = nullptr;
+	delete scriptClass;
 	scriptClass = nullptr;
 	deleteMeNow = false;
 	age = 0;
@@ -215,7 +221,7 @@ void UnitInstance::load(ResourceLoader* loader, const Json::Value& json)
 
 	if (unitFilename == "")
 	{
-		printf("No unit filename specified for unit instance (%s)\n", name.c_str());
+		LOG_ERROR("No unit filename specified for unit instance ({0})", name);
 		return;
 	}
 
@@ -246,14 +252,7 @@ void UnitInstance::update(Game* game)
 			if (iter != triggeredStages.end()) continue;
 
 			triggeredStages.push_back(stage);
-
-			if (scriptClass)
-			{
-				auto func = scriptClass->getFunction("onStageChange");
-
-				if (func.isFunction()) func.call(scriptClass->classInstance, currentStage ? currentStage->name : "", stage->name);
-			}
-
+			CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
 			currentStage = stage;
 			break;
 		}
@@ -307,12 +306,7 @@ void UnitInstance::update(Game* game)
 	}
 
 	age += game->deltaTime;
-
-	if (scriptClass)
-	{
-		auto func = scriptClass->getFunction("onUpdate");
-		if (func.isFunction()) func.call(scriptClass->classInstance);
-	}
+	CALL_LUA_FUNC("onUpdate");
 }
 
 void UnitInstance::computeHealth()
@@ -466,16 +460,7 @@ void UnitInstance::computeBoundingBox()
 			|| (Game::instance->screenMode == ScreenMode::Horizontal && boundingBox.x < Game::instance->graphics->videoWidth))
 		{
 			appeared = true;
-
-			if (scriptClass)
-			{
-				auto func = scriptClass->getFunction("onAppeared");
-
-				if (func.isFunction())
-				{
-					func.call(scriptClass->classInstance);
-				}
-			}
+			CALL_LUA_FUNC("onAppeared");
 		}
 	}
 }

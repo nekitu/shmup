@@ -37,16 +37,7 @@ void WeaponInstance::fire()
 
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
-
-	if (scriptClass)
-	{
-		auto f = scriptClass->getFunction("onFire");
-
-		if (f.isFunction())
-		{
-			f(this);
-		}
-	}
+	CALL_LUA_FUNC("onFire");
 }
 
 void WeaponInstance::spawnProjectiles(Game* game)
@@ -133,20 +124,12 @@ void WeaponInstance::update(struct Game* game)
 		spawnProjectiles(game);
     }
 
-	if (scriptClass)
-	{
-		auto func = scriptClass->getFunction("onUpdate");
-
-		if (func.isFunction())
-		{
-			func.call(scriptClass->classInstance);
-		}
-	}
+	CALL_LUA_FUNC("onUpdate");
 }
 
 void WeaponInstance::render()
 {
-
+	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam)
 	{
 		static f32 f = 0;

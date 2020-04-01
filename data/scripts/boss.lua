@@ -18,7 +18,7 @@ function C:onStageChange(old, new)
     print("ACTIVATING LAST RESORT SWORD")
   end
 end
-
+local s = 0
 function C:onUpdate()
   if self.unit.health == 0 then
     self.unit.deleteMeNow = true
@@ -27,6 +27,9 @@ function C:onUpdate()
     game:animateCameraSpeed(110, 0.6)
     game:shakeCamera(Vec2(10, 10), 3, 200)
   end
+  self.unit.root.position.x = self.unit.root.position.x + math.sin(s) * 10 * game.deltaTime
+  self.unit.root.position.y = self.unit.root.position.y + math.sin(s) * 40 * game.deltaTime
+  s = s + game.deltaTime
 end
 
 function C:onCollide(other)

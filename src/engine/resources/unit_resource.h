@@ -56,22 +56,22 @@ struct UnitLifeStage
 	f32 triggerOnHealth = 100;
 };
 
+enum class UnitType
+{
+	None,
+	Player,
+	Enemy,
+	Item,
+	PlayerProjectile,
+	EnemyProjectile,
+
+	Count
+};
+
 struct UnitResource : Resource
 {
-	enum class Type
-	{
-		Unknown,
-		Player,
-		Enemy,
-		Item,
-		PlayerProjectile,
-		EnemyProjectile,
-
-		Count
-	};
-
 	std::string name;
-	Type type = Type::Unknown;
+	UnitType unitType = UnitType::None;
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;
 	f32 parallaxScale = 1.0f;

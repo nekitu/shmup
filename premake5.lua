@@ -254,6 +254,11 @@ function link_utf8()
 	includedirs {scriptRoot.."/libs/utf8/source"}
 end
 
+function link_spdlog()
+	filter {}
+	includedirs {scriptRoot.."/libs/spdlog/include"}
+end
+
 ---
 --- Include the subprojects
 ---

@@ -38,13 +38,13 @@ bool GpuProgram::create(const std::string& vsSrc, const std::string& psSrc)
 
 		if (strcmp(errorLog, ""))
 		{
-			printf("Linking program: %s\n", errorLog);
+			LOG_INFO("Linking program: {0}", errorLog);
 		}
 	}
 
 	if (!glIsProgram((GLuint)program))
 	{
-		printf("Program ID:%d is not a valid OpenGL program\n", program);
+		LOG_INFO("Program ID: {0} is not a valid OpenGL program", program);
 	}
 	OGL_CHECK_ERROR;
 
@@ -57,7 +57,7 @@ bool GpuProgram::create(const std::string& vsSrc, const std::string& psSrc)
 		GLchar errorLog[1024] = { 0 };
 		glGetShaderInfoLog((GLuint)pixelShader, 1024, NULL, errorLog);
 		OGL_CHECK_ERROR;
-		printf("Error validating pixel shader: '%s'\n", errorLog);
+		LOG_ERROR("Error validating pixel shader: '{0}'", errorLog);
 		return false;
 	}
 
@@ -69,11 +69,11 @@ bool GpuProgram::create(const std::string& vsSrc, const std::string& psSrc)
 		GLchar errorLog[1024] = { 0 };
 		glGetShaderInfoLog((GLuint)vertexShader, 1024, NULL, errorLog);
 		OGL_CHECK_ERROR;
-		printf("Error validating vertex shader: '%s'\n", errorLog);
+		LOG_ERROR("Error validating vertex shader: '{0}'", errorLog);
 		return false;
 	}
 
-	printf("Validating program id: %d\n", program);
+	LOG_INFO("Validating program id: {0}", program);
 	glValidateProgram((GLuint)program);
 	OGL_CHECK_ERROR;
 
@@ -86,7 +86,7 @@ bool GpuProgram::create(const std::string& vsSrc, const std::string& psSrc)
 		GLchar errorLog[1024] = { 0 };
 		glGetProgramInfoLog((GLuint)program, 1024, NULL, errorLog);
 		OGL_CHECK_ERROR;
-		printf("Error validating program: '%s'\n", errorLog);
+		LOG_ERROR("Error validating program: '{0}'", errorLog);
 		return false;
 	}
 
@@ -102,7 +102,7 @@ bool GpuProgram::create(const std::string& vsSrc, const std::string& psSrc)
 		GLchar name[100];
 		glGetActiveAttrib(program, n, 100, &len, &size, &type, name);
 		OGL_CHECK_ERROR;
-		printf("%s\n", name);
+		LOG_INFO("{0}", name);
 	}
 
 	return true;
