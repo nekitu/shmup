@@ -2,12 +2,16 @@ local C = {}
 
 function C:init(unit)
   self.unit = unit
-  self.playerIndex = 0
   self.isFirePressed = false
-  self.active = true
 end
 
-function C:update()
+function C:setup(params)
+  self.playerIndex = params:getInt("playerIndex", 0)
+  self.active = params:getBool("active", true)
+  log.info("Setup player " .. tostring(self.playerIndex))
+end
+
+function C:onUpdate()
   if not self.active then
     return
   end

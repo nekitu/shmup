@@ -12,11 +12,11 @@
 #include "color.h"
 #include "resources/level_resource.h"
 #include "lua_scripting.h"
-#include "projectile_instance.h"
+#include "projectile.h"
 
 namespace engine
 {
-struct UnitInstance;
+struct Unit;
 
 enum class InputControl
 {
@@ -52,15 +52,15 @@ struct BeamCollisionInfo
 	bool valid = false;
 	Vec2 point;
 	f32 distance = 0;
-	struct UnitInstance* unitInst = nullptr;
-	struct SpriteInstance* spriteInst = nullptr;
+	struct Unit* unit = nullptr;
+	struct Sprite* sprite = nullptr;
 };
 
 struct PlayerStats
 {
 	u32 score = 0;
 	bool active = false;
-	struct UnitInstance* unitInstance = nullptr;
+	struct Unit* unit = nullptr;
 };
 
 struct ScreenFx
@@ -100,13 +100,13 @@ struct Game
 	f32 lastTime = 0;
 	u32 hiscore = 0;
 	u32 credit = 0;
-	std::vector<UnitInstance*> unitInstances;
-	std::vector<UnitInstance*> newUnitInstances;
-	std::vector<ProjectileInstance> projectiles;
+	std::vector<Unit*> units;
+	std::vector<Unit*> newUnits;
+	std::vector<Projectile> projectiles;
 	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
-	struct MusicInstance* music = nullptr;
+	struct Music* music = nullptr;
 	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
 	u32 currentLevelIndex = 0;
 	struct ScriptResource* currentMainScript = nullptr;
@@ -134,7 +134,7 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
-	BeamCollisionInfo checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 beamWidth);
+	BeamCollisionInfo checkBeamIntersection(Unit* unit, Sprite* sprite, const Vec2& pos, f32 beamWidth);
 	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
 	Vec2 screenToWorld(const Vec2& pos, u32 layerIndex);
 	Rect worldToScreen(const Rect& rc, u32 layerIndex);
@@ -146,6 +146,7 @@ struct Game
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);
 	void fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter);
 	void updateScreenFx();
+	void updateCamera();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
 	bool isPlayerMoveLeft(u32 playerIndex);
 	bool isPlayerMoveRight(u32 playerIndex);
@@ -154,15 +155,14 @@ struct Game
 	bool isPlayerFire1(u32 playerIndex);
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
-	void deleteNonPersistentUnitInstances();
+	void deleteNonPersistentUnits();
 	bool loadLevels();
 	bool changeLevel(i32 index);
 	static std::string makeFullDataPath(const std::string relativeDataFilename);
-	struct SpriteInstance* createSpriteInstance(struct SpriteResource* spriteRes);
-	struct UnitInstance* createUnitInstance(struct UnitResource* unitRes);
-	struct WeaponInstance* createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst);
-	struct ProjectileInstance* newProjectileInstance();
-	void releaseProjectileInstance(ProjectileInstance* inst);
+	struct Unit* createUnit(struct UnitResource* unitRes);
+	struct Weapon* createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite);
+	struct Projectile* newProjectile();
+	void releaseProjectile(Projectile* proj);
 };
 
 }

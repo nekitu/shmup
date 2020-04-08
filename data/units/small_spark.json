@@ -4,7 +4,7 @@
   "autoDeleteType": "OutOfScreen",
   "script": "scripts/small_spark",
   "root": "body",
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",

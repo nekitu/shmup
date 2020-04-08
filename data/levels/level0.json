@@ -6,7 +6,7 @@
 	{ "name": "background3", "parallaxScale": 3},
 	{ "name": "foreground", "parallaxScale": 1}
 ],
-"unitInstances":
+"units":
 [
 	{
 		"name": "bg",

@@ -1,8 +1,8 @@
 #include "level_resource.h"
 #include "json/value.h"
-#include "unit_instance.h"
+#include "unit.h"
 #include "resource_loader.h"
-#include "sprite_instance.h"
+#include "sprite.h"
 #include "game.h"
 
 namespace engine
@@ -10,26 +10,40 @@ namespace engine
 bool LevelResource::load(Json::Value& json)
 {
 	auto layersJson = json.get("layers", Json::Value());
-	auto unitInstancesJson = json.get("unitInstances", Json::Value());
+	auto unitsJson = json.get("units", Json::Value());
 
-	if (!unitInstancesJson.size())
+	if (!unitsJson.size())
 		return true;
 
 	for (auto& item : layersJson)
 	{
 		Layer layer;
+
 		layer.parallaxScale = item.get("parallaxScale", 1.0f).asFloat();
 		layers.push_back(layer);
 	}
 
-	for (auto& item : unitInstancesJson)
+	for (auto& item : unitsJson)
 	{
-		UnitInstance* unitInst = new UnitInstance();
-		unitInst->load(loader, item);
-		unitInstances.push_back(unitInst);
+		Unit* unit = new Unit();
+
+		unit->load(loader, item);
+		units.push_back(unit);
 	}
 
 	return true;
+}
+
+void LevelResource::unload()
+{
+	layers.clear();
+
+	for (auto& unit : units)
+	{
+		delete unit;
+	}
+
+	units.clear();
 }
 
 }

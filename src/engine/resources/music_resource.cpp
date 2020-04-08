@@ -4,7 +4,6 @@ namespace engine
 {
 MusicResource::~MusicResource()
 {
-	if (music) Mix_FreeMusic(music);
 }
 
 bool MusicResource::load(Json::Value& json)
@@ -15,6 +14,12 @@ bool MusicResource::load(Json::Value& json)
 		return false;
 
 	return true;
+}
+
+void MusicResource::unload()
+{
+	if (music) Mix_FreeMusic(music);
+	music = nullptr;
 }
 
 }

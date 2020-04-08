@@ -4,9 +4,9 @@
 
 namespace engine
 {
-struct MusicInstance
+struct Sound
 {
-	struct MusicResource* musicResource = nullptr;
+	struct SoundResource* soundResource = nullptr;
 
 	bool play();
 };

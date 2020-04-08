@@ -46,7 +46,7 @@ struct AnimationTrack
 
 	std::vector<AnimationKey> keys;
 
-	f32 animate(f32 atTime, struct AnimationInstance* animInstance);
+	f32 animate(f32 atTime, struct Animation* anim);
 };
 
 enum class AnimationType
@@ -65,6 +65,7 @@ struct AnimationResource : Resource
 	u32 repeatCount = 0; /// zero means infinite
 
 	virtual bool load(Json::Value& json) override;
+	void unload() override;
 };
 
 }

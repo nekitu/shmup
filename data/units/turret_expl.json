@@ -5,7 +5,7 @@
     "autoDeleteType": "EndOfScreen",
     "root": "body",
     "script":"scripts/turret_expl",
-    "spriteInstances":
+    "sprites":
     [
         {
             "name": "body",

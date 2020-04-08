@@ -2,7 +2,7 @@
     "name": "FireFromBoss",
     "type": "EnemyProjectile",
     "autoDeleteType": "OutOfScreen",
-    "spriteInstances":
+    "sprites":
     [
         {
             "name": "body",

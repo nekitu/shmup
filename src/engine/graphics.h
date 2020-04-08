@@ -31,9 +31,9 @@ struct Graphics
 	std::vector<Vertex> vertices;
 	u32 drawVertexCount = 0;
 	f32 vertexCountGrowFactor = 1.5f;
-	u32 currentColor = 0;
-	u32 currentColorMode = 0;
-	u32 currentAlphaMode = 0;
+	u32 color = 0;
+	u32 colorMode = 0;
+	u32 alphaMode = 0;
 	u32 atlasTextureIndex = 0;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;

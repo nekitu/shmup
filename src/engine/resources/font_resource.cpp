@@ -29,6 +29,14 @@ bool FontResource::load(Json::Value& json)
 	return true;
 }
 
+void FontResource::unload()
+{
+	charsSprite = nullptr;
+	startGlyphFrame = 0;
+	glyphCodes.clear();
+	kernings.clear();
+}
+
 u32 FontResource::getGlyphSpriteFrame(u32 code)
 {
 	return glyphCodes[code];

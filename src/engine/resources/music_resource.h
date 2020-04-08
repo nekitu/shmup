@@ -11,6 +11,7 @@ struct MusicResource : Resource
 
 	~MusicResource();
 	bool load(Json::Value& json) override;
+	void unload() override;
 };
 
 }

@@ -2,11 +2,6 @@
 
 namespace engine
 {
-SoundResource::~SoundResource()
-{
-	if (wave) Mix_FreeChunk(wave);
-}
-
 bool SoundResource::load(Json::Value& json)
 {
 	wave = Mix_LoadWAV(fileName.c_str());
@@ -15,6 +10,12 @@ bool SoundResource::load(Json::Value& json)
 		return false;
 
 	return true;
+}
+
+void SoundResource::unload()
+{
+	if (wave) Mix_FreeChunk(wave);
+	wave = nullptr;
 }
 
 }

@@ -416,25 +416,25 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 
 	vertices[i].position = rect.topLeft();
 	vertices[i].uv = uvRect.topLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.topRight();
 	vertices[i].uv = uvRect.topRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
 	vertices[i].uv = uvRect.bottomLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -442,25 +442,25 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 
 	vertices[i].position = rect.topRight();
 	vertices[i].uv = uvRect.topRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomRight();
 	vertices[i].uv = uvRect.bottomRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
 	vertices[i].uv = uvRect.bottomLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -484,25 +484,25 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 
 	vertices[i].position = rect.topLeft();
 	vertices[i].uv = t3;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.topRight();
 	vertices[i].uv = t0;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
 	vertices[i].uv = t2;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -510,25 +510,25 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 
 	vertices[i].position = rect.topRight();
 	vertices[i].uv = t0;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomRight();
 	vertices[i].uv = t1;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
 	vertices[i].uv = t2;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -571,25 +571,25 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 
 	vertices[i].position = v0;
 	vertices[i].uv = t3;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v1;
 	vertices[i].uv = t0;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v3;
 	vertices[i].uv = t2;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -597,25 +597,25 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 
 	vertices[i].position = v1;
 	vertices[i].uv = t0;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v2;
 	vertices[i].uv = t1;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v3;
 	vertices[i].uv = t2;
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -683,25 +683,25 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 
 	vertices[i].position = v0;
 	vertices[i].uv = uvRect.topLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v1;
 	vertices[i].uv = uvRect.topRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v3;
 	vertices[i].uv = uvRect.bottomLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
@@ -709,25 +709,25 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 
 	vertices[i].position = v1;
 	vertices[i].uv = uvRect.topRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v2;
 	vertices[i].uv = uvRect.bottomRight();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 
 	vertices[i].position = v3;
 	vertices[i].uv = uvRect.bottomLeft();
-	vertices[i].color = currentColor;
-	vertices[i].colorMode = currentColorMode;
-	vertices[i].alphaMode = currentAlphaMode;
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
 	i++;
 

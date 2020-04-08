@@ -4,7 +4,7 @@ function C:init(unit)
   self.unit = unit
 end
 
-function C:update()
+function C:onUpdate()
   if not self.unit.root then return end
   self.unit.root.position = self.unit.root.position + self.unit.velocity:mulScalarReturn(self.unit.speed * game.deltaTime)
   self.unit.speed = self.unit.speed + self.unit.speed * self.unit.acceleration * game.deltaTime

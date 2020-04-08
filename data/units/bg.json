@@ -5,12 +5,12 @@
   "parallaxScale": 0.4,
   "controllers":
   [
-      { "name": "bg", "class": "Background" }
+      { "name": "bg", "script": "scripts/controllers/background" }
   ],
   "healthPoints": 1000,
   "root": "body",
   "collide": false,
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",

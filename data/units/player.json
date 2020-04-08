@@ -6,14 +6,14 @@
   "shadow": true,
   "shadowOffset": "40 40",
   "shadowScale": 0.4,
+  "autoDeleteType": "None",
   "controllers":
   [
-    { "name": "main", "class": "Player" },
-    { "name": "screenFx", "class": "ScreenFx" },
-    { "name": "gunL_follow", "class": "Follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
-    { "name": "gunR_follow", "class": "Follow", "follower":"gunR", "follow": "body", "speed":10},
-    { "name": "gunLtrail_follow", "class": "Follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
-    { "name": "gunRtrail_follow", "class": "Follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
+    { "name": "main", "script": "scripts/controllers/player" },
+    { "name": "gunL_follow", "script": "scripts/controllers/follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": false},
+    { "name": "gunR_follow", "script": "scripts/controllers/follow", "follower":"gunR", "follow": "body", "speed":10},
+    { "name": "gunLtrail_follow", "script": "scripts/controllers/follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
+    { "name": "gunRtrail_follow", "script": "scripts/controllers/follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
   ],
   "root": "body",
   "animations":
@@ -25,7 +25,7 @@
     {
     }
   },
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",

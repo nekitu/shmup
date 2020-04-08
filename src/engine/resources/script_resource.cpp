@@ -4,12 +4,12 @@
 #include "resources/sprite_resource.h"
 #include "utils.h"
 #include "resource_loader.h"
-#include "weapon_instance.h"
-#include "unit_instance.h"
-#include "sprite_instance.h"
+#include "weapon.h"
+#include "unit.h"
+#include "sprite.h"
 #include "game.h"
 #include "graphics.h"
-#include "projectile_instance.h"
+#include "projectile.h"
 
 namespace LuaIntf
 {
@@ -74,11 +74,6 @@ LuaIntf::LuaRef ScriptClassInstanceBase::getFunction(const std::string& funcName
 	return LuaIntf::LuaRef();
 }
 
-void engine_log(const char* str)
-{
-	LOG_INFO("{0}", str);
-}
-
 bool initializeLua()
 {
 	L = luaL_newstate();
@@ -88,25 +83,32 @@ bool initializeLua()
 
 	LuaIntf::LuaContext l(L);
 
+	LUA.beginModule("log")
+		.addFunction("info", [](const std::string& str) { LOG_INFO("LUA: {0}", str); })
+		.addFunction("error", [](const std::string& str) { LOG_ERROR("LUA: {0}", str); })
+		.addFunction("debug", [](const std::string& str) { LOG_DEBUG("LUA: {0}", str); })
+		.addFunction("warn", [](const std::string& str) { LOG_WARN("LUA: {0}", str); })
+		.addFunction("critical", [](const std::string& str) { LOG_CRITICAL("LUA: {0}", str); })
+		.endModule();
+
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
-		//.addFunction("log", &engine_log)
 		.addVariable("cameraSpeed", &Game::cameraSpeed)
 		.addVariable("hiscore", &Game::hiscore)
-		.addFunction("player1", [](Game* g) { return g->players[0].unitInstance; })
-		.addFunction("player2", [](Game* g) { return g->players[1].unitInstance; })
+		.addFunction("player1", [](Game* g) { return g->players[0].unit; })
+		.addFunction("player2", [](Game* g) { return g->players[1].unit; })
 		.addVariable("credit", &Game::credit)
 		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeLevel", &Game::changeLevel)
 		.addFunction("loadNextLevel", [](Game* g) { g->changeLevel(~0); })
-		.addFunction("spawn", [](Game* g, const std::string& unit, const std::string& name, const Vec2& position)
+		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{
-				auto uinst = g->createUnitInstance(Game::instance->resourceLoader->loadUnit(unit));
-				uinst->name = name;
-				uinst->root->position = position;
-				return uinst;
+				auto u = g->createUnit(Game::instance->resourceLoader->loadUnit(unitResource));
+				u->name = name;
+				u->root->position = position;
+				return u;
 			}
 		)
 		.addFunction("loadFont", [](Game* g, const std::string& filename) { return g->resourceLoader->loadFont(filename); })
@@ -139,9 +141,9 @@ bool initializeLua()
 	LUA.beginClass<Graphics>("Graphics")
 		.addVariable("videoWidth", &Graphics::videoWidth)
 		.addVariable("videoHeight", &Graphics::videoHeight)
-		.addVariable("currentColor", &Graphics::currentColor)
-		.addVariable("currentColorMode", &Graphics::currentColorMode)
-		.addVariable("currentAlphaMode", &Graphics::currentAlphaMode)
+		.addVariable("color", &Graphics::color)
+		.addVariable("colorMode", &Graphics::colorMode)
+		.addVariable("alphaMode", &Graphics::alphaMode)
 		.addFunction("drawText", &Graphics::drawText)
 		.endClass();
 
@@ -149,12 +151,11 @@ bool initializeLua()
 		.addVariableRef("direction", &WeaponResource::Parameters::direction)
 		.endClass();
 
-	LUA.beginClass<WeaponInstance>("WeaponInstance")
-		.addVariable("active", &WeaponInstance::active)
-		.addVariable("angle", &WeaponInstance::angle)
-		.addVariableRef("params", &WeaponInstance::params)
-		.addFunction("fire", &WeaponInstance::fire)
-		.addFunction("debug", &WeaponInstance::debug)
+	LUA.beginClass<Weapon>("Weapon")
+		.addVariable("active", &Weapon::active)
+		.addVariable("angle", &Weapon::angle)
+		.addVariableRef("params", &Weapon::params)
+		.addFunction("fire", &Weapon::fire)
 		.endClass();
 
 	LUA.beginClass<Resource>("Resource")
@@ -179,35 +180,37 @@ bool initializeLua()
 		.addVariable("triggerOnHealth", &UnitLifeStage::triggerOnHealth)
 		.endClass();
 
-	LUA.beginClass<UnitInstance>("UnitInstance")
-		.addVariable("id", &UnitInstance::id, false)
-		.addVariable("name", &UnitInstance::name, true)
-		.addVariable("layerIndex", &UnitInstance::layerIndex)
-		.addVariable("appeared", &UnitInstance::appeared)
-		.addVariable("unitResource", &UnitInstance::unit, false)
-		.addVariable("age", &UnitInstance::age, false)
-		.addVariable("health", &UnitInstance::health)
-		.addVariable("speed", &UnitInstance::speed)
-		.addVariable("stage", &UnitInstance::currentStage)
-		.addVariable("deleteMeNow", &UnitInstance::deleteMeNow)
-		.addVariable("root", &UnitInstance::root)
+	LUA.beginClass<Unit>("Unit")
+		.addVariable("id", &Unit::id, false)
+		.addVariable("name", &Unit::name, true)
+		.addVariable("layerIndex", &Unit::layerIndex)
+		.addVariable("appeared", &Unit::appeared)
+		.addVariable("unitResource", &Unit::unitResource, false)
+		.addVariable("age", &Unit::age, false)
+		.addVariable("health", &Unit::health)
+		.addVariable("speed", &Unit::speed)
+		.addVariable("stage", &Unit::currentStage)
+		.addVariable("deleteMeNow", &Unit::deleteMeNow)
+		.addVariable("root", &Unit::root)
+		.addFunction("findSprite", &Unit::findSprite)
 		.addFunction("findWeapon",
-			[](UnitInstance* uinst, const std::string& weaponName)
+			[](Unit* unit, const std::string& weaponName)
 			{
-				auto iter = uinst->weapons.find(weaponName);
+				auto iter = unit->weapons.find(weaponName);
 
-				if (iter != uinst->weapons.end())
+				if (iter != unit->weapons.end())
 				{
 					return iter->second;
 				}
 
-				return (WeaponInstance*)nullptr;
+				return (Weapon*)nullptr;
 			}
 		)
-		.addFunction("getWeapons", [](UnitInstance* thisObj)
+		.addFunction("getWeapons", [](Unit* thisObj)
 			{
 				LuaIntf::LuaRef wpns = LuaIntf::LuaRef::createTable(getLuaState());
 				int i = 1;
+
 				for (auto& wpn : thisObj->weapons)
 				{
 					wpns.set(i, wpn.second);
@@ -216,9 +219,9 @@ bool initializeLua()
 
 				return wpns;
 			})
-		.addFunction("checkPixelCollision", [](UnitInstance* thisObj, UnitInstance* other, LuaIntf::LuaRef& collisions)
+		.addFunction("checkPixelCollision", [](Unit* thisObj, Unit* other, LuaIntf::LuaRef& collisions)
 			{
-				std::vector<SpriteInstanceCollision> cols;
+				std::vector<SpriteCollision> cols;
 				bool collided = thisObj->checkPixelCollision(other, cols);
 				int i = 1;
 
@@ -230,9 +233,9 @@ bool initializeLua()
 				return collided;
 			}
 		)
-		.addFunction("fire", [](UnitInstance* inst)
+		.addFunction("fire", [](Unit* unit)
 			{
-				for (auto& wp : inst->weapons)
+				for (auto& wp : unit->weapons)
 				{
 					wp.second->fire();
 					wp.second->update(Game::instance);
@@ -240,12 +243,27 @@ bool initializeLua()
 			})
 		.endClass();
 
-	LUA.beginExtendClass<ProjectileInstance, UnitInstance>("ProjectileInstance")
-		.addVariableRef("weapon", &ProjectileInstance::weapon)
-		.addVariableRef("velocity", &ProjectileInstance::velocity)
-		.addVariable("minSpeed", &ProjectileInstance::minSpeed)
-		.addVariable("maxSpeed", &ProjectileInstance::maxSpeed)
-		.addVariable("acceleration", &ProjectileInstance::acceleration)
+	LUA.beginExtendClass<Projectile, Unit>("Projectile")
+		.addVariableRef("weaponResource", &Projectile::weaponResource)
+		.addVariableRef("velocity", &Projectile::velocity)
+		.addVariable("minSpeed", &Projectile::minSpeed)
+		.addVariable("maxSpeed", &Projectile::maxSpeed)
+		.addVariable("acceleration", &Projectile::acceleration)
+		.endClass();
+
+	LUA.beginClass<ControllerInstanceResource>("ControllerInstanceResource")
+		.addFunction("getInt", [](ControllerInstanceResource* cls, const std::string& name, int defaultVal) { return cls->json.get(name, defaultVal).asInt(); })
+		.addFunction("getFloat", [](ControllerInstanceResource* cls, const std::string& name, f32 defaultVal) { return cls->json.get(name, defaultVal).asFloat(); })
+		.addFunction("getString", [](ControllerInstanceResource* cls, const std::string& name, const std::string& defaultVal) { return cls->json.get(name, defaultVal).asString(); })
+		.addFunction("getBool", [](ControllerInstanceResource* cls, const std::string& name, bool defaultVal) { return cls->json.get(name, defaultVal).asBool(); })
+		.addFunction("getVec2", [](ControllerInstanceResource* cls, const std::string& name, const Vec2& defaultVal)
+			{
+
+				auto str = cls->json.get(name, defaultVal.toString()).asString();
+				Vec2 v;
+				v.parse(str);
+				return v;
+			})
 		.endClass();
 
 	LUA.beginClass<Color>("Color")
@@ -299,27 +317,28 @@ bool initializeLua()
 		.addFunction("center", &Rect::center)
 		.endClass();
 
-	LUA.beginClass<SpriteInstance>("SpriteInstance")
-		.addVariableRef("position", &SpriteInstance::position)
-		.addVariable("rotation", &SpriteInstance::rotation)
-		.addVariable("scale", &SpriteInstance::scale)
-		.addVariable("verticalFlip", &SpriteInstance::verticalFlip)
-		.addVariable("horizontalFlip", &SpriteInstance::horizontalFlip)
-		.addVariableRef("screenPosition", &SpriteInstance::screenPosition)
-		.addVariableRef("sprite", &SpriteInstance::sprite)
-		.addVariable("frame", &SpriteInstance::animationFrame)
-		.addVariable("screenRect", &SpriteInstance::screenRect)
-		.addFunction("setFrameAnimation", &SpriteInstance::setFrameAnimation)
-		.addFunction("setFrameAnimationFromAngle", &SpriteInstance::setFrameAnimationFromAngle)
-		.addFunction("checkPixelCollision", &SpriteInstance::checkPixelCollision)
-		.addFunction("hit", &SpriteInstance::hit)
-		.addFunction("getFrameFromAngle", &SpriteInstance::getFrameFromAngle)
+	LUA.beginClass<Sprite>("Sprite")
+		.addVariableRef("position", &Sprite::position)
+		.addVariable("rotation", &Sprite::rotation)
+		.addVariable("scale", &Sprite::scale)
+		.addVariable("verticalFlip", &Sprite::verticalFlip)
+		.addVariable("horizontalFlip", &Sprite::horizontalFlip)
+		.addVariableRef("screenPosition", &Sprite::screenPosition)
+		.addVariableRef("spriteResource", &Sprite::spriteResource)
+		.addVariable("frame", &Sprite::animationFrame)
+		.addVariable("screenRect", &Sprite::screenRect)
+		.addVariable("notRelativeToRoot", &Sprite::notRelativeToRoot)
+		.addFunction("setFrameAnimation", &Sprite::setFrameAnimation)
+		.addFunction("setFrameAnimationFromAngle", &Sprite::setFrameAnimationFromAngle)
+		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)
+		.addFunction("hit", &Sprite::hit)
+		.addFunction("getFrameFromAngle", &Sprite::getFrameFromAngle)
 		.endClass();
 
-	LUA.beginClass<SpriteInstanceCollision>("SpriteInstanceCollision")
-		.addVariable("a", &SpriteInstanceCollision::a)
-		.addVariable("b", &SpriteInstanceCollision::b)
-		.addVariable("collisionCenter", &SpriteInstanceCollision::collisionCenter)
+	LUA.beginClass<SpriteCollision>("SpriteCollision")
+		.addVariable("sprite1", &SpriteCollision::sprite1)
+		.addVariable("sprite2", &SpriteCollision::sprite2)
+		.addVariable("collisionCenter", &SpriteCollision::collisionCenter)
 		.endClass();
 
 	l.setGlobal("game", Game::instance);

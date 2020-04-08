@@ -5,11 +5,10 @@ function C:init(unit)
 end
 
 function C:onUpdate()
-  local x
 end
 
 function C:onAppeared()
-  game:fadeScreen(Color(0,0,0,1), ColorMode_Add, 3, false)
+  game:fadeScreen(Color(0, 0, 0, 1), ColorMode_Add, 3, false)
 end
 
 return function(unit)

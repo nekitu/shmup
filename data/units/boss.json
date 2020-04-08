@@ -4,23 +4,23 @@
   "speed": 0.0,
   "controllers":
   [
-    { "name": "main", "class": "SimpleEnemy" }
+    { "name": "main", "script": "scripts/controllers/enemy" }
   ],
-  "script": "scripts/boss",
+  "script": "scripts/boss.lua",
   "root": "body",
   "stages":
   [
     {
-      "name":"stage0",
-      "triggerOnHealth": 100
+        "name":"stage0",
+        "triggerOnHealth": 100
     },
     {
-      "name":"stage1",
-      "triggerOnHealth": 50
+        "name":"stage1",
+        "triggerOnHealth": 50
     },
     {
-      "name":"stage2",
-      "triggerOnHealth": 0
+        "name":"stage2",
+        "triggerOnHealth": 0
     }
   ],
   "animations":
@@ -38,7 +38,7 @@
       "body": "anims/boss_body_idle"
     }
   },
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",

@@ -13,7 +13,9 @@ struct Layer
 struct LevelResource : Resource
 {
 	std::vector<Layer> layers;
-	std::vector<struct UnitInstance*> unitInstances;
-	bool load(Json::Value& json);
+	std::vector<struct Unit*> units;
+
+	bool load(Json::Value& json) override;
+	void unload() override;
 };
 }

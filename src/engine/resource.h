@@ -28,8 +28,10 @@ struct Resource
 	struct ResourceLoader* loader = nullptr;
 	std::string fileName;
 	u32 usageCount = 1;
+	bool mustReload = false;
 
 	virtual ~Resource() {}
 	virtual bool load(Json::Value& json) { return false; }
+	virtual void unload() {}
 };
 }

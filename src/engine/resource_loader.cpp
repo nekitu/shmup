@@ -10,7 +10,7 @@
 #include "resources/animation_resource.h"
 #include "resources/font_resource.h"
 #include "image_atlas.h"
-#include "weapon_instance.h"
+#include "weapon.h"
 #include "game.h"
 #include <json/json.h>
 #include "utils.h"
@@ -88,9 +88,9 @@ void ResourceLoader::reloadWeapons()
 		}
 	}
 
-	for (auto unit : Game::instance->unitInstances)
+	for (auto unitResource : Game::instance->units)
 	{
-		for (auto wpn : unit->weapons)
+		for (auto wpn : unitResource->weapons)
 		{
 			wpn.second->initializeFrom(wpn.second->weaponResource);
 		}

@@ -4,10 +4,10 @@
 #include "image_atlas.h"
 #include "resource_loader.h"
 #include "utils.h"
-#include "sprite_instance.h"
+#include "sprite.h"
 #include "resources/sprite_resource.h"
 #include "resources/sound_resource.h"
-#include "animation_instance.h"
+#include "animation.h"
 #include "resources/weapon_resource.h"
 
 namespace engine
@@ -47,6 +47,17 @@ bool UnitResource::load(Json::Value& json)
 	if (autoDeleteTypeStr == "OutOfScreen") autoDeleteType = AutoDeleteType::OutOfScreen;
 	if (autoDeleteTypeStr == "EndOfScreen") autoDeleteType = AutoDeleteType::EndOfScreen;
 
+	// load controllers
+	auto controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));
+	for (u32 i = 0; i < controllersJson.size(); i++)
+	{
+		ControllerInstanceResource ctrl;
+
+		ctrl.json = controllersJson[i];
+		ctrl.script = Game::instance->resourceLoader->loadScript(ctrl.json.get("script", "").asString());
+		controllers[ctrl.json.get("name", "noname").asString()] = ctrl;
+	}
+
 	// load stages
 	auto stagesJson = json.get("stages", Json::Value(Json::ValueType::arrayValue));
 
@@ -60,39 +71,39 @@ bool UnitResource::load(Json::Value& json)
 		stages.push_back(stage);
 	}
 
-	// load sprite instances
-	auto spriteInstancesJson = json.get("spriteInstances", Json::Value());
+	// load sprites
+	auto spritesJson = json.get("sprites", Json::Value());
 
-	for (u32 i = 0; i < spriteInstancesJson.size(); i++)
+	for (u32 i = 0; i < spritesJson.size(); i++)
 	{
-		SpriteInstanceResource* sprInst = new SpriteInstanceResource();
-		auto& sprJson = spriteInstancesJson[i];
+		SpriteInstanceResource* spr = new SpriteInstanceResource();
+		auto& sprJson = spritesJson[i];
 		auto sprRes = loader->loadSprite(sprJson.get("sprite", "").asString());
 
-		sprInst->sprite = sprRes;
-		sprInst->name = sprJson["name"].asString();
-		sprInst->animationName = sprJson.get("animationName", "default").asString();
-		sprInst->position.parse(sprJson.get("position", "0 0").asString());
-		sprInst->rotation = sprJson.get("rotation", 0).asInt();
-		sprInst->scale = sprJson.get("scale", 1.0f).asFloat();
-		sprInst->horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
-		sprInst->verticalFlip = sprJson.get("verticalFlip", false).asBool();
-		sprInst->orderIndex = i;
-		sprInst->collide = sprJson.get("collide", true).asBool();
-		sprInst->shadow = sprJson.get("shadow", sprInst->shadow).asBool();
-		sprInst->visible = sprJson.get("visible", true).asBool();
-		sprInst->health = sprJson.get("health", 100.0f).asFloat();
-		sprInst->maxHealth = sprJson.get("maxHealth", 100.0f).asFloat();
-		sprInst->color.parse(sprJson.get("color", sprInst->color.toString()).asString());
+		spr->spriteResource = sprRes;
+		spr->name = sprJson["name"].asString();
+		spr->animationName = sprJson.get("animationName", "default").asString();
+		spr->position.parse(sprJson.get("position", "0 0").asString());
+		spr->rotation = sprJson.get("rotation", 0).asInt();
+		spr->scale = sprJson.get("scale", 1.0f).asFloat();
+		spr->horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
+		spr->verticalFlip = sprJson.get("verticalFlip", false).asBool();
+		spr->orderIndex = i;
+		spr->collide = sprJson.get("collide", true).asBool();
+		spr->shadow = sprJson.get("shadow", spr->shadow).asBool();
+		spr->visible = sprJson.get("visible", true).asBool();
+		spr->health = sprJson.get("health", 100.0f).asFloat();
+		spr->maxHealth = sprJson.get("maxHealth", 100.0f).asFloat();
+		spr->color.parse(sprJson.get("color", spr->color.toString()).asString());
 		auto colMode = json.get("colorMode", "Add").asString();
 
-		if (colMode == "Add") sprInst->colorMode = ColorMode::Add;
-		if (colMode == "Sub") sprInst->colorMode = ColorMode::Sub;
-		if (colMode == "Mul") sprInst->colorMode = ColorMode::Mul;
+		if (colMode == "Add") spr->colorMode = ColorMode::Add;
+		if (colMode == "Sub") spr->colorMode = ColorMode::Sub;
+		if (colMode == "Mul") spr->colorMode = ColorMode::Mul;
 
-		sprInst->hitColor.parse(sprJson.get("hitColor", sprInst->hitColor.toString()).asString());
+		spr->hitColor.parse(sprJson.get("hitColor", spr->hitColor.toString()).asString());
 
-		// load weapons for this sprite instance
+		// load weapons for this sprite
 		auto weaponsJson = sprJson.get("weapons", Json::Value());
 		for (int j = 0; j < weaponsJson.getMemberNames().size(); j++)
 		{
@@ -100,18 +111,19 @@ bool UnitResource::load(Json::Value& json)
 			auto weaponJson = weaponsJson[weaponName];
 
 			WeaponInstanceResource* weaponInstRes = new WeaponInstanceResource();
-			weaponInstRes->attachTo = sprInst;
+
+			weaponInstRes->attachTo = spr;
 			weaponInstRes->localPosition.parse(weaponJson.get("position", "0 0").asString());
-			weaponInstRes->weapon = loader->loadWeapon(weaponJson.get("weapon", "").asString());
-			weaponInstRes->ammo = weaponJson.get("ammo", weaponInstRes->weapon->params.ammo).asFloat();
+			weaponInstRes->weaponResource = loader->loadWeapon(weaponJson.get("weapon", "").asString());
+			weaponInstRes->ammo = weaponJson.get("ammo", weaponInstRes->weaponResource->params.ammo).asFloat();
 			weaponInstRes->active = weaponJson.get("active", weaponInstRes->active).asBool();
 			weapons[weaponName] = weaponInstRes;
 		}
 
-		spriteInstances[sprInst->name] = sprInst;
+		sprites[spr->name] = spr;
 	}
 
-	// load sprite instance animations
+	// load sprite animations
 	auto animsJson = json.get("animations", Json::Value());
 
 	for (int j = 0; j < animsJson.getMemberNames().size(); j++)
@@ -119,15 +131,21 @@ bool UnitResource::load(Json::Value& json)
 		auto animName = animsJson.getMemberNames()[j];
 		auto animJson = animsJson[animName];
 
-		// load each sprite instance animation
+		// load each sprite animation
 		for (int k = 0; k < animJson.getMemberNames().size(); k++)
 		{
-			auto sprInstName = animJson.getMemberNames()[k];
-			auto filename = animJson[sprInstName].asString();
-			spriteInstances[sprInstName]->animations[animName] = loader->loadAnimation(filename);
+			auto sprName = animJson.getMemberNames()[k];
+			auto filename = animJson[sprName].asString();
+			sprites[sprName]->animations[animName] = loader->loadAnimation(filename);
 		}
 	}
 
 	return true;
 }
+
+void UnitResource::unload()
+{
+	//TODO
+}
+
 }

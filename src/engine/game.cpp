@@ -9,7 +9,7 @@
 #include "resource_loader.h"
 #include "image_atlas.h"
 #include <SDL_mixer.h>
-#include "animation_instance.h"
+#include "animation.h"
 #include "resources/sound_resource.h"
 #include "resources/music_resource.h"
 #include "resources/unit_resource.h"
@@ -18,12 +18,12 @@
 #include "resources/level_resource.h"
 #include "resources/script_resource.h"
 #include "resources/font_resource.h"
-#include "unit_instance.h"
-#include "sprite_instance.h"
-#include "music_instance.h"
-#include "sound_instance.h"
-#include "weapon_instance.h"
-#include "projectile_instance.h"
+#include "unit.h"
+#include "sprite.h"
+#include "music.h"
+#include "sound.h"
+#include "weapon.h"
+#include "projectile.h"
 #include <filesystem>
 
 namespace engine
@@ -152,7 +152,7 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
 
 	//TODO: remove
-	music = new MusicInstance();
+	music = new Music();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	music->play();
 	Mix_VolumeMusic(1);
@@ -171,17 +171,13 @@ void Game::createPlayers()
 {
 	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
-		players[i].unitInstance = new UnitInstance();
-		players[i].unitInstance->initializeFrom(resourceLoader->loadUnit("units/player"));
-		unitInstances.push_back(players[i].unitInstance);
-		players[i].unitInstance->name = "Player" + std::to_string(i + 1);
-		players[i].unitInstance->root->position.x = graphics->videoWidth / 2;
-		players[i].unitInstance->root->position.y = graphics->videoHeight / 2;
-		//static_cast<PlayerController*>(players[i].unitInstance->findController("main"))->playerIndex = i;
+		players[i].unit = new Unit();
+		players[i].unit->initializeFrom(resourceLoader->loadUnit("units/player"));
+		units.push_back(players[i].unit);
+		players[i].unit->name = "Player" + std::to_string(i + 1);
+		players[i].unit->root->position.x = graphics->videoWidth / 2;
+		players[i].unit->root->position.y = graphics->videoHeight / 2;
 	}
-
-	//TODO: fix later to have a single atlas pack call after loading all sprites
-	//graphics->atlas->pack();
 }
 
 bool Game::initializeAudio()
@@ -264,6 +260,27 @@ void Game::handleInputEvents()
 	}
 }
 
+void Game::updateCamera()
+{
+	if (animatingCameraSpeed)
+	{
+		cameraSpeedAnimateTime += deltaTime * cameraSpeedAnimateSpeed;
+
+		if (cameraSpeedAnimateTime >= 1.0f)
+		{
+			animatingCameraSpeed = false;
+			cameraSpeed = newCameraSpeed;
+		}
+		else
+		{
+			cameraSpeed = lerp(oldCameraSpeed, newCameraSpeed, cameraSpeedAnimateTime);
+		}
+	}
+
+	cameraPosition.y += cameraSpeed * deltaTime;
+	cameraPosition.x = cameraParallaxOffset;
+}
+
 void Game::mainLoop()
 {
 	while (!exitGame)
@@ -274,24 +291,7 @@ void Game::mainLoop()
 		CALL_LUA_FUNC("onUpdate", deltaTime);
 
 		updateScreenFx();
-
-		if (animatingCameraSpeed)
-		{
-			cameraSpeedAnimateTime += deltaTime * cameraSpeedAnimateSpeed;
-
-			if (cameraSpeedAnimateTime >= 1.0f)
-			{
-				animatingCameraSpeed = false;
-				cameraSpeed = newCameraSpeed;
-			}
-			else
-			{
-				cameraSpeed = lerp(oldCameraSpeed, newCameraSpeed, cameraSpeedAnimateTime);
-			}
-		}
-
-		cameraPosition.y += cameraSpeed * deltaTime;
-		cameraPosition.x = cameraParallaxOffset;
+		updateCamera();
 
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
@@ -309,9 +309,9 @@ void Game::mainLoop()
 		if (!reload)
 			reloadKeyDown = false;
 
-		for (u32 i = 0; i < unitInstances.size(); i++)
+		for (u32 i = 0; i < units.size(); i++)
 		{
-			unitInstances[i]->update(this);
+			units[i]->update(this);
 		}
 
 		for (u32 i = 0; i < lastProjectileIndex; i++)
@@ -322,22 +322,22 @@ void Game::mainLoop()
 			}
 		}
 
-		// add the new created instances
-		unitInstances.insert(unitInstances.end(), newUnitInstances.begin(), newUnitInstances.end());
-		newUnitInstances.clear();
+		// add the new created units
+		units.insert(units.end(), newUnits.begin(), newUnits.end());
+		newUnits.clear();
 
-		UnitInstance::updateShadowToggle();
+		Unit::updateShadowToggle();
 
 		checkCollisions();
 
-		auto iter = unitInstances.begin();
+		auto iter = units.begin();
 
-		while (iter != unitInstances.end())
+		while (iter != units.end())
 		{
 			if ((*iter)->deleteMeNow)
 			{
 				delete* iter;
-				iter = unitInstances.erase(iter);
+				iter = units.erase(iter);
 				continue;
 			}
 
@@ -348,7 +348,7 @@ void Game::mainLoop()
 		{
 			if (projectiles[i].deleteMeNow && projectiles[i].used)
 			{
-				releaseProjectileInstance(&projectiles[i]);
+				releaseProjectile(&projectiles[i]);
 			}
 		}
 
@@ -356,18 +356,18 @@ void Game::mainLoop()
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
 
-		for (auto inst : unitInstances)
+		for (auto unit : units)
 		{
-			inst->render(graphics);
+			unit->render(graphics);
 		}
 
 		for (u32 i = 0; i < lastProjectileIndex; i++)
 		{
-			auto& projInst = projectiles[i];
+			auto& proj = projectiles[i];
 
-			if (projInst.used)
+			if (proj.used)
 			{
-				projInst.render(graphics);
+				proj.render(graphics);
 			}
 		}
 
@@ -375,8 +375,8 @@ void Game::mainLoop()
 
 		if (screenFx.doingFade)
 		{
-			graphics->currentColor = screenFx.currentFadeColor.getRgba();
-			graphics->currentColorMode = (u32)screenFx.fadeColorMode;
+			graphics->color = screenFx.currentFadeColor.getRgba();
+			graphics->colorMode = (u32)screenFx.fadeColorMode;
 			graphics->drawQuad({ 0, 0, graphics->videoWidth, graphics->videoHeight }, graphics->atlas->whiteImage->uvRect);
 		}
 
@@ -390,56 +390,56 @@ void Game::mainLoop()
 
 void Game::checkCollisions()
 {
-	std::unordered_map<UnitInstance*, UnitInstance*> collisionPairs;
+	std::unordered_map<Unit*, Unit*> collisionPairs;
 
 	// check normal units
-	for (auto unitInst : unitInstances)
+	for (auto unit1 : units)
 	{
-		if (!unitInst->collide) continue;
+		if (!unit1->collide) continue;
 
-		for (auto unitInst2 : unitInstances)
+		for (auto unit2 : units)
 		{
-			if (!unitInst2->collide) continue;
+			if (!unit2->collide) continue;
 
-			if (unitInst == unitInst2
-				|| unitInst->unit->type == unitInst2->unit->type) continue;
+			if (unit1 == unit2
+				|| unit1->unitResource->type == unit2->unitResource->type) continue;
 
-			if ((unitInst->unit->unitType == UnitType::Enemy &&
-				unitInst2->unit->unitType == UnitType::EnemyProjectile)
-				|| (unitInst2->unit->unitType == UnitType::Enemy &&
-					unitInst->unit->unitType == UnitType::EnemyProjectile))
+			if ((unit1->unitResource->unitType == UnitType::Enemy &&
+				unit2->unitResource->unitType == UnitType::EnemyProjectile)
+				|| (unit2->unitResource->unitType == UnitType::Enemy &&
+					unit1->unitResource->unitType == UnitType::EnemyProjectile))
 			{
 				continue;
 			}
 
-			if ((unitInst->unit->unitType == UnitType::Player &&
-				unitInst2->unit->unitType == UnitType::PlayerProjectile)
-				|| (unitInst2->unit->unitType == UnitType::Player &&
-					unitInst->unit->unitType == UnitType::PlayerProjectile))
+			if ((unit1->unitResource->unitType == UnitType::Player &&
+				unit2->unitResource->unitType == UnitType::PlayerProjectile)
+				|| (unit2->unitResource->unitType == UnitType::Player &&
+					unit1->unitResource->unitType == UnitType::PlayerProjectile))
 			{
 				continue;
 			}
 
-			if (unitInst->boundingBox.overlaps(unitInst2->boundingBox))
+			if (unit1->boundingBox.overlaps(unit2->boundingBox))
 			{
-				auto iter1 = collisionPairs.find(unitInst);
-				auto iter2 = collisionPairs.find(unitInst2);
+				auto iter1 = collisionPairs.find(unit1);
+				auto iter2 = collisionPairs.find(unit2);
 				bool exists1 = false;
 				bool exists2 = false;
 
-				if (iter1 != collisionPairs.end() && iter1->second == unitInst2)
+				if (iter1 != collisionPairs.end() && iter1->second == unit2)
 				{
 					exists1 = true;
 				}
 
-				if (iter2 != collisionPairs.end() && iter2->second == unitInst)
+				if (iter2 != collisionPairs.end() && iter2->second == unit1)
 				{
 					exists2 = true;
 				}
 
 				if (!exists1 && !exists2)
 				{
-					collisionPairs[unitInst] = unitInst2;
+					collisionPairs[unit1] = unit2;
 				}
 			}
 		}
@@ -448,55 +448,55 @@ void Game::checkCollisions()
 	// check projectiles vs normal units
 	for (u32 i = 0; i < lastProjectileIndex; i++)
 	{
-		ProjectileInstance& unitInst = projectiles[i];
+		Projectile& unitProj = projectiles[i];
 
-		if (!unitInst.collide || !unitInst.used) continue;
+		if (!unitProj.collide || !unitProj.used) continue;
 
-		for (auto unitInst2 : unitInstances)
+		for (auto unit2 : units)
 		{
-			if (!unitInst2->collide) continue;
+			if (!unit2->collide) continue;
 
-			if (&unitInst == unitInst2
-				|| unitInst.unit->unitType == unitInst2->unit->unitType) continue;
+			if (&unitProj == unit2
+				|| unitProj.unitResource->unitType == unit2->unitResource->unitType) continue;
 
-			if (unitInst2->unit->unitType == UnitType::Enemy &&
-				unitInst.unit->unitType == UnitType::EnemyProjectile)
+			if (unit2->unitResource->unitType == UnitType::Enemy &&
+				unitProj.unitResource->unitType == UnitType::EnemyProjectile)
 			{
 				continue;
 			}
 
-			if (unitInst2->unit->unitType == UnitType::Player &&
-				unitInst.unit->unitType == UnitType::PlayerProjectile)
+			if (unit2->unitResource->unitType == UnitType::Player &&
+				unitProj.unitResource->unitType == UnitType::PlayerProjectile)
 			{
 				continue;
 			}
 
-			if (unitInst.boundingBox.overlaps(unitInst2->boundingBox))
+			if (unitProj.boundingBox.overlaps(unit2->boundingBox))
 			{
-				auto iter1 = collisionPairs.find(&unitInst);
-				auto iter2 = collisionPairs.find(unitInst2);
+				auto iter1 = collisionPairs.find(&unitProj);
+				auto iter2 = collisionPairs.find(unit2);
 				bool exists1 = false;
 				bool exists2 = false;
 
-				if (iter1 != collisionPairs.end() && iter1->second == unitInst2)
+				if (iter1 != collisionPairs.end() && iter1->second == unit2)
 				{
 					exists1 = true;
 				}
 
-				if (iter2 != collisionPairs.end() && iter2->second == &unitInst)
+				if (iter2 != collisionPairs.end() && iter2->second == &unitProj)
 				{
 					exists2 = true;
 				}
 
 				if (!exists1 && !exists2)
 				{
-					collisionPairs[&unitInst] = unitInst2;
+					collisionPairs[&unitProj] = unit2;
 				}
 			}
 		}
 	}
 
-	std::vector<SpriteInstanceCollision> pixelCols;
+	std::vector<SpriteCollision> pixelCols;
 
 	for (auto& cp : collisionPairs)
 	{
@@ -504,14 +504,14 @@ void Game::checkCollisions()
 
 		if (cp.first->checkPixelCollision(cp.second, pixelCols))
 		{
-			if (cp.first->unit->unitType == UnitType::EnemyProjectile
-				|| cp.first->unit->unitType == UnitType::PlayerProjectile)
+			if (cp.first->unitResource->unitType == UnitType::EnemyProjectile
+				|| cp.first->unitResource->unitType == UnitType::PlayerProjectile)
 			{
 				cp.first->deleteMeNow = true;
 			}
 
-			if (cp.second->unit->unitType == UnitType::EnemyProjectile
-				|| cp.second->unit->unitType == UnitType::PlayerProjectile)
+			if (cp.second->unitResource->unitType == UnitType::EnemyProjectile
+				|| cp.second->unitResource->unitType == UnitType::PlayerProjectile)
 			{
 				cp.second->deleteMeNow = true;
 			}
@@ -524,8 +524,8 @@ void Game::checkCollisions()
 				{
 					LuaIntf::LuaRef col = LuaIntf::LuaRef::createTable(getLuaState());
 
-					col.set("a", pixelCols[i].a);
-					col.set("b", pixelCols[i].b);
+					col.set("sprite1", pixelCols[i].sprite1);
+					col.set("sprite2", pixelCols[i].sprite2);
 					col.set("collisionCenter", pixelCols[i].collisionCenter);
 					colsTbl.set(i + 1, col);
 				}
@@ -537,7 +537,7 @@ void Game::checkCollisions()
 	}
 }
 
-BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance* sprInst, const Vec2& pos, f32 beamWidth)
+BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const Vec2& pos, f32 beamWidth)
 {
 	BeamCollisionInfo closest;
 	Rect rc;
@@ -553,87 +553,86 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 		rc.set(pos.x, pos.y - beamWidth / 2, graphics->videoWidth - pos.x, beamWidth);
 	}
 
-	for (auto unitInst : unitInstances)
+	for (auto unit1 : units)
 	{
-		if (unitInst == inst) continue;
-		if (!unitInst->collide) continue;
+		if (unit1 == unit || !unit1->collide) continue;
 
-		for (auto sprInst2 : unitInst->spriteInstances)
+		for (auto sprite2 : unit1->sprites)
 		{
-			if (sprInst == sprInst2) continue;
-			if (!sprInst2->collide) continue;
+			if (sprite == sprite2) continue;
+			if (!sprite2->collide) continue;
 
 			if (screenMode == ScreenMode::Vertical)
 			{
-				if (sprInst2->screenRect.y > pos.y) continue;
+				if (sprite2->screenRect.y > pos.y) continue;
 
-				if (sprInst2->screenRect.bottom() > pos.y && sprInst2->screenRect.y <= pos.y)
+				if (sprite2->screenRect.bottom() > pos.y && sprite2->screenRect.y <= pos.y)
 				{
 					closest.valid = true;
 					closest.distance = 0;
 					closest.point = pos;
-					closest.unitInst = inst;
-					closest.spriteInst = sprInst2;
+					closest.unit = unit;
+					closest.sprite = sprite2;
 
 					return closest;
 				}
 			}
 			else if (screenMode == ScreenMode::Horizontal)
 			{
-				if (sprInst2->screenRect.right() < pos.x) continue;
+				if (sprite2->screenRect.right() < pos.x) continue;
 
-				if (sprInst2->screenRect.x < pos.x && sprInst2->screenRect.right() >= pos.x)
+				if (sprite2->screenRect.x < pos.x && sprite2->screenRect.right() >= pos.x)
 				{
 					closest.valid = true;
 					closest.distance = 0;
 					closest.point = pos;
-					closest.unitInst = inst;
-					closest.spriteInst = sprInst2;
+					closest.unit = unit;
+					closest.sprite = sprite2;
 
 					return closest;
 				}
 			}
 
-			if (sprInst2->screenRect.overlaps(rc))
+			if (sprite2->screenRect.overlaps(rc))
 			if (screenMode == ScreenMode::Vertical)
 			{
 				Vec2 col;
 				col.x = pos.x;
-				col.y = sprInst2->screenRect.bottom();
+				col.y = sprite2->screenRect.bottom();
 
 				// for small sprites
-				bool isInsideBeam = rc.contains(sprInst2->screenRect);
+				bool isInsideBeam = rc.contains(sprite2->screenRect);
 				bool isTouchingHalfBeam = false;
 				bool pixelCollided = false;
 
-				f32 relativeX = round(col.x - sprInst2->screenRect.x);
+				f32 relativeX = round(col.x - sprite2->screenRect.x);
 
 				// if the middle of the beam is outside the sprite rect
 				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeX < 0 || relativeX >= sprInst2->screenRect.width)
+				if (relativeX < 0 || relativeX >= sprite2->screenRect.width)
 				{
-					if (fabs(relativeX) <= beamWidth / 2 || (sprInst2->screenRect.width - relativeX) <= beamWidth / 2)
+					if (fabs(relativeX) <= beamWidth / 2 || (sprite2->screenRect.width - relativeX) <= beamWidth / 2)
 					{
 						isTouchingHalfBeam = true;
-						col.y = sprInst2->screenRect.center().y;
+						col.y = sprite2->screenRect.center().y;
 					}
 
 					continue;
 				}
 				else
 				{
-					Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
+					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
 
-					for (int y = sprInst2->sprite->frameHeight - 1; y >= 0; y--)
+					for (int y = sprite2->spriteResource->frameHeight - 1; y >= 0; y--)
 					{
-						u8* p = (u8*)&sprInst2->sprite->image->imageData[
-							(u32)(frmRc.y + y) * sprInst2->sprite->image->width
+						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
+							(u32)(frmRc.y + y) * sprite2->spriteResource->image->width
 								+ (u32)(frmRc.x + relativeX)];
 
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.y -= sprInst2->screenRect.height - y;
+							col.y -= sprite2->screenRect.height - y;
 							break;
 						}
 					}
@@ -648,50 +647,50 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 						closest.valid = true;
 						closest.distance = dist;
 						closest.point = col;
-						closest.unitInst = inst;
-						closest.spriteInst = sprInst2;
+						closest.unit = unit;
+						closest.sprite = sprite2;
 					}
 				}
 			}
 			else if (screenMode == ScreenMode::Horizontal)
 			{
 				Vec2 col;
-				col.x = sprInst2->screenRect.x;
+				col.x = sprite2->screenRect.x;
 				col.y = pos.y;
 
 				// for small sprites
-				bool isInsideBeam = rc.contains(sprInst2->screenRect);
+				bool isInsideBeam = rc.contains(sprite2->screenRect);
 				bool isTouchingHalfBeam = false;
 				bool pixelCollided = false;
 
-				f32 relativeY = round(col.y - sprInst2->screenRect.y);
+				f32 relativeY = round(col.y - sprite2->screenRect.y);
 
 				// if the middle of the beam is outside the sprite rect
 				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeY < 0 || relativeY >= sprInst2->screenRect.height)
+				if (relativeY < 0 || relativeY >= sprite2->screenRect.height)
 				{
-					if (fabs(relativeY) <= beamWidth / 2 || (sprInst2->screenRect.height - relativeY) <= beamWidth / 2)
+					if (fabs(relativeY) <= beamWidth / 2 || (sprite2->screenRect.height - relativeY) <= beamWidth / 2)
 					{
 						isTouchingHalfBeam = true;
-						col.x = sprInst2->screenRect.center().x;
+						col.x = sprite2->screenRect.center().x;
 					}
 
 					continue;
 				}
 				else
 				{
-					Rect frmRc = sprInst2->sprite->getSheetFramePixelRect(sprInst2->animationFrame);
+					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
 
-					for (int x = sprInst2->sprite->frameWidth - 1; x >= 0; x--)
+					for (int x = sprite2->spriteResource->frameWidth - 1; x >= 0; x--)
 					{
-						u8* p = (u8*)&sprInst2->sprite->image->imageData[
-							(u32)(frmRc.y + relativeY) * sprInst2->sprite->image->width
+						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
+							(u32)(frmRc.y + relativeY) * sprite2->spriteResource->image->width
 								+ (u32)(frmRc.x + x)];
 
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.x -= sprInst2->screenRect.width - x;
+							col.x -= sprite2->screenRect.width - x;
 							break;
 						}
 					}
@@ -706,8 +705,8 @@ BeamCollisionInfo Game::checkBeamIntersection(UnitInstance* inst, SpriteInstance
 						closest.valid = true;
 						closest.distance = dist;
 						closest.point = col;
-						closest.unitInst = inst;
-						closest.spriteInst = sprInst2;
+						closest.unit = unit;
+						closest.sprite = sprite2;
 					}
 				}
 			}
@@ -789,9 +788,9 @@ void Game::preloadSprites()
 
 	LOG_INFO("Computing sprite params after packing...");
 
-	for (auto sprite : resourceLoader->sprites)
+	for (auto spriteResource : resourceLoader->sprites)
 	{
-		sprite->computeParamsAfterAtlasGeneration();
+		spriteResource->computeParamsAfterAtlasGeneration();
 	}
 }
 
@@ -955,16 +954,16 @@ bool Game::loadLevels()
 	return true;
 }
 
-void Game::deleteNonPersistentUnitInstances()
+void Game::deleteNonPersistentUnits()
 {
-	auto iter = unitInstances.begin();
+	auto iter = units.begin();
 
-	while (iter != unitInstances.end())
+	while (iter != units.end())
 	{
-		if ((*iter)->unit->unitType != UnitType::Player)
+		if ((*iter)->unitResource->unitType != UnitType::Player)
 		{
 			delete *iter;
-			iter = unitInstances.erase(iter);
+			iter = units.erase(iter);
 		}
 		else
 		{
@@ -975,7 +974,7 @@ void Game::deleteNonPersistentUnitInstances()
 
 bool Game::changeLevel(i32 index)
 {
-	deleteNonPersistentUnitInstances();
+	deleteNonPersistentUnits();
 	projectiles.clear();
 	projectiles.resize(maxProjectileCount);
 
@@ -998,9 +997,9 @@ bool Game::changeLevel(i32 index)
 		layers.push_back(layer);
 	}
 
-	for (auto& inst : level->unitInstances)
+	for (auto& unit : level->units)
 	{
-		unitInstances.push_back(inst);
+		units.push_back(unit);
 	}
 
 	resourceLoader->unload(level);
@@ -1008,61 +1007,51 @@ bool Game::changeLevel(i32 index)
 	return true;
 }
 
-SpriteInstance* Game::createSpriteInstance(SpriteResource* sprite)
+Unit* Game::createUnit(UnitResource* unitResource)
 {
-	SpriteInstance* inst = new SpriteInstance();
-	inst->sprite = sprite;
-	inst->setFrameAnimation("default");
+	auto unit = new Unit();
 
-	return inst;
+	unit->initializeFrom(unitResource);
+	newUnits.push_back(unit);
+
+	return unit;
 }
 
-
-UnitInstance* Game::createUnitInstance(UnitResource* unit)
+Weapon* Game::createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite)
 {
-	auto unitInst = new UnitInstance();
-
-	unitInst->initializeFrom(unit);
-	newUnitInstances.push_back(unitInst);
-
-	return unitInst;
-}
-
-WeaponInstance* Game::createWeaponInstance(const std::string& weaponResFilename, struct UnitInstance* unitInst, struct SpriteInstance* spriteInst)
-{
-	WeaponInstance* weaponInst = new WeaponInstance();
+	Weapon* weapon = new Weapon();
 	auto weaponRes = resourceLoader->loadWeapon(weaponResFilename);
 
-	weaponInst->parentUnitInstance = unitInst;
-	weaponInst->attachTo = spriteInst;
-	weaponInst->initializeFrom(weaponRes);
+	weapon->parentUnit = unit;
+	weapon->attachTo = sprite;
+	weapon->initializeFrom(weaponRes);
 
-	return weaponInst;
+	return weapon;
 }
 
-ProjectileInstance* Game::newProjectileInstance()
+Projectile* Game::newProjectile()
 {
 	for (u32 i = 0; i < maxProjectileCount; i++)
 	{
 		if (!projectiles[i].used)
 		{
-			ProjectileInstance* inst = &projectiles[i];
+			Projectile* proj = &projectiles[i];
 
-			inst->used = true;
+			proj->used = true;
 
 			if (lastProjectileIndex < i + 1)
 				lastProjectileIndex = i + 1;
 
-			return inst;
+			return proj;
 		}
 	}
 
 	return nullptr;
 }
 
-void Game::releaseProjectileInstance(ProjectileInstance* inst)
+void Game::releaseProjectile(Projectile* proj)
 {
-	inst->used = false;
+	proj->used = false;
 }
 
 }

@@ -9,8 +9,8 @@ struct SoundResource : Resource
 {
 	Mix_Chunk* wave = nullptr;
 
-	~SoundResource();
 	bool load(Json::Value& json) override;
+	void unload() override;
 };
 
 }

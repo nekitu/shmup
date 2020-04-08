@@ -2,7 +2,7 @@
     "name": "Fire2",
     "type": "PlayerProjectile",
     "autoDeleteType": "OutOfScreen",
-    "spriteInstances":
+    "sprites":
     [
         {
             "name": "body",

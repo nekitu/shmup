@@ -5,7 +5,7 @@
   "autoDeleteType": "EndOfScreen",
   "script": "scripts/trigger",
   "root": "body",
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",

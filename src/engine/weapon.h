@@ -5,23 +5,22 @@
 
 namespace engine
 {
-struct WeaponInstance
+struct Weapon
 {
 	WeaponResource::Parameters params;
 	bool active = true;
 	struct WeaponResource* weaponResource = nullptr;
-	struct UnitInstance* parentUnitInstance = nullptr;
-	struct SpriteInstance* attachTo = nullptr;
+	struct Unit* parentUnit = nullptr;
+	struct Sprite* attachTo = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 
-	~WeaponInstance() { delete scriptClass; }
+	~Weapon() { delete scriptClass; }
 
-	void copyFrom(WeaponInstance* other);
+	void copyFrom(Weapon* other);
 	void fire();
 	void initializeFrom(struct WeaponResource* res);
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);
-	void debug(const std::string& info);
 	void render();
 
 	f32 angle = 0;

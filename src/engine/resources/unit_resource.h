@@ -20,7 +20,7 @@ enum class AutoDeleteType
 
 struct SpriteInstanceResource
 {
-	struct SpriteResource* sprite = nullptr;
+	struct SpriteResource* spriteResource = nullptr;
 	std::string name;
 	std::string animationName = "default";
 	Vec2 position;
@@ -37,17 +37,23 @@ struct SpriteInstanceResource
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;
-	struct SpriteResource* hitSprite = nullptr; // spawn an unit instance on projectile/beam hit
+	struct SpriteResource* hitSprite = nullptr; // spawn a unit on projectile/beam hit
 	std::map<std::string /*anim name*/, struct AnimationResource*> animations;
 };
 
 struct WeaponInstanceResource
 {
 	SpriteInstanceResource* attachTo = nullptr;
-	struct WeaponResource* weapon = nullptr;
+	struct WeaponResource* weaponResource = nullptr;
 	Vec2 localPosition;
 	f32 ammo = 100;
 	bool active = true;
+};
+
+struct ControllerInstanceResource
+{
+	Json::Value json;
+	struct ScriptResource* script = nullptr;
 };
 
 struct UnitLifeStage
@@ -82,11 +88,13 @@ struct UnitResource : Resource
 	bool collide = true;
 	std::string rootName;
 	struct ScriptResource* script = nullptr;
-	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> spriteInstances;
+	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> sprites;
 	std::vector<UnitLifeStage*> stages;
 	std::map<std::string /*weapon name*/, WeaponInstanceResource*> weapons;
+	std::map<std::string /*controller name*/, ControllerInstanceResource> controllers;
 
-	virtual bool load(Json::Value& json) override;
+	bool load(Json::Value& json) override;
+	void unload() override;
 };
 
 }

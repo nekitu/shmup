@@ -1,12 +1,12 @@
 #include "animation_resource.h"
-#include "animation_instance.h"
+#include "animation.h"
 #include <algorithm>
 
 namespace engine
 {
-f32 AnimationTrack::animate(f32 atTime, AnimationInstance* animInstance)
+f32 AnimationTrack::animate(f32 atTime, Animation* anim)
 {
-	u32 key1Index = animInstance->previousTrackKeys[this];
+	u32 key1Index = anim->previousTrackKeys[this];
 	AnimationKey* key1 = &keys[key1Index];
 	AnimationKey* key2 = nullptr;
 
@@ -19,9 +19,11 @@ f32 AnimationTrack::animate(f32 atTime, AnimationInstance* animInstance)
 			key2 = &keys[i + 1];
 
 			if (key1->triggerEvent
-				&& std::find(animInstance->triggeredKeyEvents.begin(), animInstance->triggeredKeyEvents.end(), key1) == animInstance->triggeredKeyEvents.end())
+				&& std::find(
+					anim->triggeredKeyEvents.begin(),
+					anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
 			{
-				animInstance->triggerKeyEvent(key1);
+				anim->triggerKeyEvent(key1);
 			}
 
 			break;
@@ -32,8 +34,9 @@ f32 AnimationTrack::animate(f32 atTime, AnimationInstance* animInstance)
 	{
 		// key1->time ----- atTime ----------------key2->time
 		f32 t = (atTime - key1->time) / (key2->time - key1->time);
+
 		// update first interpolation key
-		animInstance->previousTrackKeys[this] = key1Index;
+		anim->previousTrackKeys[this] = key1Index;
 
 		return key1->value + t * (key2->value - key1->value);
 	}
@@ -82,6 +85,7 @@ bool AnimationResource::load(Json::Value& json)
 		for (auto& keyJson : trackJson)
 		{
 			AnimationKey key;
+
 			key.time = keyJson.get("time", 0.0f).asFloat();
 			key.value = keyJson.get("value", 0.0f).asFloat();
 			key.triggerEvent = keyJson.get("triggerEvent", false).asBool();
@@ -98,6 +102,16 @@ bool AnimationResource::load(Json::Value& json)
 	}
 
 	return true;
+}
+
+void AnimationResource::unload()
+{
+	for (auto& track : tracks)
+	{
+		delete track.second;
+	}
+
+	tracks.clear();
 }
 
 }

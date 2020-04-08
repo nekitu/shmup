@@ -28,7 +28,7 @@ struct WeaponResource : Resource
 		f32 maxProjectileSpeed = 10000000;
 		f32 fireDamage = 1; /// if this is projectile, damage is per projectile hit, if beam then its per second
 		f32 beamWidth = 1;
-		Vec2 position; /// relative to sprite instance
+		Vec2 position; /// relative to sprite
 		Vec2 offset;
 		f32 offsetRadius = 0;
 		f32 ammo = 0;

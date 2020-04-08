@@ -102,7 +102,7 @@ struct ScriptResource : Resource
 	std::vector<ScriptClassInstanceBase*> classInstances;
 
 	bool load(Json::Value& json) override;
-	void unload();
+	void unload() override;
 
 	template<typename T>
 	ScriptClassInstanceBase* createClassInstance(T* obj)

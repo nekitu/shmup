@@ -7,10 +7,10 @@
 
 namespace engine
 {
-struct SpriteInstance
+struct Sprite
 {
 	std::string name;
-	struct SpriteResource* sprite = nullptr;
+	struct SpriteResource* spriteResource = nullptr;
 	Vec2 position;
 	f32 scale = 1.0f;
 	bool verticalFlip = false;
@@ -45,7 +45,7 @@ struct SpriteInstance
 	f32 animationDirection = 1;
 	bool animationIsActive = true;
 
-	void copyFrom(SpriteInstance* other);
+	void copyFrom(Sprite* other);
 	void initializeFrom(struct SpriteInstanceResource* res);
 	void update(struct Game* game);
 	void setFrameAnimation(const std::string& name);
@@ -53,7 +53,7 @@ struct SpriteInstance
 	void hit(f32 hitDamage);
 	f32 getFrameFromAngle(f32 angle);
 	void setFrameAnimationFromAngle(f32 angle);
-	bool checkPixelCollision(SpriteInstance* other, Vec2& outCollisionCenter);
+	bool checkPixelCollision(Sprite* other, Vec2& outCollisionCenter);
 };
 
 }

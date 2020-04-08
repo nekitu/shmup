@@ -18,8 +18,8 @@ function C:onUpdate()
 
     if self.unit.health == 0 then
         self.unit.deleteMeNow = true
-        local uinst = game:spawn("units/turret_expl", "expl2", self.unit.root.position)
-        uinst.layerIndex = self.unit.layerIndex
+        local unit = game:spawn("units/turret_expl", "expl2", self.unit.root.position)
+        unit.layerIndex = self.unit.layerIndex
         game:shakeCamera(Vec2(2, 2), 0.5, 70)
         game:fadeScreen(Color(1,1,1,1), 0, 0.1, true)
     end

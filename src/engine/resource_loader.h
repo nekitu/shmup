@@ -16,6 +16,7 @@ struct ResourceLoader
 	void unload(struct Resource* res);
 	void reloadScripts();
 	void reloadWeapons();
+	void reloadSprites();
 	// example: "sprites/sample_sprite"
 	struct SpriteResource* loadSprite(const std::string& filename);
 	struct SoundResource* loadSound(const std::string& filename);

@@ -176,4 +176,28 @@ void SpriteResource::computeParamsAfterAtlasGeneration()
 	frameCount = rows * columns;
 }
 
+void SpriteResource::unload()
+{
+	image = nullptr;
+	atlas = nullptr;
+	frameCount = 0;
+	frameWidth = 0;
+	frameHeight = 0;
+	uvFrameWidth = 0;
+	uvFrameHeight = 0;
+	rows = columns = 0;
+	color = Color::black;
+	colorMode = ColorMode::Add;
+
+	for (auto& frmAnim : frameAnimations)
+	{
+		delete frmAnim.second;
+	}
+
+	frameAnimations.clear();
+
+	rotationAnimPrefix = "r";
+	rotationAnimCount = 0;
+}
+
 }

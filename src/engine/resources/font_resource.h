@@ -13,6 +13,7 @@ struct FontResource : Resource
 	std::map<std::pair<u32, u32>, i32> kernings;
 
 	bool load(Json::Value& json) override;
+	void unload() override;
 	u32 getGlyphSpriteFrame(u32 code);
 };
 

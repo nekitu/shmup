@@ -1,10 +1,10 @@
-#include "music_instance.h"
+#include "music.h"
 #include <SDL_mixer.h>
 #include "resources/music_resource.h"
 
 namespace engine
 {
-bool MusicInstance::play()
+bool Music::play()
 {
 	if (Mix_PlayingMusic())
 		return false;

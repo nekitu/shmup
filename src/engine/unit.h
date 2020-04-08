@@ -6,24 +6,24 @@
 
 namespace engine
 {
-struct SpriteInstanceCollision
+struct SpriteCollision
 {
-	struct SpriteInstance* a = nullptr;
-	struct SpriteInstance* b = nullptr;
+	struct Sprite* sprite1 = nullptr;
+	struct Sprite* sprite2 = nullptr;
 	Vec2 collisionCenter;
 };
 
-struct UnitInstance
+struct Unit
 {
 	// members related to unit resource instantiation
-	typedef std::map<struct SpriteInstance*, struct AnimationInstance*> SpriteInstanceAnimationMap;
+	typedef std::map<struct Sprite*, struct Animation*> SpriteAnimationMap;
 
-	std::vector<struct SpriteInstance*> spriteInstances;
-	std::map<std::string /*animation name*/, SpriteInstanceAnimationMap> spriteInstanceAnimations;
-	std::map<std::string /*weapon instance name*/, struct WeaponInstance*> weapons;
-	SpriteInstanceAnimationMap* spriteInstanceAnimationMap = nullptr;
+	std::vector<struct Sprite*> sprites;
+	std::map<std::string /*animation name*/, SpriteAnimationMap> spriteAnimations;
+	std::map<std::string /*weapon name*/, struct Weapon*> weapons;
+	SpriteAnimationMap* spriteAnimationMap = nullptr;
 
-	// unit instance general members
+	// unit general members
 	static u64 lastId;
 	u64 id = 0;
 	u32 layerIndex = 0;
@@ -34,22 +34,23 @@ struct UnitInstance
 	bool appeared = false;
 	f32 speed = 10.0f;
 	f32 health = 100.0f; // auto computed, always a percentage
-	f32 maxHealth = 100.0f; // auto computed from sprite instances health
+	f32 maxHealth = 100.0f; // auto computed from sprites health
 	f32 age = 0;
 	u32 stageIndex = 0;
 	bool collide = true;
 	bool shadow = false;
-	struct UnitResource* unit = nullptr;
+	struct UnitResource* unitResource = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
-	struct SpriteInstance* root = nullptr;
+	struct Sprite* root = nullptr;
 	struct UnitLifeStage* currentStage = nullptr;
 	std::vector<UnitLifeStage*> triggeredStages;
 	bool deleteMeNow = false;
+	std::map<std::string, ScriptClassInstanceBase*> controllers;
 
-	UnitInstance();
-	virtual ~UnitInstance();
+	Unit();
+	virtual ~Unit();
 	void reset();
-	virtual void copyFrom(UnitInstance* other);
+	virtual void copyFrom(Unit* other);
 	virtual void initializeFrom(UnitResource* res);
 	virtual void load(struct ResourceLoader* loader, const Json::Value& json);
 	virtual void update(struct Game* game);
@@ -57,11 +58,10 @@ struct UnitInstance
 	virtual void computeBoundingBox();
 	virtual void computeHealth();
 	void setAnimation(const std::string& animName);
-	struct SpriteInstance* findSpriteInstance(const std::string& sname);
-
-	bool checkPixelCollision(struct UnitInstance* other, std::vector<SpriteInstanceCollision>& collisions);
-
+	struct Sprite* findSprite(const std::string& sname);
+	bool checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>& collisions);
 	static void updateShadowToggle();
+
 private:
 	static bool shadowToggle;
 };

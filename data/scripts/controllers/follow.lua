@@ -1,13 +1,20 @@
+require("util")
 local C = {}
 
 function C:init(unit)
   self.unit = unit
-	self.follower = nil
-	self.follow = nil
-	self.offset = Vec2()
-	self.speed = 1
-	self.constantSpeed = false
-	self.offsetAcquired = false
+end
+
+function C:setup(params)
+	self.follower = self.unit:findSprite(params:getString("follower", ""))
+	self.follow = self.unit:findSprite(params:getString("follow", ""))
+	self.offset = params:getVec2("offset", Vec2())
+	self.speed = params:getFloat("speed", 1)
+	self.constantSpeed = params:getBool("constantSpeed", false)
+  self.offsetAcquired = false
+  print(tostring(self.follower))
+  print(tostring(self.follow))
+  dump(self)
 end
 
 function C:acquireOffset()
@@ -22,7 +29,7 @@ function C:acquireOffset()
   end
 end
 
-function C:update()
+function C:onUpdate()
   if not self.offsetAcquired then self:acquireOffset() end
 
   if self.follow and self.follower then
@@ -36,10 +43,21 @@ function C:update()
         self.follower.position = targetPos
       else
         delta:normalize()
-        self.follower.position:add(self.delta).addScalar(self.speed * game.deltaTime)
+        self.follower.position:add(delta:mulScalar(self.speed * game.deltaTime))
       end
+      print("dx "..tostring(delta.x))
+      print("dy "..tostring(delta.y))
     else
-      self.follower.position:add((targetPos - self.follower.position):mulScalar(self.speed * game.deltaTime))
+      local v = targetPos:sub(self.follower.position)
+      print("speed: "..tostring(self.speed))
+      print("deltatime: "..tostring(game.deltaTime))
+      print("m: "..tostring(self.speed * game.deltaTime))
+      print(v.x)
+      print(v.y)
+      v:mulScalar(self.speed * game.deltaTime)
+      print(v.x)
+      print(v.y)
+      self.follower.position:add(v)
     end
   end
 end

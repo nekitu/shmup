@@ -6,9 +6,9 @@
 
 namespace engine
 {
-struct AnimationInstance
+struct Animation
 {
-	AnimationResource* animation = nullptr;
+	AnimationResource* animationResource = nullptr;
 	f32 timeScale = 1.0f;
 	f32 currentTime = 0.0f;
 	u32 currentRepeatCount = 0;
@@ -19,13 +19,13 @@ struct AnimationInstance
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	std::string keyEventScriptCallback;
 
-	void copyFrom(AnimationInstance* other);
+	void copyFrom(Animation* other);
 	void initializeFrom(AnimationResource* res);
 	void reset();
 	void triggerKeyEvent(AnimationKey* key);
 	void update(f32 deltaTime);
 	f32 animate(AnimationTrack::Type trackType);
-	void animateSpriteInstance(struct SpriteInstance* sprInst);
+	void animateSprite(struct Sprite* spr);
 
 protected:
 	void updateRepeatCount();

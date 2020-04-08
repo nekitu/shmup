@@ -1,8 +1,8 @@
-#include "sprite_instance.h"
+#include "sprite.h"
 #include "game.h"
 #include "resources/sprite_resource.h"
 #include "resources/unit_resource.h"
-#include "sprite_instance.h"
+#include "sprite.h"
 #include <assert.h>
 #include "image_atlas.h"
 #include <cmath>
@@ -10,10 +10,10 @@
 
 namespace engine
 {
-void SpriteInstance::copyFrom(SpriteInstance* other)
+void Sprite::copyFrom(Sprite* other)
 {
 	name = other->name;
-	sprite = other->sprite;
+	spriteResource = other->spriteResource;
 	position = other->position;
 	scale = other->scale;
 	verticalFlip = other->verticalFlip;
@@ -45,10 +45,10 @@ void SpriteInstance::copyFrom(SpriteInstance* other)
 	play();
 }
 
-void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
+void Sprite::initializeFrom(SpriteInstanceResource* res)
 {
 	name = res->name;
-	sprite = res->sprite;
+	spriteResource = res->spriteResource;
 	position = res->position;
 	scale = res->scale;
 	verticalFlip = res->verticalFlip;
@@ -75,7 +75,7 @@ void SpriteInstance::initializeFrom(SpriteInstanceResource* res)
 	setFrameAnimation(animName);
 }
 
-void SpriteInstance::update(struct Game* game)
+void Sprite::update(struct Game* game)
 {
 	// update the sprite frame animation
 	if (frameAnimation && animationIsActive)
@@ -163,16 +163,16 @@ void SpriteInstance::update(struct Game* game)
 	}
 }
 
-void SpriteInstance::setFrameAnimation(const std::string& name)
+void Sprite::setFrameAnimation(const std::string& name)
 {
-	if (sprite && sprite->frameAnimations.size())
+	if (spriteResource && spriteResource->frameAnimations.size())
 	{
-		frameAnimation = sprite->frameAnimations[name];
+		frameAnimation = spriteResource->frameAnimations[name];
 		play();
 	}
 }
 
-void SpriteInstance::play()
+void Sprite::play()
 {
 	if (!frameAnimation) return;
 	animationDirection = 1;
@@ -180,7 +180,7 @@ void SpriteInstance::play()
 	animationFrame = frameAnimation->startFrame;
 }
 
-void SpriteInstance::hit(f32 hitDamage)
+void Sprite::hit(f32 hitDamage)
 {
 	health -= hitDamage;
 	clampValue(health, 0, maxHealth);
@@ -192,7 +192,7 @@ void SpriteInstance::hit(f32 hitDamage)
 	currentHitFlashCount = 0;
 }
 
-bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisionCenter)
+bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 {
 	if (!visible)
 		return false;
@@ -206,11 +206,11 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 
 	if (partRc.width < 1 || partRc.height < 1) return false;
 
-	auto getRectPixels = [](SpriteInstance* spr, const Rect& localRc)
+	auto getRectPixels = [](Sprite* spr, const Rect& localRc)
 	{
 		std::vector<u8> pixels;
 
-		auto frmRc = spr->sprite->getSheetFramePixelRect(spr->animationFrame);
+		auto frmRc = spr->spriteResource->getSheetFramePixelRect(spr->animationFrame);
 		pixels.resize(localRc.width * localRc.height);
 		int i = 0;
 		f32 step = 1.0f / spr->scale;
@@ -225,8 +225,8 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 
 			for (int x = 0; x < localRc.width; x++)
 			{
-				u32 offs = ((u32)frmRc.y + srcy + (u32)rcy) * spr->sprite->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx;
-				u8* px = (u8*)&spr->sprite->image->imageData[offs];
+				u32 offs = ((u32)frmRc.y + srcy + (u32)rcy) * spr->spriteResource->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx;
+				u8* px = (u8*)&spr->spriteResource->image->imageData[offs];
 				pixels[i++] = px[3];
 				srcx += step;
 			}
@@ -263,20 +263,20 @@ bool SpriteInstance::checkPixelCollision(SpriteInstance* other, Vec2& outCollisi
 	return false;
 }
 
-f32 SpriteInstance::getFrameFromAngle(f32 angle)
+f32 Sprite::getFrameFromAngle(f32 angle)
 {
-	return (f32)(sprite->frameCount - 1) * fabs(angle) / 360.0f;
+	return (f32)(spriteResource->frameCount - 1) * fabs(angle) / 360.0f;
 }
 
-void SpriteInstance::setFrameAnimationFromAngle(f32 angle)
+void Sprite::setFrameAnimationFromAngle(f32 angle)
 {
-	if (!sprite->rotationAnimCount) return;
+	if (!spriteResource->rotationAnimCount) return;
 
-	int idx = (f32)(sprite->rotationAnimCount - 1)* fabs(angle) / 360.0f;
+	int idx = (f32)(spriteResource->rotationAnimCount - 1)* fabs(angle) / 360.0f;
 	char buf[10] = { 0 };
 	itoa(idx, buf, 10);
 	f32 relFrame = frameAnimation ? animationFrame - frameAnimation->startFrame : 0;
-	setFrameAnimation(sprite->rotationAnimPrefix + buf);
+	setFrameAnimation(spriteResource->rotationAnimPrefix + buf);
 	if (frameAnimation)
 	{
 		animationFrame = frameAnimation->startFrame + relFrame;

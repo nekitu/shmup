@@ -1,7 +1,7 @@
-#include "weapon_instance.h"
+#include "weapon.h"
 #include "game.h"
-#include "projectile_instance.h"
-#include "sprite_instance.h"
+#include "projectile.h"
+#include "sprite.h"
 #include "utils.h"
 #include "graphics.h"
 #include "resources/script_resource.h"
@@ -10,16 +10,16 @@
 
 namespace engine
 {
-void WeaponInstance::copyFrom(WeaponInstance* other)
+void Weapon::copyFrom(Weapon* other)
 {
 	params = other->params;
 	active = other->active;
 	weaponResource = other->weaponResource;
-	parentUnitInstance = other->parentUnitInstance;
+	parentUnit = other->parentUnit;
 	attachTo = other->attachTo;
 }
 
-void WeaponInstance::initializeFrom(struct WeaponResource* res)
+void Weapon::initializeFrom(struct WeaponResource* res)
 {
 	weaponResource = res;
 	params = res->params;
@@ -30,7 +30,7 @@ void WeaponInstance::initializeFrom(struct WeaponResource* res)
 	}
 }
 
-void WeaponInstance::fire()
+void Weapon::fire()
 {
 	if (!active)
 		return;
@@ -40,7 +40,7 @@ void WeaponInstance::fire()
 	CALL_LUA_FUNC("onFire");
 }
 
-void WeaponInstance::spawnProjectiles(Game* game)
+void Weapon::spawnProjectiles(Game* game)
 {
 	if (params.type == WeaponResource::Type::Beam) return;
 
@@ -48,8 +48,8 @@ void WeaponInstance::spawnProjectiles(Game* game)
 	{
 		Vec2 pos = attachTo->screenRect.center();
 
-		params.direction.x = game->players[0].unitInstance->root->screenRect.center().x - pos.x;
-		params.direction.y = game->players[0].unitInstance->root->screenRect.center().y - pos.y;
+		params.direction.x = game->players[0].unit->root->screenRect.center().x - pos.x;
+		params.direction.y = game->players[0].unit->root->screenRect.center().y - pos.y;
 		params.direction.normalize();
 	}
 
@@ -69,21 +69,21 @@ void WeaponInstance::spawnProjectiles(Game* game)
 
 	for (u32 i = 0; i < params.fireRays; i++)
 	{
-		auto newProj = Game::instance->newProjectileInstance();
+		auto newProj = Game::instance->newProjectile();
 		newProj->initializeFrom(weaponResource->projectileUnit);
-		newProj->weapon = this;
+		newProj->weaponResource = this;
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnitInstance->root && !attachTo->notRelativeToRoot)
-			pos += parentUnitInstance->root->position;
+		if (attachTo != parentUnit->root && !attachTo->notRelativeToRoot)
+			pos += parentUnit->root->position;
 
 		newProj->root->position = pos + params.position + params.offset + offRadius;
 		auto rads = deg2rad(angle);
 		newProj->velocity.x = sinf(rads);
 		newProj->velocity.y = cosf(rads);
 		newProj->velocity.normalize();
-		newProj->layerIndex = parentUnitInstance->layerIndex;
+		newProj->layerIndex = parentUnit->layerIndex;
 		newProj->speed = params.initialProjectileSpeed;
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
@@ -92,7 +92,7 @@ void WeaponInstance::spawnProjectiles(Game* game)
 	}
 }
 
-void WeaponInstance::update(struct Game* game)
+void Weapon::update(struct Game* game)
 {
 	if (!active)
 		return;
@@ -101,13 +101,13 @@ void WeaponInstance::update(struct Game* game)
 	{
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnitInstance->root && !attachTo->notRelativeToRoot)
-			pos += parentUnitInstance->root->position;
+		if (attachTo != parentUnit->root && !attachTo->notRelativeToRoot)
+			pos += parentUnit->root->position;
 
-		pos = Game::instance->worldToScreen(pos, parentUnitInstance->layerIndex);
+		pos = Game::instance->worldToScreen(pos, parentUnit->layerIndex);
 
 		// line to sprite check collision
-		BeamCollisionInfo bci = game->checkBeamIntersection(parentUnitInstance, attachTo, pos, params.beamWidth);
+		BeamCollisionInfo bci = game->checkBeamIntersection(parentUnit, attachTo, pos, params.beamWidth);
 
 		dbgBeamStartPos = pos;
 		dbgBeamCol = bci;
@@ -127,7 +127,7 @@ void WeaponInstance::update(struct Game* game)
 	CALL_LUA_FUNC("onUpdate");
 }
 
-void WeaponInstance::render()
+void Weapon::render()
 {
 	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam)
@@ -138,8 +138,8 @@ void WeaponInstance::render()
 		auto spr = Game::instance->resourceLoader->loadSprite("sprites/beam");
 		auto sprTop = Game::instance->resourceLoader->loadSprite("sprites/beam_top");
 		auto sprBtm = Game::instance->resourceLoader->loadSprite("sprites/beam_btm");
-		Game::instance->graphics->currentColor = 0;
-		Game::instance->graphics->currentColorMode = (u32)ColorMode::Add;
+		Game::instance->graphics->color = 0;
+		Game::instance->graphics->colorMode = (u32)ColorMode::Add;
 
 		if (!dbgBeamCol.valid) dbgBeamCol.distance = dbgBeamStartPos.y;
 
@@ -155,8 +155,8 @@ void WeaponInstance::render()
 
 	}
 
-	Game::instance->graphics->currentColor = 0;
-	Game::instance->graphics->currentColorMode = (u32)ColorMode::Add;
+	Game::instance->graphics->color = 0;
+	Game::instance->graphics->colorMode = (u32)ColorMode::Add;
 	auto sprB = Game::instance->resourceLoader->loadSprite("sprites/black");
 	static f32 r1 = 30;
 	static f32 r2 = 60;
@@ -175,14 +175,11 @@ void WeaponInstance::render()
 
 		Game::instance->graphics->drawQuad({ p.x, p.y, 5, 5 }, sprB->getFrameUvRect(0));
 	}
+
 	r1 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
 	r2 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
 	rotAng1 += Game::instance->deltaTime * 0.1;
 	angDelta += Game::instance->deltaTime * 0.2;
-}
-
-void WeaponInstance::debug(const std::string& info)
-{
 }
 
 }

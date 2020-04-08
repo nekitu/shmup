@@ -4,7 +4,7 @@
   "speed": 0.0,
   "controllers":
   [
-    { "name": "main", "class": "SimpleEnemy" }
+    { "name": "main", "script": "scripts/controllers/enemy" }
   ],
   "healthPoints": 1000,
   "autoDeleteType": "EndOfScreen",
@@ -40,7 +40,7 @@
       "body": "anims/boss_body_idle"
     }
   },
-  "spriteInstances":
+  "sprites":
   [
     {
       "name": "body",
