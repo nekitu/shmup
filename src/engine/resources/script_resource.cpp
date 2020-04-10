@@ -359,6 +359,8 @@ bool initializeLua()
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
+	l.setGlobal("AlphaMode_Blend", AlphaMode::Blend);
+	l.setGlobal("AlphaMode_Mask", AlphaMode::Mask);
 	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 	return true;
 }

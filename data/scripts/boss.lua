@@ -41,7 +41,7 @@ function C:onCollide(other)
   local cols = {}
   if self.unit:checkPixelCollision(other, cols) then
     self.unit.root:hit(1)
-	end
+  end
 end
 
 function C:onAppeared()

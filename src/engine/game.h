@@ -75,6 +75,7 @@ struct ScreenFx
 	Color fadeColor;
 	Color currentFadeColor;
 	ColorMode fadeColorMode = ColorMode::Add;
+	AlphaMode fadeAlphaMode = AlphaMode::Mask;
 	f32 fadeTimerDir = 1;
 	bool fadeRevertBackAfter = false;
 	bool doingFade = false;
@@ -146,7 +147,7 @@ struct Game
 	void computeDeltaTime();
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);
-	void fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter);
+	void fadeScreen(const Color& color, ColorMode colorMode, AlphaMode alphaMode, f32 duration, bool revertBackAfter);
 	void updateScreenFx();
 	void updateCamera();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }

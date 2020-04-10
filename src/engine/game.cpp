@@ -386,6 +386,7 @@ void Game::mainLoop()
 		{
 			graphics->color = screenFx.currentFadeColor.getRgba();
 			graphics->colorMode = (u32)screenFx.fadeColorMode;
+			graphics->alphaMode = (u32)screenFx.fadeAlphaMode;
 			graphics->drawQuad({ 0, 0, graphics->videoWidth, graphics->videoHeight }, graphics->atlas->whiteImage->uvRect);
 		}
 
@@ -826,7 +827,7 @@ void Game::shakeCamera(const Vec2& force, f32 duration, u32 count)
 	screenFx.shakeDuration = duration;
 }
 
-void Game::fadeScreen(const Color& color, ColorMode colorMode, f32 duration, bool revertBackAfter)
+void Game::fadeScreen(const Color& color, ColorMode colorMode, AlphaMode alphaMode, f32 duration, bool revertBackAfter)
 {
 	screenFx.doingFade = true;
 	screenFx.fadeTimer = 0;
@@ -834,6 +835,7 @@ void Game::fadeScreen(const Color& color, ColorMode colorMode, f32 duration, boo
 	screenFx.fadeColor = color;
 	screenFx.fadeDuration = duration;
 	screenFx.fadeColorMode = colorMode;
+	screenFx.fadeAlphaMode = alphaMode;
 	screenFx.fadeRevertBackAfter = revertBackAfter;
 }
 
@@ -878,6 +880,7 @@ void Game::updateScreenFx()
 				screenFx.doingFade = false;
 				screenFx.fadeTimer = 1;
 				screenFx.currentFadeColor = screenFx.fadeColor;
+				graphics->alphaMode = (u32)AlphaMode::Mask;
 			}
 		}
 		else if (screenFx.fadeTimerDir < 0 && screenFx.fadeTimer < 0)
