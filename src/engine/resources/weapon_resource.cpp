@@ -31,4 +31,8 @@ bool WeaponResource::load(Json::Value& json)
 	return true;
 }
 
+void WeaponResource::unload()
+{
+}
+
 }

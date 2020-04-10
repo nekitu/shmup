@@ -1,12 +1,12 @@
 {
-    "frameWidth": 30,
-    "frameHeight":  40,
+    "frameWidth": 8,
+    "frameHeight":  8,
     "animations":
     {
         "default":
         {
             "start": 0,
-            "frames": 4,
+            "frames": 10,
             "type": "Normal",
             "fps": 1,
             "repeat": 0

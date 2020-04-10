@@ -12,9 +12,13 @@ function C:setup(params)
 	self.speed = params:getFloat("speed", 1)
 	self.constantSpeed = params:getBool("constantSpeed", false)
   self.offsetAcquired = false
-  print(tostring(self.follower))
-  print(tostring(self.follow))
-  dump(self)
+  print("setup "..tostring(self.follower).." ".. self.follow.name)
+end
+
+function C:onUnload()
+  print("Unloading script...")
+  self.follower.notRelativeToRoot = self.initialNotRelativeToRoot
+  self.follower.position = self.initialPosition:getCopy()
 end
 
 function C:acquireOffset()
@@ -22,8 +26,10 @@ function C:acquireOffset()
   if not self.follow then self.follow = self.unit.root end
 
   if self.follower and self.follow then
+    self.initialNotRelativeToRoot = self.follower.notRelativeToRoot
+    self.initialPosition = self.follower.position:getCopy()
     self.follower.notRelativeToRoot = true  -- force to not transform locally to parent
-    self.offset = self.follower.position
+    self.offset = self.follower.position:getCopy()
     self.follower.position = self.follow.position + self.offset
     self.offsetAcquired = true
   end
@@ -38,26 +44,17 @@ function C:onUpdate()
     if self.constantSpeed then
       local delta = targetPos - self.follower.position
       local dist = delta:getLength()
+      local moveSize = self.speed * game.deltaTime
 
-      if dist <= self.speed * game.deltaTime then
-        self.follower.position = targetPos
+      if dist <= moveSize then
+        self.follower.position = targetPos:getCopy()
       else
         delta:normalize()
-        self.follower.position:add(delta:mulScalar(self.speed * game.deltaTime))
+        self.follower.position:add(delta:mulScalar(moveSize))
       end
-      print("dx "..tostring(delta.x))
-      print("dy "..tostring(delta.y))
     else
-      local v = targetPos:sub(self.follower.position)
-      print("speed: "..tostring(self.speed))
-      print("deltatime: "..tostring(game.deltaTime))
-      print("m: "..tostring(self.speed * game.deltaTime))
-      print(v.x)
-      print(v.y)
-      v:mulScalar(self.speed * game.deltaTime)
-      print(v.x)
-      print(v.y)
-      self.follower.position:add(v)
+      local t = self.speed * game.deltaTime
+      self.follower.position = self.follower.position + (targetPos - self.follower.position):mulScalar(t)
     end
   end
 end

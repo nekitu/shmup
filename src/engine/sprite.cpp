@@ -274,9 +274,13 @@ void Sprite::setFrameAnimationFromAngle(f32 angle)
 
 	int idx = (f32)(spriteResource->rotationAnimCount - 1)* fabs(angle) / 360.0f;
 	char buf[10] = { 0 };
+
 	itoa(idx, buf, 10);
+
 	f32 relFrame = frameAnimation ? animationFrame - frameAnimation->startFrame : 0;
+
 	setFrameAnimation(spriteResource->rotationAnimPrefix + buf);
+
 	if (frameAnimation)
 	{
 		animationFrame = frameAnimation->startFrame + relFrame;

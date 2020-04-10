@@ -6,7 +6,7 @@
   [
     { "name": "main", "script": "scripts/controllers/enemy" }
   ],
-  "script": "scripts/boss.lua",
+  "script": "scripts/boss",
   "root": "body",
   "stages":
   [

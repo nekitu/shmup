@@ -14,7 +14,6 @@ function C:onUpdate()
     end
 
     self.unit.root:setFrameAnimationFromAngle(w.angle - 180)
-    self.unit.root.frame = self.unit.root:getFrameFromAngle(w.angle - 180)
 
     if self.unit.health == 0 then
         self.unit.deleteMeNow = true

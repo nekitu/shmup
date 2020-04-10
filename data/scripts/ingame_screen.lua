@@ -2,7 +2,9 @@ local C = {}
 
 function C:init()
   self.fnt = game:loadFont("fonts/default")
+  self.fntNum = game:loadFont("fonts/default_numeric")
   self.time = 0
+  self.fpsCount = 0
 end
 
 function C:onUpdate()
@@ -34,8 +36,14 @@ function C:onRender(layerIndex)
       gfx:drawText(self.fnt, Vec2(140, 25), "INSERT COIN")
     end
 
+    gfx.colorMode = ColorMode_Add
+    gfx.color = Color.black:getRgba()
+    gfx:drawText(self.fnt, Vec2(20, 300), "FPS")
+    gfx:drawText(self.fntNum, Vec2(50, 300), tostring(self.fps))
+
+    self.fpsCount = self.fpsCount + 1
     self.time = self.time + game.deltaTime
-    if self.time > 1 then self.time = 0 end
+    if self.time > 1 then self.time = 0 self.fps = self.fpsCount self.fpsCount = 0 end
   end
 end
 

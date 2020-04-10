@@ -10,8 +10,21 @@
 
 namespace engine
 {
+Weapon::~Weapon()
+{
+	LOG_INFO("Deleting weapon");
+	delete scriptClass;
+}
+
+void Weapon::reset()
+{
+	delete scriptClass;
+	scriptClass = nullptr;
+}
+
 void Weapon::copyFrom(Weapon* other)
 {
+	reset();
 	params = other->params;
 	active = other->active;
 	weaponResource = other->weaponResource;
@@ -21,6 +34,7 @@ void Weapon::copyFrom(Weapon* other)
 
 void Weapon::initializeFrom(struct WeaponResource* res)
 {
+	reset();
 	weaponResource = res;
 	params = res->params;
 
@@ -67,19 +81,23 @@ void Weapon::spawnProjectiles(Game* game)
 
 	angle += fireAngleOffset;
 
+	f32 ang = angle;
+
 	for (u32 i = 0; i < params.fireRays; i++)
 	{
 		auto newProj = Game::instance->newProjectile();
+
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weaponResource = this;
-		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(angle)), params.offsetRadius * cosf(deg2rad(angle)));
+
+		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(ang)), params.offsetRadius * cosf(deg2rad(ang)));
 		Vec2 pos = attachTo->position;
 
 		if (attachTo != parentUnit->root && !attachTo->notRelativeToRoot)
 			pos += parentUnit->root->position;
 
 		newProj->root->position = pos + params.position + params.offset + offRadius;
-		auto rads = deg2rad(angle);
+		auto rads = deg2rad(ang);
 		newProj->velocity.x = sinf(rads);
 		newProj->velocity.y = cosf(rads);
 		newProj->velocity.normalize();
@@ -88,7 +106,7 @@ void Weapon::spawnProjectiles(Game* game)
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
-		angle += angleBetweenRays;
+		ang += angleBetweenRays;
 	}
 }
 

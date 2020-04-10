@@ -10,10 +10,8 @@
   "controllers":
   [
     { "name": "main", "script": "scripts/controllers/player" },
-    { "name": "gunL_follow", "script": "scripts/controllers/follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": false},
-    { "name": "gunR_follow", "script": "scripts/controllers/follow", "follower":"gunR", "follow": "body", "speed":10},
-    { "name": "gunLtrail_follow", "script": "scripts/controllers/follow", "follower":"gunLtrail", "follow": "gunL", "speed":5},
-    { "name": "gunRtrail_follow", "script": "scripts/controllers/follow", "follower":"gunRtrail", "follow": "gunR", "speed":5}
+    { "name": "gunL_follow", "script": "scripts/controllers/follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
+    { "name": "gunR_follow", "script": "scripts/controllers/follow", "follower":"gunR", "follow": "body", "speed":10, "constantSpeed": false}
   ],
   "root": "body",
   "animations":
@@ -42,7 +40,7 @@
       "name": "gunL",
       "sprite": "sprites/enemy",
       "position": "-40 0",
-      "scale": 0.15,
+      "scale": 0.2,
       "rotation": 0,
       "horizontalFlip": false,
       "verticalFlip": false,
@@ -77,30 +75,6 @@
           "active": true
         }
       }
-    },
-    {
-      "name": "gunRtrail",
-      "sprite": "sprites/fire",
-      "position": "0 20",
-      "scale": 0.5,
-      "visible": false,
-      "rotation": 0,
-      "horizontalFlip": false,
-      "verticalFlip": false,
-      "color": "0 0 0 1",
-      "hitColor": "1 1 0.4 1"
-    },
-    {
-      "name": "gunLtrail",
-      "sprite": "sprites/fire",
-      "position": "0 20",
-      "visible": false,
-      "scale": 0.5,
-      "rotation": 0,
-      "horizontalFlip": false,
-      "verticalFlip": false,
-      "color": "0 0 0 1",
-      "hitColor": "1 1 0.4 1"
     }
   ]
 }

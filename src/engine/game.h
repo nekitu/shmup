@@ -88,7 +88,7 @@ struct Game
 	u32 windowWidth = 800, windowHeight = 600;
 	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
-	bool vSync = true;
+	bool vSync = false;
 	std::string dataRoot = "../data/";
 	bool exitGame = false;
 	bool editing = false;
@@ -100,9 +100,11 @@ struct Game
 	f32 lastTime = 0;
 	u32 hiscore = 0;
 	u32 credit = 0;
+	bool pauseGame = false;
 	std::vector<Unit*> units;
 	std::vector<Unit*> newUnits;
-	std::vector<Projectile> projectiles;
+	std::vector<Projectile> projectilePool;
+	std::vector<Projectile*> projectiles;
 	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
@@ -114,7 +116,7 @@ struct Game
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset;
-	f32 cameraSpeed = 11;
+	f32 cameraSpeed = 10;
 	f32 cameraParallaxOffset = 0;
 	f32 cameraParallaxScale = 0.2f;
 	std::vector<Layer> layers;
@@ -162,7 +164,7 @@ struct Game
 	struct Unit* createUnit(struct UnitResource* unitRes);
 	struct Weapon* createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite);
 	struct Projectile* newProjectile();
-	void releaseProjectile(Projectile* proj);
+	std::vector<Projectile*>::iterator releaseProjectile(Projectile* proj);
 };
 
 }

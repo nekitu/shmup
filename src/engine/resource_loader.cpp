@@ -64,6 +64,15 @@ void ResourceLoader::reloadScripts()
 		res->load(json);
 	}
 
+	// setup controllers for units again
+	for (auto unit : Game::instance->units)
+	{
+		for (auto ctrl : unit->controllers)
+		{
+			CALL_LUA_FUNC2(ctrl.second, "setup", &unit->unitResource->controllers[ctrl.first]);
+		}
+	}
+
 	reloadWeapons();
 }
 

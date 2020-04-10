@@ -14,8 +14,9 @@ struct Weapon
 	struct Sprite* attachTo = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 
-	~Weapon() { delete scriptClass; }
+	~Weapon();
 
+	void reset();
 	void copyFrom(Weapon* other);
 	void fire();
 	void initializeFrom(struct WeaponResource* res);

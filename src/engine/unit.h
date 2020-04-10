@@ -36,6 +36,7 @@ struct Unit
 	f32 health = 100.0f; // auto computed, always a percentage
 	f32 maxHealth = 100.0f; // auto computed from sprites health
 	f32 age = 0;
+	f32 maxOutOfScreenAge = 10;
 	u32 stageIndex = 0;
 	bool collide = true;
 	bool shadow = false;

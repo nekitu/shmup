@@ -14,321 +14,328 @@
 
 namespace engine
 {
-bool Unit::shadowToggle = true;
-u64 Unit::lastId = 1;
+	bool Unit::shadowToggle = true;
+	u64 Unit::lastId = 1;
 
-Unit::Unit()
-{
-	id = lastId++;
-}
-
-Unit::~Unit()
-{
-	delete scriptClass;
-}
-
-void Unit::reset()
-{
-	for (auto spr : sprites) delete spr;
-
-	for (auto sprAnimPair : spriteAnimations)
+	Unit::Unit()
 	{
-		for (auto sprAnim : sprAnimPair.second)
+		id = lastId++;
+	}
+
+	Unit::~Unit()
+	{
+		reset();
+	}
+
+	void Unit::reset()
+	{
+		for (auto spr : sprites) delete spr;
+
+		for (auto sprAnimPair : spriteAnimations)
 		{
-			delete sprAnim.second;
+			for (auto sprAnim : sprAnimPair.second)
+			{
+				delete sprAnim.second;
+			}
+		}
+
+		for (auto wpn : weapons) delete wpn.second;
+
+		for (auto ctrl : controllers)
+		{
+			delete ctrl.second;
+		}
+
+		controllers.clear();
+		spriteAnimations.clear();
+		sprites.clear();
+		weapons.clear();
+		triggeredStages.clear();
+		root = nullptr;
+		currentStage = nullptr;
+		unitResource = nullptr;
+		delete scriptClass;
+		scriptClass = nullptr;
+		deleteMeNow = false;
+		age = 0;
+		spriteAnimationMap = nullptr;
+		appeared = false;
+		stageIndex = 0;
+	}
+
+	void Unit::updateShadowToggle()
+	{
+		shadowToggle = !shadowToggle;
+	}
+
+	void Unit::copyFrom(Unit* other)
+	{
+		reset();
+		layerIndex = other->layerIndex;
+		name = other->name;
+		currentAnimationName = other->currentAnimationName;
+		boundingBox = other->boundingBox;
+		visible = other->visible;
+		appeared = other->appeared;
+		speed = other->speed;
+		health = other->health;
+		maxHealth = other->maxHealth;
+		age = other->age;
+		stageIndex = other->stageIndex;
+		collide = other->collide;
+		shadow = other->shadow;
+		unitResource = other->unitResource;
+		deleteMeNow = other->deleteMeNow;
+		scriptClass = other->unitResource->script ? other->unitResource->script->createClassInstance(this) : nullptr;
+
+		// map from other unit to new sprites
+		std::map<Sprite*, Sprite*> spriteMap;
+
+		// copy sprites
+		for (auto& otherSpr : other->sprites)
+		{
+			auto spr = new Sprite();
+
+			spr->copyFrom(otherSpr);
+			sprites.push_back(spr);
+			spriteMap[otherSpr] = spr;
+		}
+
+		root = spriteMap[other->root];
+
+		// if no root specified, use first sprite as root
+		if (!root && sprites.size())
+		{
+			root = sprites[0];
+		}
+
+		if (other->root)
+		{
+			root->position = other->root->position;
+			root->scale = other->root->scale;
+			root->rotation = other->root->rotation;
+			root->verticalFlip = other->root->verticalFlip;
+			root->horizontalFlip = other->root->horizontalFlip;
+		}
+
+		// copy sprite animations
+		for (auto& spriteAnim : other->spriteAnimations)
+		{
+			auto& animName = spriteAnim.first;
+			auto& animMap = spriteAnim.second;
+
+			spriteAnimations[animName] = SpriteAnimationMap();
+			auto& crtAnimMap = spriteAnimations[animName];
+
+			for (auto& anim : animMap)
+			{
+				Animation* newAnim = new Animation();
+
+				newAnim->copyFrom(anim.second);
+				crtAnimMap[spriteMap[anim.first]] = newAnim;
+			}
+		}
+
+		// copy weapons
+		for (auto& wi : other->weapons)
+		{
+			Weapon* wiNew = new Weapon();
+
+			wiNew->copyFrom(wi.second);
+			// reparent to this
+			wiNew->parentUnit = this;
+			// attach to new sprite
+			wiNew->attachTo = spriteMap[wi.second->attachTo];
+			weapons[wi.first] = wiNew;
+		}
+
+		setAnimation(currentAnimationName);
+
+		// controller script instances
+		for (auto& ctrl : unitResource->controllers)
+		{
+			auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
+			CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
+			controllers[ctrl.first] = ctrlClassInst;
 		}
 	}
 
-	for (auto wpn : weapons) delete wpn.second;
-
-	controllers.clear();
-	spriteAnimations.clear();
-	sprites.clear();
-	weapons.clear();
-	triggeredStages.clear();
-	root = nullptr;
-	currentStage = nullptr;
-	unitResource = nullptr;
-	delete scriptClass;
-	scriptClass = nullptr;
-	deleteMeNow = false;
-	age = 0;
-	spriteAnimationMap = nullptr;
-	appeared = false;
-	stageIndex = 0;
-}
-
-void Unit::updateShadowToggle()
-{
-	shadowToggle = !shadowToggle;
-}
-
-void Unit::copyFrom(Unit* other)
-{
-	reset();
-	layerIndex = other->layerIndex;
-	name = other->name;
-	currentAnimationName = other->currentAnimationName;
-	boundingBox = other->boundingBox;
-	visible = other->visible;
-	appeared = other->appeared;
-	speed = other->speed;
-	health = other->health;
-	maxHealth = other->maxHealth;
-	age = other->age;
-	stageIndex = other->stageIndex;
-	collide = other->collide;
-	shadow = other->shadow;
-	unitResource = other->unitResource;
-	deleteMeNow = other->deleteMeNow;
-	scriptClass = other->unitResource->script ? other->unitResource->script->createClassInstance(this) : nullptr;
-
-	// controller script instances
-	for (auto& ctrl : unitResource->controllers)
+	void Unit::initializeFrom(UnitResource* res)
 	{
-		auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
-		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
-		controllers[ctrl.first] = ctrlClassInst;
-	}
+		reset();
+		unitResource = res;
+		name = res->name;
+		speed = res->speed;
+		visible = res->visible;
+		scriptClass = res->script ? res->script->createClassInstance(this) : nullptr;
+		collide = res->collide;
+		shadow = res->shadow;
 
-	// map from other unit to new sprites
-	std::map<Sprite*, Sprite*> spriteMap;
+		// map from other unit to new sprites
+		std::map<SpriteInstanceResource*, Sprite*> spriteMap;
 
-	// copy sprites
-	for (auto& otherSpr : other->sprites)
-	{
-		auto spr = new Sprite();
-
-		spr->copyFrom(otherSpr);
-		sprites.push_back(spr);
-		spriteMap[otherSpr] = spr;
-	}
-
-	root = spriteMap[other->root];
-
-	// if no root specified, use first sprite as root
-	if (!root && sprites.size())
-	{
-		root = sprites[0];
-	}
-
-	if (other->root)
-	{
-		root->position = other->root->position;
-		root->scale = other->root->scale;
-		root->rotation = other->root->rotation;
-		root->verticalFlip = other->root->verticalFlip;
-		root->horizontalFlip = other->root->horizontalFlip;
-	}
-
-	// copy sprite animations
-	for (auto& spriteAnim : other->spriteAnimations)
-	{
-		auto& animName = spriteAnim.first;
-		auto& animMap = spriteAnim.second;
-
-		spriteAnimations[animName] = SpriteAnimationMap();
-		auto& crtAnimMap = spriteAnimations[animName];
-
-		for (auto& anim : animMap)
+		// create the sprites for this unit
+		for (auto& iter : res->sprites)
 		{
-			Animation* newAnim = new Animation();
+			Sprite* spr = new Sprite();
 
-			newAnim->copyFrom(anim.second);
-			crtAnimMap[spriteMap[anim.first]] = newAnim;
+			spr->initializeFrom(iter.second);
+			sprites.push_back(spr);
+			spriteMap[iter.second] = spr;
+		}
+
+		std::sort(sprites.begin(), sprites.end(), [](const Sprite* a, const Sprite* b) { return a->orderIndex < b->orderIndex; });
+
+		if (res->rootName.size())
+		{
+			root = spriteMap[res->sprites[res->rootName]];
+		}
+
+		// if no root specified, use first sprite as root
+		if (!root && sprites.size())
+		{
+			root = sprites[0];
+		}
+
+		// copy sprite animations
+		for (auto& spriteAnim : res->sprites)
+		{
+			auto& animName = spriteAnim.first;
+			auto& sprRes = spriteAnim.second;
+
+			spriteAnimations[animName] = SpriteAnimationMap();
+			auto& crtAnimMap = spriteAnimations[animName];
+
+			if (sprRes)
+				for (auto& anim : sprRes->animations)
+				{
+					Animation* newAnim = new Animation();
+
+					newAnim->initializeFrom(anim.second);
+					crtAnimMap[spriteMap[sprRes]] = newAnim;
+				}
+		}
+
+		// create weapons
+		for (auto& weaponRes : res->weapons)
+		{
+			Weapon* weapon = new Weapon();
+
+			weapon->initializeFrom(weaponRes.second->weaponResource);
+			weapon->parentUnit = this;
+			weapon->attachTo = spriteMap[weaponRes.second->attachTo];
+			weapon->active = weaponRes.second->active;
+			weapon->params.position = weaponRes.second->localPosition;
+			weapons[weaponRes.first] = weapon;
+		}
+
+		// controller script instances
+		// has to be last since they will try to references sprites, weapons, etc.
+		for (auto& ctrl : res->controllers)
+		{
+			auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
+			CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
+			controllers[ctrl.first] = ctrlClassInst;
 		}
 	}
 
-	// copy weapons
-	for (auto& wi : other->weapons)
+	void Unit::load(ResourceLoader* loader, const Json::Value& json)
 	{
-		Weapon* wiNew = new Weapon();
+		name = json.get("name", name).asCString();
+		auto unitFilename = json["unit"].asString();
 
-		wiNew->copyFrom(wi.second);
-		// reparent to this
-		wiNew->parentUnit = this;
-		// attach to new sprite
-		wiNew->attachTo = spriteMap[wi.second->attachTo];
-		weapons[wi.first] = wiNew;
-	}
-
-	setAnimation(currentAnimationName);
-}
-
-void Unit::initializeFrom(UnitResource* res)
-{
-	reset();
-	unitResource = res;
-	name = res->name;
-	speed = res->speed;
-	visible = res->visible;
-	scriptClass = res->script ? res->script->createClassInstance(this) : nullptr;
-	collide = res->collide;
-	shadow = res->shadow;
-
-	// map from other unit to new sprites
-	std::map<SpriteInstanceResource*, Sprite*> spriteMap;
-
-	// create the sprites for this unit
-	for (auto& iter : res->sprites)
-	{
-		Sprite* spr = new Sprite();
-
-		spr->initializeFrom(iter.second);
-		sprites.push_back(spr);
-		spriteMap[iter.second] = spr;
-	}
-
-	std::sort(sprites.begin(), sprites.end(), [](const Sprite* a, const Sprite* b) { return a->orderIndex < b->orderIndex; });
-
-	if (res->rootName.size())
-	{
-		root = spriteMap[res->sprites[res->rootName]];
-	}
-
-	// if no root specified, use first sprite as root
-	if (!root && sprites.size())
-	{
-		root = sprites[0];
-	}
-
-	// copy sprite animations
-	for (auto& spriteAnim : res->sprites)
-	{
-		auto& animName = spriteAnim.first;
-		auto& sprRes = spriteAnim.second;
-
-		spriteAnimations[animName] = SpriteAnimationMap();
-		auto& crtAnimMap = spriteAnimations[animName];
-
-		if (sprRes)
-		for (auto& anim : sprRes->animations)
+		if (unitFilename == "")
 		{
-			Animation* newAnim = new Animation();
-
-			newAnim->initializeFrom(anim.second);
-			crtAnimMap[spriteMap[sprRes]] = newAnim;
+			LOG_ERROR("No unitResource filename specified for unitResource instance ({0})", name);
+			return;
 		}
+
+		auto unitResource = loader->loadUnit(unitFilename);
+		initializeFrom(unitResource);
+		name = json.get("name", name).asCString();
+		currentAnimationName = json.get("animationName", "").asString();
+		boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
+		visible = json.get("visible", visible).asBool();
+		shadow = json.get("shadow", visible).asBool();
+		speed = json.get("speed", speed).asFloat();
+		layerIndex = json.get("layerIndex", layerIndex).asInt();
+		root->position.parse(json.get("position", "0 0").asString());
+		stageIndex = 0;
 	}
 
-	// create weapons
-	for (auto& weaponRes : res->weapons)
+	void Unit::update(Game* game)
 	{
-		Weapon* weapon = new Weapon();
+		computeHealth();
 
-		weapon->initializeFrom(weaponRes.second->weaponResource);
-		weapon->parentUnit = this;
-		weapon->attachTo = spriteMap[weaponRes.second->attachTo];
-		weapon->active = weaponRes.second->active;
-		weapon->params.position = weaponRes.second->localPosition;
-		weapons[weaponRes.first] = weapon;
-	}
-
-	// controller script instances
-	// has to be last since they will try to references sprites, weapons, etc.
-	for (auto& ctrl : res->controllers)
-	{
-		auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
-		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
-		controllers[ctrl.first] = ctrlClassInst;
-	}
-}
-
-void Unit::load(ResourceLoader* loader, const Json::Value& json)
-{
-	name = json.get("name", name).asCString();
-	auto unitFilename = json["unit"].asString();
-
-	if (unitFilename == "")
-	{
-		LOG_ERROR("No unitResource filename specified for unitResource instance ({0})", name);
-		return;
-	}
-
-	auto unitResource = loader->loadUnit(unitFilename);
-	initializeFrom(unitResource);
-	name = json.get("name", name).asCString();
-	currentAnimationName = json.get("animationName", "").asString();
-	boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
-	visible = json.get("visible", visible).asBool();
-	shadow = json.get("shadow", visible).asBool();
-	speed = json.get("speed", speed).asFloat();
-	layerIndex = json.get("layerIndex", layerIndex).asInt();
-	root->position.parse(json.get("position", "0 0").asString());
-	stageIndex = 0;
-}
-
-void Unit::update(Game* game)
-{
-	computeHealth();
-
-	for (auto stage : unitResource->stages)
-	{
-		if (health <= stage->triggerOnHealth && stage != currentStage)
+		for (auto stage : unitResource->stages)
 		{
-			//TODO: maybe just use a currentStageIndex
-			auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
+			if (health <= stage->triggerOnHealth && stage != currentStage)
+			{
+				//TODO: maybe just use a currentStageIndex
+				auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
 
-			if (iter != triggeredStages.end()) continue;
+				if (iter != triggeredStages.end()) continue;
 
-			triggeredStages.push_back(stage);
-			CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
-			currentStage = stage;
-			break;
+				triggeredStages.push_back(stage);
+				CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
+				currentStage = stage;
+				break;
+			}
 		}
-	}
 
-	if (spriteAnimationMap)
-	{
-		for (auto iter : *spriteAnimationMap)
+		if (spriteAnimationMap)
 		{
-			auto spr = iter.first;
-			auto sprAnim = iter.second;
+			for (auto iter : *spriteAnimationMap)
+			{
+				auto spr = iter.first;
+				auto sprAnim = iter.second;
 
-			sprAnim->update(game->deltaTime);
-			sprAnim->animateSprite(spr);
+				sprAnim->update(game->deltaTime);
+				sprAnim->animateSprite(spr);
+			}
 		}
-	}
 
-	for (auto& ctrl : controllers)
-	{
-		CALL_LUA_FUNC2(ctrl.second, "onUpdate");
-	}
-
-	for (auto& wp : weapons)
-	{
-		wp.second->update(game);
-	}
-
-	for (auto spr : sprites)
-	{
-		spr->update(game);
-	}
-
-	computeBoundingBox();
-
-	if (appeared && unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
-	{
-		if (game->screenMode == ScreenMode::Vertical)
+		for (auto& ctrl : controllers)
 		{
-			if (boundingBox.y > game->graphics->videoHeight)
-				deleteMeNow = true;
+			CALL_LUA_FUNC2(ctrl.second, "onUpdate");
 		}
-		else if (game->screenMode == ScreenMode::Horizontal)
-		{
-			if (boundingBox.right() < 0)
-				deleteMeNow = true;
-		}
-	}
 
-	// delete unit if appeared on screen and goes out of screen
-	if (appeared && unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
-	if (boundingBox.x > game->graphics->videoWidth
-		|| boundingBox.y > game->graphics->videoHeight
-		|| boundingBox.right() < 0
-		|| boundingBox.bottom() < 0)
+		for (auto& wp : weapons)
+		{
+			wp.second->update(game);
+		}
+
+		for (auto spr : sprites)
+		{
+			spr->update(game);
+		}
+
+		computeBoundingBox();
+
+		if (appeared && unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
+		{
+			if (game->screenMode == ScreenMode::Vertical)
+			{
+				if (boundingBox.y > game->graphics->videoHeight)
+					deleteMeNow = true;
+			}
+			else if (game->screenMode == ScreenMode::Horizontal)
+			{
+				if (boundingBox.right() < 0)
+					deleteMeNow = true;
+			}
+		}
+
+		// delete unit if appeared on screen and goes out of screen
+		if ((appeared || age > maxOutOfScreenAge) && unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
 	{
-		deleteMeNow = true;
+		if (boundingBox.x > game->graphics->videoWidth
+			|| boundingBox.y > game->graphics->videoHeight
+			|| boundingBox.right() < 0
+			|| boundingBox.bottom() < 0)
+		{
+			deleteMeNow = true;
+		}
 	}
 
 	age += game->deltaTime;

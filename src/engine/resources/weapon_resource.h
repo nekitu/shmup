@@ -45,6 +45,7 @@ struct WeaponResource : Resource
 	LuaIntf::LuaRef scriptClassInstance;
 
 	bool load(Json::Value& json) override;
+	void unload() override;
 };
 
 }

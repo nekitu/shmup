@@ -25,7 +25,16 @@ ScriptClassInstanceBase::~ScriptClassInstanceBase()
 	if (script)
 	{
 		auto iter = std::find(script->classInstances.begin(), script->classInstances.end(), this);
-		if (iter != script->classInstances.end()) script->classInstances.erase(iter);
+
+		if (iter != script->classInstances.end())
+		{
+			LOG_INFO("Destroying the script class instance for script: {0} ", script->fileName);
+			script->classInstances.erase(iter);
+		}
+		else
+		{
+			LOG_ERROR("Cannot find the script class instance for script: {0} ", script->fileName);
+		}
 	}
 }
 
@@ -46,9 +55,11 @@ bool ScriptResource::load(Json::Value& json)
 void ScriptResource::unload()
 {
 	code = "";
+	LOG_INFO("Unloading script {0} with {1} instances", fileName, classInstances.size());
 
 	for (auto& ci : classInstances)
 	{
+		CALL_LUA_FUNC2(ci, "onUnload");
 		ci->classInstance = LuaIntf::LuaRef();
 	}
 }
@@ -283,6 +294,7 @@ bool initializeLua()
 		.addConstructor(LUA_ARGS(LuaIntf::_opt<f32>, LuaIntf::_opt<f32>))
 		.addVariable("x", &Vec2::x)
 		.addVariable("y", &Vec2::y)
+		.addFunction("getCopy", [](Vec2* v) {return Vec2(v->x, v->y); })
 		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
 		.addFunction("normalize", &Vec2::normalize)
 		.addFunction("getLength", &Vec2::getLength)
@@ -319,6 +331,7 @@ bool initializeLua()
 
 	LUA.beginClass<Sprite>("Sprite")
 		.addVariableRef("position", &Sprite::position)
+		.addVariable("name", &Sprite::name)
 		.addVariable("rotation", &Sprite::rotation)
 		.addVariable("scale", &Sprite::scale)
 		.addVariable("verticalFlip", &Sprite::verticalFlip)

@@ -120,14 +120,10 @@ bool Game::initialize()
 	}
 
 	initializeAudio();
-
-	lastTime = SDL_GetTicks();
 	graphics = new Graphics(this);
 	resourceLoader = new ResourceLoader();
 	resourceLoader->atlas = graphics->atlas;
-
 	initializeLua();
-
 	loadLevels();
 	changeLevel(0);
 	createPlayers();
@@ -160,6 +156,7 @@ bool Game::initialize()
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
 	scriptClass = currentMainScript->createClassInstance(this);
 	preloadSprites();
+	lastTime = SDL_GetTicks();
 }
 
 void Game::shutdown()
@@ -288,17 +285,14 @@ void Game::mainLoop()
 		computeDeltaTime();
 		handleInputEvents();
 
-		CALL_LUA_FUNC("onUpdate", deltaTime);
-
-		updateScreenFx();
-		updateCamera();
-
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
 
 		static bool reloadKeyDown = false;
+		static bool pauseKeyDown = false;
 
 		bool reload = isControlDown(InputControl::ReloadScripts);
+		bool pause = isControlDown(InputControl::Pause);
 
 		if (!reloadKeyDown && reload)
 		{
@@ -309,17 +303,33 @@ void Game::mainLoop()
 		if (!reload)
 			reloadKeyDown = false;
 
+		if (!pauseKeyDown && pause)
+		{
+			pauseKeyDown = true;
+			pauseGame = !pauseGame;
+		}
+
+		if (!pause)
+			pauseKeyDown = false;
+
+		if (pauseGame)
+		{
+			deltaTime = 0;
+		}
+
+		CALL_LUA_FUNC("onUpdate", deltaTime);
+
+		updateScreenFx();
+		updateCamera();
+
 		for (u32 i = 0; i < units.size(); i++)
 		{
 			units[i]->update(this);
 		}
 
-		for (u32 i = 0; i < lastProjectileIndex; i++)
+		for (auto proj : projectiles)
 		{
-			if (projectiles[i].used)
-			{
-				projectiles[i].update(this);
-			}
+			proj->update(this);
 		}
 
 		// add the new created units
@@ -336,7 +346,7 @@ void Game::mainLoop()
 		{
 			if ((*iter)->deleteMeNow)
 			{
-				delete* iter;
+				delete *iter;
 				iter = units.erase(iter);
 				continue;
 			}
@@ -344,12 +354,16 @@ void Game::mainLoop()
 			++iter;
 		}
 
-		for (u32 i = 0; i < lastProjectileIndex; i++)
+		auto iterProj = projectiles.begin();
+		while (iterProj != projectiles.end())
 		{
-			if (projectiles[i].deleteMeNow && projectiles[i].used)
+			if ((*iterProj)->deleteMeNow)
 			{
-				releaseProjectile(&projectiles[i]);
+				iterProj = releaseProjectile(*iterProj);
+				continue;
 			}
+
+			++iterProj;
 		}
 
 		// update and render the game graphics render target
@@ -361,14 +375,9 @@ void Game::mainLoop()
 			unit->render(graphics);
 		}
 
-		for (u32 i = 0; i < lastProjectileIndex; i++)
+		for (auto proj : projectiles)
 		{
-			auto& proj = projectiles[i];
-
-			if (proj.used)
-			{
-				proj.render(graphics);
-			}
+			proj->render(graphics);
 		}
 
 		CALL_LUA_FUNC("onRender", 0)
@@ -446,34 +455,32 @@ void Game::checkCollisions()
 	}
 
 	// check projectiles vs normal units
-	for (u32 i = 0; i < lastProjectileIndex; i++)
+	for (auto unitProj : projectiles)
 	{
-		Projectile& unitProj = projectiles[i];
-
-		if (!unitProj.collide || !unitProj.used) continue;
+		if (!unitProj->collide) continue;
 
 		for (auto unit2 : units)
 		{
 			if (!unit2->collide) continue;
 
-			if (&unitProj == unit2
-				|| unitProj.unitResource->unitType == unit2->unitResource->unitType) continue;
+			if (unitProj == unit2
+				|| unitProj->unitResource->unitType == unit2->unitResource->unitType) continue;
 
 			if (unit2->unitResource->unitType == UnitType::Enemy &&
-				unitProj.unitResource->unitType == UnitType::EnemyProjectile)
+				unitProj->unitResource->unitType == UnitType::EnemyProjectile)
 			{
 				continue;
 			}
 
 			if (unit2->unitResource->unitType == UnitType::Player &&
-				unitProj.unitResource->unitType == UnitType::PlayerProjectile)
+				unitProj->unitResource->unitType == UnitType::PlayerProjectile)
 			{
 				continue;
 			}
 
-			if (unitProj.boundingBox.overlaps(unit2->boundingBox))
+			if (unitProj->boundingBox.overlaps(unit2->boundingBox))
 			{
-				auto iter1 = collisionPairs.find(&unitProj);
+				auto iter1 = collisionPairs.find(unitProj);
 				auto iter2 = collisionPairs.find(unit2);
 				bool exists1 = false;
 				bool exists2 = false;
@@ -483,14 +490,14 @@ void Game::checkCollisions()
 					exists1 = true;
 				}
 
-				if (iter2 != collisionPairs.end() && iter2->second == &unitProj)
+				if (iter2 != collisionPairs.end() && iter2->second == unitProj)
 				{
 					exists2 = true;
 				}
 
 				if (!exists1 && !exists2)
 				{
-					collisionPairs[&unitProj] = unit2;
+					collisionPairs[unitProj] = unit2;
 				}
 			}
 		}
@@ -975,8 +982,9 @@ void Game::deleteNonPersistentUnits()
 bool Game::changeLevel(i32 index)
 {
 	deleteNonPersistentUnits();
+	projectilePool.clear();
+	projectilePool.resize(maxProjectileCount);
 	projectiles.clear();
-	projectiles.resize(maxProjectileCount);
 
 	if (index == -1)
 	{
@@ -1033,14 +1041,12 @@ Projectile* Game::newProjectile()
 {
 	for (u32 i = 0; i < maxProjectileCount; i++)
 	{
-		if (!projectiles[i].used)
+		if (!projectilePool[i].used)
 		{
-			Projectile* proj = &projectiles[i];
+			Projectile* proj = &projectilePool[i];
 
 			proj->used = true;
-
-			if (lastProjectileIndex < i + 1)
-				lastProjectileIndex = i + 1;
+			projectiles.push_back(proj);
 
 			return proj;
 		}
@@ -1049,9 +1055,19 @@ Projectile* Game::newProjectile()
 	return nullptr;
 }
 
-void Game::releaseProjectile(Projectile* proj)
+std::vector<Projectile*>::iterator Game::releaseProjectile(Projectile* proj)
 {
 	proj->used = false;
+
+	auto iter = std::find(projectiles.begin(), projectiles.end(), proj);
+
+	if (iter != projectiles.end())
+	{
+		auto newIter = projectiles.erase(iter);
+		return newIter;
+	}
+
+	return projectiles.end();
 }
 
 }

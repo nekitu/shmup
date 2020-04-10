@@ -92,6 +92,8 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 			return false;
 		}
 
+		LOG_INFO("Lua: Created class instance for {0}'", script->fileName);
+
 		return true;
 	}
 };
