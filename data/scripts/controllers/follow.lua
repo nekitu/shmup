@@ -17,7 +17,7 @@ end
 
 function C:onUnload()
   print("Unloading script...")
-  self.follower.rootChild = self.initialRootChild
+  self.follower.relativeToRoot = self.initialRelativeToRoot
   self.follower.position = self.initialPosition:getCopy()
 end
 
@@ -26,9 +26,9 @@ function C:acquireOffset()
   if not self.follow then self.follow = self.unit.root end
 
   if self.follower and self.follow then
-    self.initialRootChild = self.follower.initialRootChild
+    self.initialRelativeToRoot = self.follower.relativeToRoot
     self.initialPosition = self.follower.position:getCopy()
-    self.follower.rootChild = false  -- no parent
+    self.follower.relativeToRoot = false  -- no parent
     self.offset = self.follower.position:getCopy()
     self.follower.position = self.follow.position + self.offset
     self.offsetAcquired = true

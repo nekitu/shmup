@@ -28,7 +28,7 @@ struct Sprite
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
-	bool rootChild = true;
+	bool relativeToRoot = true;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;

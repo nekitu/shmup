@@ -93,7 +93,7 @@ void Weapon::spawnProjectiles(Game* game)
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(ang)), params.offsetRadius * cosf(deg2rad(ang)));
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnit->root && attachTo->rootChild)
+		if (attachTo != parentUnit->root && attachTo->relativeToRoot)
 			pos += parentUnit->root->position;
 
 		newProj->root->position = pos + params.position + params.offset + offRadius;
@@ -120,7 +120,7 @@ void Weapon::update(struct Game* game)
 	{
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnit->root && attachTo->rootChild)
+		if (attachTo != parentUnit->root && attachTo->relativeToRoot)
 			pos += parentUnit->root->position;
 
 		pos = Game::instance->worldToScreen(pos, parentUnit->layerIndex);

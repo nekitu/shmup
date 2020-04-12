@@ -425,7 +425,7 @@ void Unit::computeBoundingBox()
 		Vec2 pos;
 
 		// if relative to root sprite
-		if (spr->rootChild)
+		if (spr->relativeToRoot)
 		{
 			pos = root->position;
 		}
@@ -512,7 +512,7 @@ void Unit::render(Graphics* gfx)
 
 		Vec2 pos;
 
-		if (spr->rootChild)
+		if (spr->relativeToRoot)
 		{
 			pos = spr != root ? root->position : Vec2();
 		}
