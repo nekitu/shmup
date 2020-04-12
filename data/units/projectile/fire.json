@@ -7,8 +7,8 @@
     [
         {
             "name": "body",
-            "scale": 0.2,
-            "sprite": "sprites/fire"
+            "scale": 1,
+            "sprite": "sprites/fire1"
         }
     ]
 }

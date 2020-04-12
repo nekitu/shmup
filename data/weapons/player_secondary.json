@@ -1,16 +1,16 @@
 {
   "fireRate" : 5,
-  "fireRays" : 3,
+  "fireRays" : 1,
   "type": "Projectile",
   "beamWidth": 40,
-  "fireRaysAngle" : 10,
+  "fireRaysAngle" : 0,
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,
   "initialProjectileSpeed": 450,
   "minProjectileSpeed": 50,
   "maxProjectileSpeed": 2000,
-  "projectileAcceleration": -1,
+  "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/fire2",
   "script": "scripts/weapon_primary"
 }

@@ -72,10 +72,9 @@ struct ScreenFx
 	bool doingShake = false;
 
 	f32 fadeDuration, fadeTimer = 0;
-	Color fadeColor;
+	u32 fadeLayer = 0;
+	Color fadeColorFrom, fadeColorTo;
 	Color currentFadeColor;
-	ColorMode fadeColorMode = ColorMode::Add;
-	AlphaMode fadeAlphaMode = AlphaMode::Mask;
 	f32 fadeTimerDir = 1;
 	bool fadeRevertBackAfter = false;
 	bool doingFade = false;
@@ -90,6 +89,7 @@ struct Game
 	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
 	bool vSync = false;
+	std::string configFilename = "game.json";
 	std::string dataRoot = "../data/";
 	bool exitGame = false;
 	bool editing = false;
@@ -131,6 +131,7 @@ struct Game
 
 	Game();
 	~Game();
+	void loadConfig();
 	bool initialize();
 	void shutdown();
 	void createPlayers();
@@ -147,7 +148,7 @@ struct Game
 	void computeDeltaTime();
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);
-	void fadeScreen(const Color& color, ColorMode colorMode, AlphaMode alphaMode, f32 duration, bool revertBackAfter);
+	void fadeScreen(const Color& color1, const Color& color2, f32 duration, bool revertBackAfter, u32 layer = 1);
 	void updateScreenFx();
 	void updateCamera();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
@@ -159,7 +160,6 @@ struct Game
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
-	bool loadLevels();
 	bool changeLevel(i32 index);
 	static std::string makeFullDataPath(const std::string relativeDataFilename);
 	struct Unit* createUnit(struct UnitResource* unitRes);

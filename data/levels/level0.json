@@ -1,22 +1,23 @@
 {
 "layers":
 [
-	{ "name": "background1", "parallaxScale": 1},
+	{ "name": "player", "parallaxScale": 1},
+	{ "name": "foreground", "parallaxScale": 4},
+	{ "name": "background1", "parallaxScale": 3},
 	{ "name": "background2", "parallaxScale": 2},
-	{ "name": "background3", "parallaxScale": 3},
-	{ "name": "foreground", "parallaxScale": 1}
+	{ "name": "background3", "parallaxScale": 1}
 ],
 "units":
 [
 	{
 		"name": "bg",
 		"unit": "units/bg",
-		"layerIndex": 0,
+		"layerIndex": 3,
 		"position": "120 -572"
 	},
 	{
 		"name": "bg2",
-		"layerIndex": 1,
+		"layerIndex": 2,
 		"unit": "units/bg2",
 		"position": "120 -572"
 	},
@@ -46,13 +47,13 @@
 	},
 	{
 		"name": "Some1",
-		"layerIndex": 3,
+		"layerIndex": 1,
 		"unit": "units/boss",
 		"position": "180 -510"
 	},
   {
     "name": "End",
-    "layerIndex": 3,
+    "layerIndex": 1,
     "unit": "units/trigger",
     "position": "180 -810"
   }

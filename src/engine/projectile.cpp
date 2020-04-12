@@ -22,6 +22,7 @@ void Projectile::initializeFrom(struct UnitResource* res)
 void Projectile::update(Game* game)
 {
 	Unit::update(game);
+
 	if (!root) return;
 	root->position += velocity * speed * game->deltaTime;
 	speed += speed * acceleration * game->deltaTime;

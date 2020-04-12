@@ -33,7 +33,6 @@ struct SpriteInstanceResource
 	bool visible = true;
 	bool shadow = true;
 	f32 health = 100.0f;
-	f32 maxHealth = 100.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;

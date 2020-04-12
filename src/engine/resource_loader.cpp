@@ -86,7 +86,7 @@ void ResourceLoader::reloadWeapons()
 	{
 		if (res.second->type == ResourceType::Weapon)
 		{
-			std::string fullFilename = root + res.first;
+			std::string fullFilename = Game::instance->dataRoot + res.first;
 
 			if (!loadJson(fullFilename + ".json", json))
 			{
@@ -112,7 +112,7 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -146,7 +146,7 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -178,7 +178,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -210,7 +210,7 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -242,7 +242,7 @@ LevelResource* ResourceLoader::loadLevel(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -274,7 +274,7 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -306,7 +306,7 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 
 	if (filename.empty()) return nullptr;
 
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -330,7 +330,7 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 {
 	checkEmptyFilename("loadAnimation", filename);
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{
@@ -359,7 +359,7 @@ AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 FontResource* ResourceLoader::loadFont(const std::string& filename)
 {
 	checkEmptyFilename("loadFont", filename);
-	std::string fullFilename = root + filename;
+	std::string fullFilename = Game::instance->dataRoot + filename;
 
 	if (resources[filename])
 	{

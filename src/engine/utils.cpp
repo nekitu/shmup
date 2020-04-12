@@ -103,6 +103,13 @@ bool loadJson(const std::string& fullFilename, Json::Value& root)
 	LOG_INFO("Loading \"{0}\"", fullFilename);
 	Json::Reader reader;
 	auto json = readTextFile(fullFilename);
+
+	if (json.empty())
+	{
+		LOG_ERROR("Empty JSON file {0}", fullFilename);
+		return false;
+	}
+
 	bool ok = reader.parse(json, root);
 
 	if (!ok)

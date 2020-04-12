@@ -38,6 +38,10 @@ struct Graphics
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;
+	std::vector<Color> colorStack;
+	std::vector<ColorMode> colorModeStack;
+	std::vector<AlphaMode> alphaModeStack;
+
 
 	Graphics(struct Game* game);
 	void createScreenRenderTarget();
@@ -56,6 +60,12 @@ struct Graphics
 	void setupProjection(f32 width, f32 height);
 	void endFrame();
 	void needToAddVertexCount(u32 count);
+	void pushColor(const Color& newColor);
+	void pushColorMode(ColorMode newColorMode);
+	void pushAlphaMode(AlphaMode newAlphaMode);
+	void popColor();
+	void popColorMode();
+	void popAlphaMode();
 	bool viewportImageFitSize(
 		f32 imageWidth, f32 imageHeight,
 		f32 viewWidth, f32 viewHeight,

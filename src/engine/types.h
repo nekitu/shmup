@@ -79,14 +79,14 @@ typedef std::vector<u32> UnicodeString;
 
 enum class ColorMode
 {
-	Add,
+	Add = 0,
 	Sub,
 	Mul
 };
 
 enum class AlphaMode
 {
-	Mask,
+	Mask = 0,
 	Blend
 };
 

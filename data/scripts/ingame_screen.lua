@@ -5,6 +5,7 @@ function C:init()
   self.fntNum = game:loadFont("fonts/default_numeric")
   self.time = 0
   self.fpsCount = 0
+  --game:fadeScreen(Color(0,0,0,0), Color(1,1,1,1), 4, true, 1)
 end
 
 function C:onUpdate()
@@ -40,6 +41,8 @@ function C:onRender(layerIndex)
     gfx.color = Color.black:getRgba()
     gfx:drawText(self.fnt, Vec2(20, 300), "FPS")
     gfx:drawText(self.fntNum, Vec2(50, 300), tostring(self.fps))
+    gfx:drawText(self.fnt, Vec2(20, 290), "PCN")
+    gfx:drawText(self.fntNum, Vec2(50, 290), tostring(game:getProjectileCount()))
 
     self.fpsCount = self.fpsCount + 1
     self.time = self.time + game.deltaTime

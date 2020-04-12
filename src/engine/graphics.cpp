@@ -159,7 +159,8 @@ bool Graphics::createGpuPrograms()
 
 void Graphics::commitRenderState()
 {
-	//glEnable(GL_BLEND);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 	//glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 	glDisable(GL_CULL_FACE);
@@ -777,6 +778,42 @@ bool Graphics::viewportImageFitSize(
 	}
 
 	return true;
+}
+
+void Graphics::pushColor(const Color& newColor)
+{
+	colorStack.push_back(color);
+	color = newColor.getRgba();
+}
+
+void Graphics::pushColorMode(ColorMode newColorMode)
+{
+	colorModeStack.push_back((ColorMode)colorMode);
+	colorMode = (u32)newColorMode;
+}
+
+void Graphics::pushAlphaMode(AlphaMode newAlphaMode)
+{
+	alphaModeStack.push_back((AlphaMode)alphaMode);
+	alphaMode = (u32)newAlphaMode;
+}
+
+void Graphics::popColor()
+{
+	color = colorStack.back().getRgba();
+	colorStack.pop_back();
+}
+
+void Graphics::popColorMode()
+{
+	colorMode = (u32)colorModeStack.back();
+	colorModeStack.pop_back();
+}
+
+void Graphics::popAlphaMode()
+{
+	alphaMode = (u32)alphaModeStack.back();
+	alphaModeStack.pop_back();
 }
 
 }

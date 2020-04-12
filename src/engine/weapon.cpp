@@ -60,10 +60,10 @@ void Weapon::spawnProjectiles(Game* game)
 
 	if (params.autoAim)
 	{
-		Vec2 pos = attachTo->screenRect.center();
+		Vec2 pos = attachTo->rect.center();
 
-		params.direction.x = game->players[0].unit->root->screenRect.center().x - pos.x;
-		params.direction.y = game->players[0].unit->root->screenRect.center().y - pos.y;
+		params.direction.x = game->players[0].unit->root->rect.center().x - pos.x;
+		params.direction.y = game->players[0].unit->root->rect.center().y - pos.y;
 		params.direction.normalize();
 	}
 
@@ -93,7 +93,7 @@ void Weapon::spawnProjectiles(Game* game)
 		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(ang)), params.offsetRadius * cosf(deg2rad(ang)));
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnit->root && !attachTo->notRelativeToRoot)
+		if (attachTo != parentUnit->root && attachTo->rootChild)
 			pos += parentUnit->root->position;
 
 		newProj->root->position = pos + params.position + params.offset + offRadius;
@@ -106,6 +106,7 @@ void Weapon::spawnProjectiles(Game* game)
 		newProj->acceleration = params.projectileAcceleration;
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
+		newProj->appeared = true;
 		ang += angleBetweenRays;
 	}
 }
@@ -119,7 +120,7 @@ void Weapon::update(struct Game* game)
 	{
 		Vec2 pos = attachTo->position;
 
-		if (attachTo != parentUnit->root && !attachTo->notRelativeToRoot)
+		if (attachTo != parentUnit->root && attachTo->rootChild)
 			pos += parentUnit->root->position;
 
 		pos = Game::instance->worldToScreen(pos, parentUnit->layerIndex);
@@ -170,34 +171,7 @@ void Weapon::render()
 		if ((u32)f2 > 1) f2 = 0;
 		f3 += Game::instance->deltaTime * 20;
 		if ((u32)f3 > 1) f3 = 0;
-
 	}
-
-	Game::instance->graphics->color = 0;
-	Game::instance->graphics->colorMode = (u32)ColorMode::Add;
-	auto sprB = Game::instance->resourceLoader->loadSprite("sprites/black");
-	static f32 r1 = 30;
-	static f32 r2 = 60;
-	static f32 rotAng1 = 0;
-	static f32 angDelta = 0;
-
-	for (f32 a = angDelta; a < angDelta + M_PI * 2.0f; a += deg2rad(30))
-	{
-		Vec2 p;
-
-		p.x = sinf(a) * r1;
-		p.y = cosf(a) * r2;
-		p.rotateAround({ 0.f,0.f }, rotAng1);
-		p.x += 120;
-		p.y += 120;
-
-		Game::instance->graphics->drawQuad({ p.x, p.y, 5, 5 }, sprB->getFrameUvRect(0));
-	}
-
-	r1 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
-	r2 += sinf(rotAng1) * 10.0 * Game::instance->deltaTime * 5.0f;
-	rotAng1 += Game::instance->deltaTime * 0.1;
-	angDelta += Game::instance->deltaTime * 0.2;
 }
 
 }

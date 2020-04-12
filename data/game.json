@@ -1,0 +1,14 @@
+{
+  "windowWidth": 1000,
+  "windowHeight": 800,
+  "windowTitle": "Stellar Eagle",
+  "fullscreen": false,
+  "vSync": false,
+  "levels":
+  [
+    {
+      "title": "Intro",
+      "file": "levels/level0"
+    }
+  ]
+}

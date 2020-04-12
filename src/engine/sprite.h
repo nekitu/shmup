@@ -16,8 +16,7 @@ struct Sprite
 	bool verticalFlip = false;
 	bool horizontalFlip = false;
 	f32 rotation = 0;
-	Vec2 screenPosition;
-	Rect screenRect;
+	Rect rect;
 	Rect uvRect;
 	Rect shadowRect;
 	u32 orderIndex = 0;
@@ -29,7 +28,7 @@ struct Sprite
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
-	bool notRelativeToRoot = false;
+	bool rootChild = true;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;

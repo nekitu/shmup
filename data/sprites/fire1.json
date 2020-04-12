@@ -1,0 +1,15 @@
+{
+    "frameWidth": 8,
+    "frameHeight": 8,
+    "animations":
+    {
+        "default":
+        {
+            "start": 0,
+            "frames": 2,
+            "type": "Normal",
+            "fps": 10,
+            "repeat": 0
+        }
+    }
+}

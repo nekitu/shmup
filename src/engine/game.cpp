@@ -41,7 +41,29 @@ Game::~Game()
 
 std::string Game::makeFullDataPath(const std::string relativeDataFilename)
 {
-	return instance->resourceLoader->root + relativeDataFilename;
+	return instance->dataRoot + relativeDataFilename;
+}
+
+void Game::loadConfig()
+{
+	Json::Value json;
+
+	if (!loadJson(makeFullDataPath(configFilename), json)) return;
+
+	windowWidth = json.get("windowWidth", windowWidth).asInt();
+	windowHeight = json.get("windowHeight", windowHeight).asInt();
+	windowTitle = json.get("windowTitle", windowTitle).asString();
+	fullscreen = json.get("fullscreen", fullscreen).asBool();
+	vSync = json.get("vSync", vSync).asBool();
+
+	auto levelsJson = json.get("levels", Json::ValueType::arrayValue);
+
+	for (u32 i = 0; i < levelsJson.size(); i++)
+	{
+		Json::Value& lvlInfoJson = levelsJson[i];
+		LOG_INFO("Level: {0} in {1}", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
+		levels.push_back(std::make_pair(lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asString()));
+	}
 }
 
 bool Game::initialize()
@@ -124,7 +146,6 @@ bool Game::initialize()
 	resourceLoader = new ResourceLoader();
 	resourceLoader->atlas = graphics->atlas;
 	initializeLua();
-	loadLevels();
 	changeLevel(0);
 	createPlayers();
 
@@ -370,24 +391,40 @@ void Game::mainLoop()
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
 
+		static std::vector<Unit*> allUnitsToRender;
+
+		//allUnitsToRender.clear();
+		//allUnitsToRender.insert(allUnitsToRender.end(), units.begin(), units.end());
+
+		//std::stable_sort(allUnitsToRender.begin(), allUnitsToRender.end(), [](Unit* a, Unit* b) { return a->layerIndex > b->layerIndex; });
+
+		u32 currentLayer = ~0;
+
 		for (auto unit : units)
+		{
+			unit->render(graphics);
+
+			if (currentLayer != unit->layerIndex)
+			{
+				currentLayer = unit->layerIndex;
+				CALL_LUA_FUNC("onRender", currentLayer);
+			}
+		}
+
+		for (auto unit : projectiles)
 		{
 			unit->render(graphics);
 		}
 
-		for (auto proj : projectiles)
-		{
-			proj->render(graphics);
-		}
-
-		CALL_LUA_FUNC("onRender", 0)
-
 		if (screenFx.doingFade)
 		{
-			graphics->color = screenFx.currentFadeColor.getRgba();
-			graphics->colorMode = (u32)screenFx.fadeColorMode;
-			graphics->alphaMode = (u32)screenFx.fadeAlphaMode;
+			graphics->pushColor(screenFx.currentFadeColor);
+			graphics->pushColorMode(ColorMode::Mul);
+			graphics->pushAlphaMode(AlphaMode::Blend);
 			graphics->drawQuad({ 0, 0, graphics->videoWidth, graphics->videoHeight }, graphics->atlas->whiteImage->uvRect);
+			graphics->popColor();
+			graphics->popColorMode();
+			graphics->popAlphaMode();
 		}
 
 		graphics->endFrame();
@@ -572,9 +609,9 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 
 			if (screenMode == ScreenMode::Vertical)
 			{
-				if (sprite2->screenRect.y > pos.y) continue;
+				if (sprite2->rect.y > pos.y) continue;
 
-				if (sprite2->screenRect.bottom() > pos.y && sprite2->screenRect.y <= pos.y)
+				if (sprite2->rect.bottom() > pos.y && sprite2->rect.y <= pos.y)
 				{
 					closest.valid = true;
 					closest.distance = 0;
@@ -587,9 +624,9 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 			}
 			else if (screenMode == ScreenMode::Horizontal)
 			{
-				if (sprite2->screenRect.right() < pos.x) continue;
+				if (sprite2->rect.right() < pos.x) continue;
 
-				if (sprite2->screenRect.x < pos.x && sprite2->screenRect.right() >= pos.x)
+				if (sprite2->rect.x < pos.x && sprite2->rect.right() >= pos.x)
 				{
 					closest.valid = true;
 					closest.distance = 0;
@@ -601,28 +638,28 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 				}
 			}
 
-			if (sprite2->screenRect.overlaps(rc))
+			if (sprite2->rect.overlaps(rc))
 			if (screenMode == ScreenMode::Vertical)
 			{
 				Vec2 col;
 				col.x = pos.x;
-				col.y = sprite2->screenRect.bottom();
+				col.y = sprite2->rect.bottom();
 
 				// for small sprites
-				bool isInsideBeam = rc.contains(sprite2->screenRect);
+				bool isInsideBeam = rc.contains(sprite2->rect);
 				bool isTouchingHalfBeam = false;
 				bool pixelCollided = false;
 
-				f32 relativeX = round(col.x - sprite2->screenRect.x);
+				f32 relativeX = round(col.x - sprite2->rect.x);
 
 				// if the middle of the beam is outside the sprite rect
 				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeX < 0 || relativeX >= sprite2->screenRect.width)
+				if (relativeX < 0 || relativeX >= sprite2->rect.width)
 				{
-					if (fabs(relativeX) <= beamWidth / 2 || (sprite2->screenRect.width - relativeX) <= beamWidth / 2)
+					if (fabs(relativeX) <= beamWidth / 2 || (sprite2->rect.width - relativeX) <= beamWidth / 2)
 					{
 						isTouchingHalfBeam = true;
-						col.y = sprite2->screenRect.center().y;
+						col.y = sprite2->rect.center().y;
 					}
 
 					continue;
@@ -640,7 +677,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.y -= sprite2->screenRect.height - y;
+							col.y -= sprite2->rect.height - y;
 							break;
 						}
 					}
@@ -663,24 +700,24 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 			else if (screenMode == ScreenMode::Horizontal)
 			{
 				Vec2 col;
-				col.x = sprite2->screenRect.x;
+				col.x = sprite2->rect.x;
 				col.y = pos.y;
 
 				// for small sprites
-				bool isInsideBeam = rc.contains(sprite2->screenRect);
+				bool isInsideBeam = rc.contains(sprite2->rect);
 				bool isTouchingHalfBeam = false;
 				bool pixelCollided = false;
 
-				f32 relativeY = round(col.y - sprite2->screenRect.y);
+				f32 relativeY = round(col.y - sprite2->rect.y);
 
 				// if the middle of the beam is outside the sprite rect
 				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeY < 0 || relativeY >= sprite2->screenRect.height)
+				if (relativeY < 0 || relativeY >= sprite2->rect.height)
 				{
-					if (fabs(relativeY) <= beamWidth / 2 || (sprite2->screenRect.height - relativeY) <= beamWidth / 2)
+					if (fabs(relativeY) <= beamWidth / 2 || (sprite2->rect.height - relativeY) <= beamWidth / 2)
 					{
 						isTouchingHalfBeam = true;
-						col.x = sprite2->screenRect.center().x;
+						col.x = sprite2->rect.center().x;
 					}
 
 					continue;
@@ -698,7 +735,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.x -= sprite2->screenRect.width - x;
+							col.x -= sprite2->rect.width - x;
 							break;
 						}
 					}
@@ -827,15 +864,15 @@ void Game::shakeCamera(const Vec2& force, f32 duration, u32 count)
 	screenFx.shakeDuration = duration;
 }
 
-void Game::fadeScreen(const Color& color, ColorMode colorMode, AlphaMode alphaMode, f32 duration, bool revertBackAfter)
+void Game::fadeScreen(const Color& color1, const Color& color2, f32 duration, bool revertBackAfter, u32 layer)
 {
 	screenFx.doingFade = true;
 	screenFx.fadeTimer = 0;
+	screenFx.fadeLayer = layer;
 	screenFx.fadeTimerDir = 1;
-	screenFx.fadeColor = color;
+	screenFx.fadeColorFrom = color1;
+	screenFx.fadeColorTo = color2;
 	screenFx.fadeDuration = duration;
-	screenFx.fadeColorMode = colorMode;
-	screenFx.fadeAlphaMode = alphaMode;
 	screenFx.fadeRevertBackAfter = revertBackAfter;
 }
 
@@ -879,33 +916,18 @@ void Game::updateScreenFx()
 			{
 				screenFx.doingFade = false;
 				screenFx.fadeTimer = 1;
-				screenFx.currentFadeColor = screenFx.fadeColor;
+				screenFx.currentFadeColor = screenFx.fadeColorFrom;
 				graphics->alphaMode = (u32)AlphaMode::Mask;
 			}
 		}
 		else if (screenFx.fadeTimerDir < 0 && screenFx.fadeTimer < 0)
 		{
 			screenFx.doingFade = false;
+			graphics->alphaMode = (u32)AlphaMode::Mask;
 		}
 		else
 		{
-			screenFx.currentFadeColor = screenFx.fadeColor;
-
-			if (screenFx.fadeColorMode == ColorMode::Add
-				|| screenFx.fadeColorMode == ColorMode::Sub)
-			{
-				screenFx.currentFadeColor.r *= screenFx.fadeTimer;
-				screenFx.currentFadeColor.g *= screenFx.fadeTimer;
-				screenFx.currentFadeColor.b *= screenFx.fadeTimer;
-				screenFx.currentFadeColor.a = 1;
-			}
-			else if (screenFx.fadeColorMode == ColorMode::Mul)
-			{
-				screenFx.currentFadeColor.r = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.r - 1.0f);
-				screenFx.currentFadeColor.g = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.g - 1.0f);
-				screenFx.currentFadeColor.b = 1.0 + screenFx.fadeTimer * (screenFx.currentFadeColor.b - 1.0f);
-				screenFx.currentFadeColor.a = 1;
-			}
+			screenFx.currentFadeColor = screenFx.fadeColorFrom + (screenFx.fadeColorTo - screenFx.fadeColorFrom) * screenFx.fadeTimer;
 		}
 	}
 }
@@ -945,25 +967,6 @@ bool Game::isPlayerFire3(u32 playerIndex)
 	return controls[(u32)(playerIndex ? InputControl::Player2_Fire3 : InputControl::Player1_Fire3)];
 }
 
-bool Game::loadLevels()
-{
-	Json::Value listJson;
-
-	if (!loadJson(makeFullDataPath("levels/list.json"), listJson))
-	{
-		return false;
-	}
-
-	for (u32 i = 0; i < listJson.size(); i++)
-	{
-		Json::Value& lvlInfoJson = listJson[i];
-		LOG_INFO("Level: {0} in {1}", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
-		levels.push_back(std::make_pair(lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asString()));
-	}
-
-	return true;
-}
-
 void Game::deleteNonPersistentUnits()
 {
 	auto iter = units.begin();
@@ -988,6 +991,7 @@ bool Game::changeLevel(i32 index)
 	projectilePool.clear();
 	projectilePool.resize(maxProjectileCount);
 	projectiles.clear();
+	layers.clear();
 
 	if (index == -1)
 	{

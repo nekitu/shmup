@@ -93,7 +93,6 @@ bool UnitResource::load(Json::Value& json)
 		spr->shadow = sprJson.get("shadow", spr->shadow).asBool();
 		spr->visible = sprJson.get("visible", true).asBool();
 		spr->health = sprJson.get("health", 100.0f).asFloat();
-		spr->maxHealth = sprJson.get("maxHealth", 100.0f).asFloat();
 		spr->color.parse(sprJson.get("color", spr->color.toString()).asString());
 		auto colMode = json.get("colorMode", "Add").asString();
 

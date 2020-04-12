@@ -40,7 +40,7 @@ ScriptClassInstanceBase::~ScriptClassInstanceBase()
 
 bool ScriptResource::load(Json::Value& json)
 {
-	code = readTextFile(loader->root + fileName + ".lua");
+	code = readTextFile(Game::makeFullDataPath(fileName + ".lua"));
 	auto res = luaL_loadstring(L, code.c_str());
 
 	// if we already have some class instances, recreate them with the new script
@@ -105,6 +105,7 @@ bool initializeLua()
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
 		.addVariable("cameraSpeed", &Game::cameraSpeed)
+		.addFunction("getProjectileCount", [](Game* game) { return Game::instance->projectiles.size(); })
 		.addVariable("hiscore", &Game::hiscore)
 		.addFunction("player1", [](Game* g) { return g->players[0].unit; })
 		.addFunction("player2", [](Game* g) { return g->players[1].unit; })
@@ -336,11 +337,10 @@ bool initializeLua()
 		.addVariable("scale", &Sprite::scale)
 		.addVariable("verticalFlip", &Sprite::verticalFlip)
 		.addVariable("horizontalFlip", &Sprite::horizontalFlip)
-		.addVariableRef("screenPosition", &Sprite::screenPosition)
 		.addVariableRef("spriteResource", &Sprite::spriteResource)
 		.addVariable("frame", &Sprite::animationFrame)
-		.addVariable("screenRect", &Sprite::screenRect)
-		.addVariable("notRelativeToRoot", &Sprite::notRelativeToRoot)
+		.addVariable("rect", &Sprite::rect)
+		.addVariable("rootChild", &Sprite::rootChild)
 		.addFunction("setFrameAnimation", &Sprite::setFrameAnimation)
 		.addFunction("setFrameAnimationFromAngle", &Sprite::setFrameAnimationFromAngle)
 		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)

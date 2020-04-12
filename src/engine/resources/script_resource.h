@@ -2,6 +2,7 @@
 #include "types.h"
 #include "resource.h"
 #include "lua_scripting.h"
+#include "utils.h"
 
 namespace engine
 {
@@ -17,7 +18,9 @@ namespace engine
 				}\
 				catch (LuaIntf::LuaException e)\
 				{\
-					LOG_ERROR("{0}: {1}", scriptClass->script->fileName, e.what());\
+					std::string str = e.what();\
+					replaceAll(str, "\r", " ");\
+					LOG_ERROR("Lua Error in {0}: {1}", scriptClass->script->fileName, str);\
 				}\
 			}\
 		}
@@ -83,7 +86,9 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 			}
 			catch (LuaIntf::LuaException e)
 			{
-				LOG_ERROR("Lua Error in {0}: {1}", script->fileName, e.what());
+				std::string str = e.what();
+				replaceAll(str, "\r", " ");
+				LOG_ERROR("Lua Error in {0}: {1}", script->fileName, str);
 			}
 		}
 		else

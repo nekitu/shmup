@@ -33,6 +33,7 @@ struct WeaponResource : Resource
 		f32 offsetRadius = 0;
 		f32 ammo = 0;
 		bool autoAim = false;
+		i32 spawnLayerOffset = 0; /// on which layer index offset should the projectile units spawn (default, below spawner unit)
 		Type type = Type::Projectile;
 	};
 

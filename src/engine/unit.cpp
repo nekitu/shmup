@@ -263,71 +263,71 @@ namespace engine
 		stageIndex = 0;
 	}
 
-	void Unit::update(Game* game)
+void Unit::update(Game* game)
+{
+	computeHealth();
+
+	for (auto stage : unitResource->stages)
 	{
-		computeHealth();
-
-		for (auto stage : unitResource->stages)
+		if (health <= stage->triggerOnHealth && stage != currentStage)
 		{
-			if (health <= stage->triggerOnHealth && stage != currentStage)
-			{
-				//TODO: maybe just use a currentStageIndex
-				auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
+			//TODO: maybe just use a currentStageIndex
+			auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
 
-				if (iter != triggeredStages.end()) continue;
+			if (iter != triggeredStages.end()) continue;
 
-				triggeredStages.push_back(stage);
-				CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
-				currentStage = stage;
-				break;
-			}
+			triggeredStages.push_back(stage);
+			CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
+			currentStage = stage;
+			break;
 		}
+	}
 
-		if (spriteAnimationMap)
+	if (spriteAnimationMap)
+	{
+		for (auto iter : *spriteAnimationMap)
 		{
-			for (auto iter : *spriteAnimationMap)
-			{
-				auto spr = iter.first;
-				auto sprAnim = iter.second;
+			auto spr = iter.first;
+			auto sprAnim = iter.second;
 
-				sprAnim->update(game->deltaTime);
-				sprAnim->animateSprite(spr);
-			}
+			sprAnim->update(game->deltaTime);
+			sprAnim->animateSprite(spr);
 		}
+	}
 
-		for (auto& ctrl : controllers)
+	for (auto& ctrl : controllers)
+	{
+		CALL_LUA_FUNC2(ctrl.second, "onUpdate");
+	}
+
+	for (auto& wp : weapons)
+	{
+		wp.second->update(game);
+	}
+
+	for (auto spr : sprites)
+	{
+		spr->update(game);
+	}
+
+	computeBoundingBox();
+
+	if (appeared && unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
+	{
+		if (game->screenMode == ScreenMode::Vertical)
 		{
-			CALL_LUA_FUNC2(ctrl.second, "onUpdate");
+			if (boundingBox.y > game->graphics->videoHeight)
+				deleteMeNow = true;
 		}
-
-		for (auto& wp : weapons)
+		else if (game->screenMode == ScreenMode::Horizontal)
 		{
-			wp.second->update(game);
+			if (boundingBox.right() < 0)
+				deleteMeNow = true;
 		}
+	}
 
-		for (auto spr : sprites)
-		{
-			spr->update(game);
-		}
-
-		computeBoundingBox();
-
-		if (appeared && unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
-		{
-			if (game->screenMode == ScreenMode::Vertical)
-			{
-				if (boundingBox.y > game->graphics->videoHeight)
-					deleteMeNow = true;
-			}
-			else if (game->screenMode == ScreenMode::Horizontal)
-			{
-				if (boundingBox.right() < 0)
-					deleteMeNow = true;
-			}
-		}
-
-		// delete unit if appeared on screen and goes out of screen
-		if ((appeared || age > maxOutOfScreenAge) && unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
+	// delete unit if appeared on screen and goes out of screen
+	if (appeared && unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
 	{
 		if (boundingBox.x > game->graphics->videoWidth
 			|| boundingBox.y > game->graphics->videoHeight
@@ -339,8 +339,9 @@ namespace engine
 	}
 
 	age += game->deltaTime;
+
 	//TODO: call as fixed step/fps ?
-	//maybe also have a onFixedUpdate like in Unity
+	// maybe also have a onFixedUpdate like in Unity
 	CALL_LUA_FUNC("onUpdate");
 }
 
@@ -408,12 +409,12 @@ void Unit::computeBoundingBox()
 
 		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
 
-		root->screenRect = boundingBox;
+		root->rect = boundingBox;
 
-		root->screenRect.x = roundf(root->screenRect.x);
-		root->screenRect.y = roundf(root->screenRect.y);
-		root->screenRect.width = roundf(root->screenRect.width);
-		root->screenRect.height = roundf(root->screenRect.height);
+		root->rect.x = roundf(root->rect.x);
+		root->rect.y = roundf(root->rect.y);
+		root->rect.width = roundf(root->rect.width);
+		root->rect.height = roundf(root->rect.height);
 	}
 
 	// compute bbox for the rest of the sprites
@@ -424,7 +425,7 @@ void Unit::computeBoundingBox()
 		Vec2 pos;
 
 		// if relative to root sprite
-		if (!spr->notRelativeToRoot)
+		if (spr->rootChild)
 		{
 			pos = root->position;
 		}
@@ -466,11 +467,11 @@ void Unit::computeBoundingBox()
 			v2.rotateAround(center, angle);
 			v3.rotateAround(center, angle);
 
-			spr->screenRect = Rect(center.x, center.y, 0, 0);
-			spr->screenRect.add(v0);
-			spr->screenRect.add(v1);
-			spr->screenRect.add(v2);
-			spr->screenRect.add(v3);
+			spr->rect = Rect(center.x, center.y, 0, 0);
+			spr->rect.add(v0);
+			spr->rect.add(v1);
+			spr->rect.add(v2);
+			spr->rect.add(v3);
 
 			boundingBox.add(v0);
 			boundingBox.add(v1);
@@ -480,7 +481,7 @@ void Unit::computeBoundingBox()
 		else
 		{
 			boundingBox.add(spriteRc);
-			spr->screenRect = spriteRc;
+			spr->rect = spriteRc;
 		}
 	}
 
@@ -511,7 +512,7 @@ void Unit::render(Graphics* gfx)
 
 		Vec2 pos;
 
-		if (!spr->notRelativeToRoot)
+		if (spr->rootChild)
 		{
 			pos = spr != root ? root->position : Vec2();
 		}
@@ -539,7 +540,7 @@ void Unit::render(Graphics* gfx)
 			uvRc.width *= -1.0f;
 		}
 
-		auto shadowRc = spr->screenRect;
+		auto shadowRc = spr->rect;
 		shadowRc += unitResource->shadowOffset;
 		shadowRc.width *= unitResource->shadowScale;
 		shadowRc.height *= unitResource->shadowScale;
@@ -593,22 +594,22 @@ void Unit::render(Graphics* gfx)
 		{
 			if (spr->spriteResource->image->rotated)
 			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(spr->screenRect, spr->uvRect, spr->rotation);
+				gfx->drawRotatedQuadWithTexCoordRotated90(spr->rect, spr->uvRect, spr->rotation);
 			}
 			else
 			{
-				gfx->drawRotatedQuad(spr->screenRect, spr->uvRect, spr->rotation);
+				gfx->drawRotatedQuad(spr->rect, spr->uvRect, spr->rotation);
 			}
 		}
 		else
 		{
 			if (spr->spriteResource->image->rotated)
 			{
-				gfx->drawQuadWithTexCoordRotated90(spr->screenRect, spr->uvRect);
+				gfx->drawQuadWithTexCoordRotated90(spr->rect, spr->uvRect);
 			}
 			else
 			{
-				gfx->drawQuad(spr->screenRect, spr->uvRect);
+				gfx->drawQuad(spr->rect, spr->uvRect);
 			}
 		}
 	}
