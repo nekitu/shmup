@@ -31,6 +31,8 @@ private:
 	f32 fireTimer = 0.0f;
 	f32 fireInterval = 0;
 	f32 fireAngleOffset = 0.0f;
+	f32 activeTimer = 0;
+	bool paused = false;
 };
 
 }

@@ -20,6 +20,8 @@ struct WeaponResource : Resource
 		u32 fireRays = 1;
 		f32 fireRate = 1;
 		f32 fireRaysAngle = 20;
+		f32 activeTime = 0;
+		f32 pauseDelay = 0;
 		Vec2 direction = Vec2(0, 1);
 		f32 fireRaysRotationSpeed = 0;
 		f32 initialProjectileSpeed = 1;

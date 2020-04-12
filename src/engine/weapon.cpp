@@ -68,20 +68,14 @@ void Weapon::spawnProjectiles(Game* game)
 	}
 
 	angle = dir2deg(params.direction);
-	f32 angleBetweenRays = params.fireRays > 1 ? params.fireRaysAngle / (f32)(params.fireRays - 1) : 0;
+	f32 angleBetweenRays = params.fireRays > 1 ? params.fireRaysAngle / (f32)(params.fireRays) : 0;
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
 
 	if (params.fireRays > 1)
 		angle = angle1;
 
-	fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
-
-	if (fireAngleOffset > 360) fireAngleOffset = 0;
-
-	angle += fireAngleOffset;
-
-	f32 ang = angle;
+	f32 ang = angle + fireAngleOffset;
 
 	for (u32 i = 0; i < params.fireRays; i++)
 	{
@@ -90,16 +84,18 @@ void Weapon::spawnProjectiles(Game* game)
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weaponResource = this;
 
-		Vec2 offRadius = Vec2(params.offsetRadius * sinf(deg2rad(ang)), params.offsetRadius * cosf(deg2rad(ang)));
+		auto rads = deg2rad(ang);
+		auto sinrads = sinf(rads);
+		auto cosrads = cosf(rads);
+		Vec2 offRadius = Vec2(params.offsetRadius * sinrads, params.offsetRadius * cosrads);
 		Vec2 pos = attachTo->position;
 
 		if (attachTo != parentUnit->root && attachTo->relativeToRoot)
 			pos += parentUnit->root->position;
 
 		newProj->root->position = pos + params.position + params.offset + offRadius;
-		auto rads = deg2rad(ang);
-		newProj->velocity.x = sinf(rads);
-		newProj->velocity.y = cosf(rads);
+		newProj->velocity.x = sinrads;
+		newProj->velocity.y = cosrads;
 		newProj->velocity.normalize();
 		newProj->layerIndex = parentUnit->layerIndex;
 		newProj->speed = params.initialProjectileSpeed;
@@ -134,8 +130,32 @@ void Weapon::update(struct Game* game)
 		return;
 	}
 
-    fireInterval = 1.0f / params.fireRate;
+	if (params.activeTime > 0 && params.pauseDelay > 0)
+	{
+		activeTimer += game->deltaTime;
+
+		if (paused)
+		{
+			if (activeTimer <= params.pauseDelay)
+			{
+				return;
+			}
+
+			paused = false;
+			activeTimer = 0;
+		}
+		else if (activeTimer > params.activeTime)
+		{
+			paused = true;
+			activeTimer = 0;
+		}
+	}
+
+	fireInterval = 1.0f / params.fireRate;
     fireTimer += game->deltaTime;
+
+	fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
+	if (fireAngleOffset > 360) fireAngleOffset = 0;
 
     if (fireTimer >= fireInterval)
     {

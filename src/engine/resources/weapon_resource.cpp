@@ -22,6 +22,8 @@ bool WeaponResource::load(Json::Value& json)
 	params.position.parse(json.get("position", "0 0").asString());
 	params.offsetRadius = json.get("offsetRadius", 0.0f).asFloat();
 	params.spawnLayerOffset = json.get("spawnLayerOffset", -1).asInt();
+	params.activeTime = json.get("activeTime", 0.0f).asFloat();
+	params.pauseDelay = json.get("pauseDelay", 0.0f).asFloat();
 	auto typeStr = json.get("type", "Projectile").asString();
 
 	if (typeStr == "Projectile") params.type = Type::Projectile;
