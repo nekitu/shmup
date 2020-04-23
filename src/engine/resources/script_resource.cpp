@@ -166,6 +166,7 @@ bool initializeLua()
 	LUA.beginClass<Weapon>("Weapon")
 		.addVariable("active", &Weapon::active)
 		.addVariable("angle", &Weapon::angle)
+		.addVariable("fireAngleOffset", &Weapon::fireAngleOffset)
 		.addVariableRef("params", &Weapon::params)
 		.addFunction("fire", &Weapon::fire)
 		.endClass();

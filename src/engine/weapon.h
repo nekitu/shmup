@@ -25,7 +25,6 @@ struct Weapon
 	void render();
 
 	f32 angle = 0;
-private:
 	BeamCollisionInfo dbgBeamCol;
 	Vec2 dbgBeamStartPos;
 	f32 fireTimer = 0.0f;

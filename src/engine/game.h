@@ -93,6 +93,7 @@ struct Game
 	std::string dataRoot = "../data/";
 	bool exitGame = false;
 	bool editing = false;
+	bool pauseOnAppDeactivate = true;
 	SDL_Window* window = nullptr;
 	SDL_GLContext glContext = 0;
 	struct Graphics* graphics = nullptr;
@@ -126,8 +127,8 @@ struct Game
 	f32 cameraSpeedAnimateTime = 0;
 	f32 oldCameraSpeed = 0, newCameraSpeed = 0;
 	ScreenFx screenFx;
-
-	u32 lastProjectileIndex = 0;
+	f32 offscreenBoundaryScale = 1.5f;
+	Rect offscreenBoundary;
 
 	Game();
 	~Game();

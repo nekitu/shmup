@@ -6,6 +6,11 @@ end
 
 function C:onFire()
 end
+local s = 0
+function C:onUpdate()
+  --self.weapon.fireAngleOffset = 0-- math.sin(s) * 40
+  --s = s + 1*game.deltaTime
+end
 
 return function(obj)
   local o = {}

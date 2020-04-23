@@ -14,6 +14,7 @@ namespace engine
 enum class AutoDeleteType
 {
 	None,
+	OffscreenBoundary, // delete when the unit goes out of the offscreen boundary
 	OutOfScreen, // delete when out of screen, any side, used for projectiles
 	EndOfScreen // delete when exits screen, depending on screen mode vertical/horizontal
 };

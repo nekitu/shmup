@@ -62,12 +62,12 @@ void Weapon::spawnProjectiles(Game* game)
 	{
 		Vec2 pos = attachTo->rect.center();
 
-		params.direction.x = game->players[0].unit->root->rect.center().x - pos.x;
-		params.direction.y = game->players[0].unit->root->rect.center().y - pos.y;
+		params.direction = game->players[0].unit->root->rect.center() - pos;
 		params.direction.normalize();
 	}
 
 	angle = dir2deg(params.direction);
+
 	f32 angleBetweenRays = params.fireRays > 1 ? params.fireRaysAngle / (f32)(params.fireRays) : 0;
 	f32 angle1 = angle - params.fireRaysAngle / 2.0f;
 	f32 angle2 = angle + params.fireRaysAngle / 2.0f;
@@ -83,7 +83,6 @@ void Weapon::spawnProjectiles(Game* game)
 
 		newProj->initializeFrom(weaponResource->projectileUnit);
 		newProj->weaponResource = this;
-
 		auto rads = deg2rad(ang);
 		auto sinrads = sinf(rads);
 		auto cosrads = cosf(rads);
@@ -103,6 +102,8 @@ void Weapon::spawnProjectiles(Game* game)
 		newProj->minSpeed = params.minProjectileSpeed;
 		newProj->maxSpeed = params.maxProjectileSpeed;
 		newProj->appeared = true;
+		auto rotAngle = dir2deg(newProj->velocity);
+		newProj->root->setFrameAnimationFromAngle(rotAngle);
 		ang += angleBetweenRays;
 	}
 }
@@ -155,7 +156,6 @@ void Weapon::update(struct Game* game)
     fireTimer += game->deltaTime;
 
 	fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
-	if (fireAngleOffset > 360) fireAngleOffset = 0;
 
     if (fireTimer >= fireInterval)
     {

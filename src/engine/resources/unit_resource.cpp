@@ -46,6 +46,7 @@ bool UnitResource::load(Json::Value& json)
 	if (autoDeleteTypeStr == "None") autoDeleteType = AutoDeleteType::None;
 	if (autoDeleteTypeStr == "OutOfScreen") autoDeleteType = AutoDeleteType::OutOfScreen;
 	if (autoDeleteTypeStr == "EndOfScreen") autoDeleteType = AutoDeleteType::EndOfScreen;
+	if (autoDeleteTypeStr == "OffscreenBoundary") autoDeleteType = AutoDeleteType::OffscreenBoundary;
 
 	// load controllers
 	auto controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));

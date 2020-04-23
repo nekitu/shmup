@@ -312,33 +312,41 @@ void Unit::update(Game* game)
 
 	computeBoundingBox();
 
-	if (appeared && unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
+	if (appeared)
 	{
-		if (game->screenMode == ScreenMode::Vertical)
+		if (unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
 		{
-			if (boundingBox.y > game->graphics->videoHeight)
+			if (game->screenMode == ScreenMode::Vertical)
+			{
+				if (boundingBox.y > game->graphics->videoHeight)
+					deleteMeNow = true;
+			}
+			else if (game->screenMode == ScreenMode::Horizontal)
+			{
+				if (boundingBox.right() < 0)
+					deleteMeNow = true;
+			}
+		}
+		else if (unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
+		{
+			if (boundingBox.x > game->graphics->videoWidth
+				|| boundingBox.y > game->graphics->videoHeight
+				|| boundingBox.right() < 0
+				|| boundingBox.bottom() < 0)
+			{
 				deleteMeNow = true;
+			}
 		}
-		else if (game->screenMode == ScreenMode::Horizontal)
+		else if (unitResource->autoDeleteType == AutoDeleteType::OffscreenBoundary)
 		{
-			if (boundingBox.right() < 0)
+			if (!game->offscreenBoundary.contains(boundingBox))
+			{
 				deleteMeNow = true;
+			}
 		}
-	}
 
-	// delete unit if appeared on screen and goes out of screen
-	if (appeared && unitResource->autoDeleteType == AutoDeleteType::OutOfScreen)
-	{
-		if (boundingBox.x > game->graphics->videoWidth
-			|| boundingBox.y > game->graphics->videoHeight
-			|| boundingBox.right() < 0
-			|| boundingBox.bottom() < 0)
-		{
-			deleteMeNow = true;
-		}
+		age += game->deltaTime;
 	}
-
-	age += game->deltaTime;
 
 	//TODO: call as fixed step/fps ?
 	// maybe also have a onFixedUpdate like in Unity

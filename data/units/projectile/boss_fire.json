@@ -1,13 +1,13 @@
 {
     "name": "FireFromBoss",
     "type": "EnemyProjectile",
-    "autoDeleteType": "OutOfScreen",
+    "autoDeleteType": "OffscreenBoundary",
     "sprites":
     [
         {
             "name": "body",
             "scale": 1,
-            "sprite": "sprites/fire2"
+            "sprite": "sprites/rocket"
         }
     ]
 }

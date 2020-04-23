@@ -55,6 +55,7 @@ void Game::loadConfig()
 	windowTitle = json.get("windowTitle", windowTitle).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
+	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
 
 	auto levelsJson = json.get("levels", Json::ValueType::arrayValue);
 
@@ -145,6 +146,10 @@ bool Game::initialize()
 	graphics = new Graphics(this);
 	resourceLoader = new ResourceLoader();
 	resourceLoader->atlas = graphics->atlas;
+
+	offscreenBoundary = Rect(0, 0, graphics->videoWidth, graphics->videoHeight);
+	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
+
 	initializeLua();
 	changeLevel(0);
 	createPlayers();
@@ -171,8 +176,8 @@ bool Game::initialize()
 	//TODO: remove
 	music = new Music();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
-	music->play();
-	Mix_VolumeMusic(1);
+	//music->play();
+	//Mix_VolumeMusic(1);
 
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
 	scriptClass = currentMainScript->createClassInstance(this);
@@ -253,6 +258,8 @@ void Game::handleInputEvents()
 				break;
 			case SDL_WINDOWEVENT_FOCUS_GAINED:
 			{
+				if (pauseOnAppDeactivate)
+					pauseGame = false;
 				break;
 			}
 			case SDL_WINDOWEVENT_ENTER:
@@ -260,7 +267,11 @@ void Game::handleInputEvents()
 				break;
 			}
 			case SDL_WINDOWEVENT_FOCUS_LOST:
+			{
+				if (pauseOnAppDeactivate)
+					pauseGame = true;
 				break;
+			}
 			case SDL_WINDOWEVENT_CLOSE:
 			{
 				exitGame = true;

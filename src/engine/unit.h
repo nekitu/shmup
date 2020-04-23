@@ -15,7 +15,6 @@ struct SpriteCollision
 
 struct Unit
 {
-	// members related to unit resource instantiation
 	typedef std::map<struct Sprite*, struct Animation*> SpriteAnimationMap;
 
 	std::vector<struct Sprite*> sprites;
@@ -23,7 +22,6 @@ struct Unit
 	std::map<std::string /*weapon name*/, struct Weapon*> weapons;
 	SpriteAnimationMap* spriteAnimationMap = nullptr;
 
-	// unit general members
 	static u64 lastId;
 	u64 id = 0;
 	u32 layerIndex = 0;

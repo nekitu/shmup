@@ -1,0 +1,12 @@
+{
+  "frameWidth": 18,
+  "frameHeight": 18,
+  "rotationAnims":
+  {
+    "frameCount":1,
+    "count": 73,
+    "type": "Normal",
+    "fps": 1,
+    "repeat": 0
+  }
+}

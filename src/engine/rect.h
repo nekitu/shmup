@@ -173,7 +173,7 @@ struct Rect
 		}
 	}
 
-    inline Rect expand(f32 amount)
+    inline Rect getExpanded(f32 amount)
     {
         return {
             x - amount,
@@ -183,9 +183,21 @@ struct Rect
         };
     }
 
-    inline Rect contract(f32 amount)
+	inline Rect getCenterScaled(f32 amount)
+	{
+		auto c = center();
+
+		return {
+			c.x - width * amount / 2.0f,
+			c.y - height * amount / 2.0f,
+			width * amount,
+			height * amount
+		};
+	}
+
+    inline Rect getContracted(f32 amount)
     {
-        return expand(-amount);
+        return getExpanded(-amount);
     }
 
 	inline void add(const Rect& rc)
