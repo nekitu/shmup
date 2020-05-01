@@ -1,0 +1,31 @@
+{
+  "name": "Intro",
+  "type": "Enemy",
+  "speed": 0.0,
+  "controllers":
+  [],
+  "autoDeleteType": "None",
+  "script": "scripts/intro_story",
+  "root": "body",
+  "animations":
+  {
+    "intro1":
+    {
+      "body": "anims/intro_story"
+    }
+  },
+  "sprites":
+  [
+    {
+      "name": "body",
+      "health": 6,
+      "sprite": "sprites/intro_bg",
+      "position": "0 0",
+      "scale": 1.0,
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1"
+    }
+  ]
+}

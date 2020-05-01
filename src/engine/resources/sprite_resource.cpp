@@ -155,6 +155,12 @@ bool SpriteResource::load(Json::Value& json)
 
 	image = loadImage(Game::makeFullDataPath(imageFilename));
 
+	if (image)
+	{
+		if (!frameWidth) frameWidth = image->width;
+		if (!frameHeight) frameHeight = image->height;
+	}
+
 	return true;
 }
 

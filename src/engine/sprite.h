@@ -11,6 +11,7 @@ struct Sprite
 {
 	std::string name;
 	struct SpriteResource* spriteResource = nullptr;
+	struct Unit* unit = nullptr;
 	Vec2 position;
 	f32 scale = 1.0f;
 	bool verticalFlip = false;

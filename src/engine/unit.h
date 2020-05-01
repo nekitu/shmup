@@ -60,6 +60,7 @@ struct Unit
 	struct Sprite* findSprite(const std::string& sname);
 	bool checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>& collisions);
 	static void updateShadowToggle();
+	void onAnimationEvent(struct Sprite* sprite, const std::string& eventName);
 
 private:
 	static bool shadowToggle;

@@ -46,7 +46,7 @@ struct AnimationTrack
 
 	std::vector<AnimationKey> keys;
 
-	f32 animate(f32 atTime, struct Animation* anim);
+	f32 animate(f32 atTime, struct Animation* anim, struct Sprite* sprite);
 };
 
 enum class AnimationType
@@ -66,6 +66,7 @@ struct AnimationResource : Resource
 
 	virtual bool load(Json::Value& json) override;
 	void unload() override;
+	bool hasTrack(AnimationTrack::Type trackType);
 };
 
 }

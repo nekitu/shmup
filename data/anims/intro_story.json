@@ -1,0 +1,17 @@
+{
+    "type": "PingPong",
+    "tracks":
+    {
+        "PositionX":
+        [
+            { "value": 0, "time": 0, "triggerEvent": true, "eventName": "-------------------begin" },
+            { "value": 15, "time": 1, "triggerEvent": true, "eventName": "------middle" },
+            { "value": 30, "time": 2, "triggerEvent": true, "eventName": "end" }
+        ],
+        "ColorR":
+        [
+            { "value": 0, "time": 0 },
+            { "value": 1, "time": 2 }
+        ]
+    }
+}

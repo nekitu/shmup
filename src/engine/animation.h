@@ -14,17 +14,18 @@ struct Animation
 	u32 currentRepeatCount = 0;
 	f32 pingPongDirection = 1.0f;
 	bool active = true;
+	bool timeWasHigherThanTotalTime = false;
+	bool timeWasLowerThanZero = false;
+	struct Unit* unit = nullptr;
 	std::vector<AnimationKey*> triggeredKeyEvents;
 	std::unordered_map<AnimationTrack*, u32> previousTrackKeys;
-	struct ScriptClassInstanceBase* scriptClass = nullptr;
-	std::string keyEventScriptCallback;
 
 	void copyFrom(Animation* other);
 	void initializeFrom(AnimationResource* res);
-	void reset();
-	void triggerKeyEvent(AnimationKey* key);
+	void rewind();
+	virtual void triggerKeyEvent(AnimationKey* key, struct Sprite* sprite);
 	void update(f32 deltaTime);
-	f32 animate(AnimationTrack::Type trackType);
+	f32 animate(AnimationTrack::Type trackType, f32 defaultVal, struct Sprite* sprite);
 	void animateSprite(struct Sprite* spr);
 
 protected:

@@ -254,6 +254,7 @@ bool initializeLua()
 					wp.second->update(Game::instance);
 				}
 			})
+		.addFunction("setAnimation", &Unit::setAnimation)
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")

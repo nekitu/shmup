@@ -4,29 +4,90 @@
 
 namespace engine
 {
-f32 AnimationTrack::animate(f32 atTime, Animation* anim)
+f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 {
+	if (keys.empty())
+		return 0;
+
+	if (keys.size() == 1)
+	{
+		//TODO event trigger
+		return keys[0].value;
+	}
+
 	u32 key1Index = anim->previousTrackKeys[this];
 	AnimationKey* key1 = &keys[key1Index];
 	AnimationKey* key2 = nullptr;
 
-	for (u32 i = key1Index, iCount = keys.size(); i < iCount - 1; i++)
+	auto isTimeOverLastKeyAndHasTrigger = anim->timeWasHigherThanTotalTime && keys[keys.size() - 1].triggerEvent;
+	auto isTimeBelowFirstKeyAndHasTrigger = anim->timeWasLowerThanZero && keys[0].triggerEvent;
+	auto isForwardDir = (anim->pingPongDirection == 1 || anim->animationResource->animationType == AnimationType::Normal);
+
+	if (isTimeBelowFirstKeyAndHasTrigger && !isForwardDir)
 	{
-		if (atTime >= keys[i].time && atTime <= keys[i + 1].time)
+		if (std::find(
+			anim->triggeredKeyEvents.begin(),
+			anim->triggeredKeyEvents.end(),
+			&keys[0]) == anim->triggeredKeyEvents.end())
 		{
-			key1Index = i;
-			key1 = &keys[i];
-			key2 = &keys[i + 1];
+			anim->previousTrackKeys[this] = 0;
+			anim->triggerKeyEvent(&keys[0], sprite);
+			return keys[0].value;
+		}
+	}
 
-			if (key1->triggerEvent
-				&& std::find(
-					anim->triggeredKeyEvents.begin(),
-					anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
+	if (isTimeOverLastKeyAndHasTrigger && isForwardDir)
+	{
+		if (std::find(
+			anim->triggeredKeyEvents.begin(),
+			anim->triggeredKeyEvents.end(),
+			&keys[keys.size() - 1]) == anim->triggeredKeyEvents.end())
+		{
+			anim->triggerKeyEvent(&keys[keys.size() - 1], sprite);
+			anim->previousTrackKeys[this] = keys.size() - 1;
+			return keys[keys.size() - 1].value;
+		}
+	}
+
+	if (isForwardDir)
+	{
+		for (i32 i = key1Index, iCount = keys.size(); i < iCount - 1; i++)
+		{
+			if (atTime >= keys[i].time && atTime <= keys[i + 1].time)
 			{
-				anim->triggerKeyEvent(key1);
-			}
+				key1Index = i;
+				key1 = &keys[i];
+				key2 = &keys[i + 1];
 
-			break;
+				if (key1->triggerEvent
+					&& std::find(
+						anim->triggeredKeyEvents.begin(),
+						anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
+				{
+					anim->triggerKeyEvent(key1, sprite);
+				}
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (i32 i = key1Index; i > 0; i--)
+		{
+			if (atTime <= keys[i - 1].time && atTime >= keys[i].time)
+			{
+				key1Index = i;
+				key1 = &keys[i];
+				key2 = &keys[i - 1];
+
+				if (key1->triggerEvent
+					&& std::find(
+						anim->triggeredKeyEvents.begin(),
+						anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
+				{
+					anim->triggerKeyEvent(key1, sprite);
+				}
+			}
 		}
 	}
 
@@ -113,5 +174,16 @@ void AnimationResource::unload()
 
 	tracks.clear();
 }
+
+bool AnimationResource::hasTrack(AnimationTrack::Type trackType)
+{
+	auto iter = tracks.find(trackType);
+
+	if (iter == tracks.end()) return false;
+	if (iter->second->keys.size() == 0) return false;
+
+	return true;
+}
+
 
 }

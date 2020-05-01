@@ -275,7 +275,6 @@ void Sprite::setFrameAnimationFromAngle(f32 angle)
 	// correct it, since our origin is at left-top
 	angle -= 180;
 	angle = fmod(fabs(angle), 360);
-	LOG_INFO("SFA {0}", angle);
 
 	int idx = (f32)(spriteResource->rotationAnimCount - 1) * angle / 360.0f;
 	char buf[10] = { 0 };

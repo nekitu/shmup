@@ -1,6 +1,7 @@
 {
 "layers":
 [
+	{ "name": "hud", "parallaxScale": 0},
 	{ "name": "player", "parallaxScale": 1},
 	{ "name": "foreground", "parallaxScale": 4},
 	{ "name": "background1", "parallaxScale": 3},
@@ -56,6 +57,12 @@
     "layerIndex": 1,
     "unit": "units/trigger",
     "position": "180 -810"
-  }
+  },
+  {
+		"name": "intro_bg",
+		"unit": "units/intro_story",
+		"layerIndex": 0,
+		"position": "0 1"
+	}
 ]
 }

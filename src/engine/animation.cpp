@@ -1,6 +1,7 @@
 #include "animation.h"
 #include "resources/script_resource.h"
 #include "sprite.h"
+#include "unit.h"
 
 namespace engine
 {
@@ -14,8 +15,6 @@ void Animation::copyFrom(Animation* other)
 	active = other->active;
 	triggeredKeyEvents = other->triggeredKeyEvents;
 	previousTrackKeys = other->previousTrackKeys;
-	scriptClass = other->scriptClass;
-	keyEventScriptCallback = other->keyEventScriptCallback;
 }
 
 void Animation::initializeFrom(AnimationResource* res)
@@ -28,7 +27,7 @@ void Animation::initializeFrom(AnimationResource* res)
 	previousTrackKeys.clear();
 }
 
-void Animation::reset()
+void Animation::rewind()
 {
 	active = true;
 	currentTime = 0.0f;
@@ -37,16 +36,23 @@ void Animation::reset()
 	triggeredKeyEvents.clear();
 }
 
-void Animation::triggerKeyEvent(AnimationKey* key)
+void Animation::triggerKeyEvent(AnimationKey* key, struct Sprite* sprite)
 {
 	triggeredKeyEvents.push_back(key);
-	CALL_LUA_FUNC(keyEventScriptCallback, key->eventName, key->time, key->value);
+
+	if (sprite && sprite->unit)
+	{
+		sprite->unit->onAnimationEvent(sprite, key->eventName);
+	}
 }
 
 void Animation::update(f32 deltaTime)
 {
 	if (!active)
 		return;
+
+	timeWasHigherThanTotalTime = false;
+	timeWasLowerThanZero = false;
 
 	switch (animationResource->animationType)
 	{
@@ -55,7 +61,10 @@ void Animation::update(f32 deltaTime)
 
 		if (currentTime > animationResource->totalTime)
 		{
+			timeWasHigherThanTotalTime = true;
 			currentTime = 0.0f;
+			previousTrackKeys.clear();
+			triggeredKeyEvents.clear();
 			updateRepeatCount();
 		}
 
@@ -65,7 +74,10 @@ void Animation::update(f32 deltaTime)
 
 		if (currentTime < 0)
 		{
+			timeWasLowerThanZero = true;
 			currentTime = animationResource->totalTime;
+			previousTrackKeys.clear();
+			triggeredKeyEvents.clear();
 			updateRepeatCount();
 		}
 
@@ -75,15 +87,20 @@ void Animation::update(f32 deltaTime)
 
 		if (currentTime < 0)
 		{
+			timeWasLowerThanZero = true;
 			currentTime = 0.0f;
 			pingPongDirection = 1.0f;
+			previousTrackKeys.clear();
+			triggeredKeyEvents.clear();
 			updateRepeatCount();
 		}
-
-		if (currentTime > animationResource->totalTime)
+		else if (currentTime > animationResource->totalTime)
 		{
+			timeWasHigherThanTotalTime = true;
 			currentTime = animationResource->totalTime;
 			pingPongDirection = -1.0f;
+			previousTrackKeys.clear();
+			triggeredKeyEvents.clear();
 			updateRepeatCount();
 		}
 
@@ -93,28 +110,28 @@ void Animation::update(f32 deltaTime)
 	}
 }
 
-f32 Animation::animate(AnimationTrack::Type trackType)
+f32 Animation::animate(AnimationTrack::Type trackType, f32 defaultVal, struct Sprite* sprite)
 {
-	if (!animationResource->tracks[trackType])
-		return 0;
+	if (!animationResource->hasTrack(trackType))
+		return defaultVal;
 
-	return animationResource->tracks[trackType]->animate(currentTime, this);
+	return animationResource->tracks[trackType]->animate(currentTime, this, sprite);
 }
 
 void Animation::animateSprite(Sprite* spr)
 {
-	spr->position.x = animate(AnimationTrack::Type::PositionX);
-	spr->position.y = animate(AnimationTrack::Type::PositionY);
-	spr->rotation = animate(AnimationTrack::Type::Rotation);
-	spr->scale = animate(AnimationTrack::Type::Scale);
-	spr->verticalFlip = animate(AnimationTrack::Type::VerticalFlip);
-	spr->horizontalFlip = animate(AnimationTrack::Type::HorizontalFlip);
-	spr->visible = animate(AnimationTrack::Type::Visible);
-	spr->color.r = animate(AnimationTrack::Type::ColorR);
-	spr->color.g = animate(AnimationTrack::Type::ColorG);
-	spr->color.b = animate(AnimationTrack::Type::ColorB);
-	spr->color.a = animate(AnimationTrack::Type::ColorA);
-	spr->colorMode = (ColorMode)(u32)animate(AnimationTrack::Type::ColorMode);
+	spr->position.x = animate(AnimationTrack::Type::PositionX, spr->position.x, spr);
+	spr->position.y = animate(AnimationTrack::Type::PositionY, spr->position.y, spr);
+	spr->rotation = animate(AnimationTrack::Type::Rotation, spr->rotation, spr);
+	spr->scale = animate(AnimationTrack::Type::Scale, spr->scale, spr);
+	spr->verticalFlip = animate(AnimationTrack::Type::VerticalFlip, spr->verticalFlip, spr);
+	spr->horizontalFlip = animate(AnimationTrack::Type::HorizontalFlip, spr->horizontalFlip, spr);
+	spr->visible = animate(AnimationTrack::Type::Visible, spr->visible, spr);
+	spr->color.r = animate(AnimationTrack::Type::ColorR, spr->color.r, spr);
+	spr->color.g = animate(AnimationTrack::Type::ColorG, spr->color.g, spr);
+	spr->color.b = animate(AnimationTrack::Type::ColorB, spr->color.b, spr);
+	spr->color.a = animate(AnimationTrack::Type::ColorA, spr->color.a, spr);
+	spr->colorMode = (ColorMode)(u32)animate(AnimationTrack::Type::ColorMode, (f32)spr->colorMode, spr);
 }
 
 void Animation::updateRepeatCount()
