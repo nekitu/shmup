@@ -15,6 +15,7 @@ void Animation::copyFrom(Animation* other)
 	active = other->active;
 	triggeredKeyEvents = other->triggeredKeyEvents;
 	previousTrackKeys = other->previousTrackKeys;
+	rewind();
 }
 
 void Animation::initializeFrom(AnimationResource* res)
@@ -25,15 +26,22 @@ void Animation::initializeFrom(AnimationResource* res)
 	pingPongDirection = 1;
 	triggeredKeyEvents.clear();
 	previousTrackKeys.clear();
+	rewind();
 }
 
 void Animation::rewind()
 {
 	active = true;
-	currentTime = 0.0f;
+	currentTime = animationResource->animationType == AnimationType::Reversed ? animationResource->totalTime : 0.0f;
 	pingPongDirection = 1.0f;
 	currentRepeatCount = 0;
 	triggeredKeyEvents.clear();
+
+	if(animationResource->animationType == AnimationType::Reversed)
+	for (auto track : animationResource->tracks)
+	{
+		previousTrackKeys[track.second] = track.second->keys.size() - 1;
+	}
 }
 
 void Animation::triggerKeyEvent(AnimationKey* key, struct Sprite* sprite)

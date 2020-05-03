@@ -15,28 +15,39 @@ f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 		return keys[0].value;
 	}
 
+	if (anim->timeWasLowerThanZero && anim->animationResource->animationType == AnimationType::Reversed)
+	{
+		anim->previousTrackKeys[this] = keys.size() - 1;
+	}
+
 	u32 key1Index = anim->previousTrackKeys[this];
 	AnimationKey* key1 = &keys[key1Index];
 	AnimationKey* key2 = nullptr;
 
 	auto isTimeOverLastKeyAndHasTrigger = anim->timeWasHigherThanTotalTime && keys[keys.size() - 1].triggerEvent;
 	auto isTimeBelowFirstKeyAndHasTrigger = anim->timeWasLowerThanZero && keys[0].triggerEvent;
-	auto isForwardDir = (anim->pingPongDirection == 1 || anim->animationResource->animationType == AnimationType::Normal);
+	auto isForwardDir = ((anim->pingPongDirection == 1 && anim->animationResource->animationType == AnimationType::PingPong) || anim->animationResource->animationType == AnimationType::Normal);
 
-	if (isTimeBelowFirstKeyAndHasTrigger && !isForwardDir)
+	if (isTimeBelowFirstKeyAndHasTrigger)
 	{
 		if (std::find(
 			anim->triggeredKeyEvents.begin(),
 			anim->triggeredKeyEvents.end(),
 			&keys[0]) == anim->triggeredKeyEvents.end())
 		{
-			anim->previousTrackKeys[this] = 0;
+			if (anim->animationResource->animationType == AnimationType::Reversed)
+			{
+				anim->previousTrackKeys[this] = keys.size() - 1;
+			}
+			else
+				anim->previousTrackKeys[this] = 0;
+
 			anim->triggerKeyEvent(&keys[0], sprite);
 			return keys[0].value;
 		}
 	}
 
-	if (isTimeOverLastKeyAndHasTrigger && isForwardDir)
+	if (isTimeOverLastKeyAndHasTrigger)
 	{
 		if (std::find(
 			anim->triggeredKeyEvents.begin(),
@@ -44,7 +55,8 @@ f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 			&keys[keys.size() - 1]) == anim->triggeredKeyEvents.end())
 		{
 			anim->triggerKeyEvent(&keys[keys.size() - 1], sprite);
-			anim->previousTrackKeys[this] = keys.size() - 1;
+			if (anim->animationResource->animationType == AnimationType::PingPong)
+				anim->previousTrackKeys[this] = keys.size() - 1;
 			return keys[keys.size() - 1].value;
 		}
 	}
@@ -74,7 +86,7 @@ f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 	{
 		for (i32 i = key1Index; i > 0; i--)
 		{
-			if (atTime <= keys[i - 1].time && atTime >= keys[i].time)
+			if (atTime >= keys[i - 1].time && atTime <= keys[i].time)
 			{
 				key1Index = i;
 				key1 = &keys[i];
@@ -87,6 +99,8 @@ f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 				{
 					anim->triggerKeyEvent(key1, sprite);
 				}
+
+				break;
 			}
 		}
 	}
@@ -96,10 +110,15 @@ f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
 		// key1->time ----- atTime ----------------key2->time
 		f32 t = (atTime - key1->time) / (key2->time - key1->time);
 
+		if (!isForwardDir)
+		{
+			t = (atTime - key2->time) / (key1->time - key2->time);
+		}
+
 		// update first interpolation key
 		anim->previousTrackKeys[this] = key1Index;
 
-		return key1->value + t * (key2->value - key1->value);
+		return key1->value + fabs(t) * (key2->value - key1->value);
 	}
 
 	return 0.0f;
