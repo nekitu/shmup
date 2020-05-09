@@ -13,7 +13,7 @@ end
 
 function C:onRender(layerIndex)
   --print("Rendering "..tostring(layerIndex))
-  if layerIndex == 0 then
+  if layerIndex == 0 and nil then
     gfx.colorMode = ColorMode_Mul
     gfx.color = Color.red:getRgba()
     gfx:drawText(self.fnt, Vec2(90, 2), "HISCORE")

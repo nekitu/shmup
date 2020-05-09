@@ -4,165 +4,57 @@
 
 namespace engine
 {
-f32 AnimationTrack::animate(f32 atTime, Animation* anim, struct Sprite* sprite)
-{
-	if (keys.empty())
-		return 0;
-
-	if (keys.size() == 1)
-	{
-		//TODO event trigger
-		return keys[0].value;
-	}
-
-	if (anim->timeWasLowerThanZero && anim->animationResource->animationType == AnimationType::Reversed)
-	{
-		anim->previousTrackKeys[this] = keys.size() - 1;
-	}
-
-	u32 key1Index = anim->previousTrackKeys[this];
-	AnimationKey* key1 = &keys[key1Index];
-	AnimationKey* key2 = nullptr;
-
-	auto isTimeOverLastKeyAndHasTrigger = anim->timeWasHigherThanTotalTime && keys[keys.size() - 1].triggerEvent;
-	auto isTimeBelowFirstKeyAndHasTrigger = anim->timeWasLowerThanZero && keys[0].triggerEvent;
-	auto isForwardDir = ((anim->pingPongDirection == 1 && anim->animationResource->animationType == AnimationType::PingPong) || anim->animationResource->animationType == AnimationType::Normal);
-
-	if (isTimeBelowFirstKeyAndHasTrigger)
-	{
-		if (std::find(
-			anim->triggeredKeyEvents.begin(),
-			anim->triggeredKeyEvents.end(),
-			&keys[0]) == anim->triggeredKeyEvents.end())
-		{
-			if (anim->animationResource->animationType == AnimationType::Reversed)
-			{
-				anim->previousTrackKeys[this] = keys.size() - 1;
-			}
-			else
-				anim->previousTrackKeys[this] = 0;
-
-			anim->triggerKeyEvent(&keys[0], sprite);
-			return keys[0].value;
-		}
-	}
-
-	if (isTimeOverLastKeyAndHasTrigger)
-	{
-		if (std::find(
-			anim->triggeredKeyEvents.begin(),
-			anim->triggeredKeyEvents.end(),
-			&keys[keys.size() - 1]) == anim->triggeredKeyEvents.end())
-		{
-			anim->triggerKeyEvent(&keys[keys.size() - 1], sprite);
-			if (anim->animationResource->animationType == AnimationType::PingPong)
-				anim->previousTrackKeys[this] = keys.size() - 1;
-			return keys[keys.size() - 1].value;
-		}
-	}
-
-	if (isForwardDir)
-	{
-		for (i32 i = key1Index, iCount = keys.size(); i < iCount - 1; i++)
-		{
-			if (atTime >= keys[i].time && atTime <= keys[i + 1].time)
-			{
-				key1Index = i;
-				key1 = &keys[i];
-				key2 = &keys[i + 1];
-
-				if (key1->triggerEvent
-					&& std::find(
-						anim->triggeredKeyEvents.begin(),
-						anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
-				{
-					anim->triggerKeyEvent(key1, sprite);
-				}
-				break;
-			}
-		}
-	}
-	else
-	{
-		for (i32 i = key1Index; i > 0; i--)
-		{
-			if (atTime >= keys[i - 1].time && atTime <= keys[i].time)
-			{
-				key1Index = i;
-				key1 = &keys[i];
-				key2 = &keys[i - 1];
-
-				if (key1->triggerEvent
-					&& std::find(
-						anim->triggeredKeyEvents.begin(),
-						anim->triggeredKeyEvents.end(), key1) == anim->triggeredKeyEvents.end())
-				{
-					anim->triggerKeyEvent(key1, sprite);
-				}
-
-				break;
-			}
-		}
-	}
-
-	if (key1 && key2)
-	{
-		// key1->time ----- atTime ----------------key2->time
-		f32 t = (atTime - key1->time) / (key2->time - key1->time);
-
-		if (!isForwardDir)
-		{
-			t = (atTime - key2->time) / (key1->time - key2->time);
-		}
-
-		// update first interpolation key
-		anim->previousTrackKeys[this] = key1Index;
-
-		return key1->value + fabs(t) * (key2->value - key1->value);
-	}
-
-	return 0.0f;
-}
-
 bool AnimationResource::load(Json::Value& json)
 {
 	speed = json.get("speed", speed).asFloat();
-	repeatCount = json.get("repeatCount", repeatCount).asUInt();
-	auto typeStr = json.get("type", "Normal").asString();
-
-	if (typeStr == "Normal") animationType = AnimationType::Normal;
-	if (typeStr == "Reversed") animationType = AnimationType::Reversed;
-	if (typeStr == "PingPong") animationType = AnimationType::PingPong;
-
 	auto tracksJson = json.get("tracks", Json::Value(Json::ValueType::arrayValue));
+	auto modeStr = json.get("loopMode", "Normal");
+	repeat = json.get("repeat", repeat).asInt();
+
+	if (modeStr == "Normal") loopMode = AnimationLoopMode::Normal;
+	if (modeStr == "Reversed") loopMode = AnimationLoopMode::Reversed;
+	if (modeStr == "PingPong") loopMode = AnimationLoopMode::PingPong;
 
 	for (u32 i = 0, iCount = tracksJson.getMemberNames().size(); i < iCount; i++)
 	{
 		auto track = new AnimationTrack();
 
 		auto keyType = tracksJson.getMemberNames()[i];
-		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::arrayValue));
-		auto trackType = AnimationTrack::Type::Unknown;
+		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
+		auto trackType = AnimationTrackType::Unknown;
 
-		if (keyType == "PositionX") trackType = AnimationTrack::Type::PositionX;
-		if (keyType == "PositionY") trackType = AnimationTrack::Type::PositionY;
-		if (keyType == "Scale") trackType = AnimationTrack::Type::Scale;
-		if (keyType == "VerticalFlip") trackType = AnimationTrack::Type::VerticalFlip;
-		if (keyType == "HorizontalFlip") trackType = AnimationTrack::Type::HorizontalFlip;
-		if (keyType == "Rotation") trackType = AnimationTrack::Type::Rotation;
-		if (keyType == "Visible") trackType = AnimationTrack::Type::Visible;
-		if (keyType == "Shadow") trackType = AnimationTrack::Type::Shadow;
-		if (keyType == "ShadowOffsetX") trackType = AnimationTrack::Type::ShadowOffsetX;
-		if (keyType == "ShadowOffsetY") trackType = AnimationTrack::Type::ShadowOffsetY;
-		if (keyType == "ShadowScaleX") trackType = AnimationTrack::Type::ShadowScaleX;
-		if (keyType == "ShadowScaleY") trackType = AnimationTrack::Type::ShadowScaleY;
-		if (keyType == "ColorR") trackType = AnimationTrack::Type::ColorR;
-		if (keyType == "ColorG") trackType = AnimationTrack::Type::ColorG;
-		if (keyType == "ColorB") trackType = AnimationTrack::Type::ColorB;
-		if (keyType == "ColorA") trackType = AnimationTrack::Type::ColorA;
-		if (keyType == "ColorMode") trackType = AnimationTrack::Type::ColorMode;
+		if (keyType == "PositionX") trackType = AnimationTrackType::PositionX;
+		if (keyType == "PositionY") trackType = AnimationTrackType::PositionY;
+		if (keyType == "ScaleX") trackType = AnimationTrackType::ScaleX;
+		if (keyType == "ScaleY") trackType = AnimationTrackType::ScaleY;
+		if (keyType == "UniformScale") trackType = AnimationTrackType::UniformScale;
+		if (keyType == "VerticalFlip") trackType = AnimationTrackType::VerticalFlip;
+		if (keyType == "HorizontalFlip") trackType = AnimationTrackType::HorizontalFlip;
+		if (keyType == "Rotation") trackType = AnimationTrackType::Rotation;
+		if (keyType == "Visible") trackType = AnimationTrackType::Visible;
+		if (keyType == "Shadow") trackType = AnimationTrackType::Shadow;
+		if (keyType == "ShadowOffsetX") trackType = AnimationTrackType::ShadowOffsetX;
+		if (keyType == "ShadowOffsetY") trackType = AnimationTrackType::ShadowOffsetY;
+		if (keyType == "ShadowScaleX") trackType = AnimationTrackType::ShadowScaleX;
+		if (keyType == "ShadowScaleY") trackType = AnimationTrackType::ShadowScaleY;
+		if (keyType == "ShadowUniformScale") trackType = AnimationTrackType::ShadowUniformScale;
+		if (keyType == "ColorR") trackType = AnimationTrackType::ColorR;
+		if (keyType == "ColorG") trackType = AnimationTrackType::ColorG;
+		if (keyType == "ColorB") trackType = AnimationTrackType::ColorB;
+		if (keyType == "ColorA") trackType = AnimationTrackType::ColorA;
+		if (keyType == "ColorMode") trackType = AnimationTrackType::ColorMode;
 
-		for (auto& keyJson : trackJson)
+		modeStr = trackJson.get("loopMode", "Normal");
+
+		if (modeStr == "Normal") track->loopMode = AnimationLoopMode::Normal;
+		if (modeStr == "Reversed") track->loopMode = AnimationLoopMode::Reversed;
+		if (modeStr == "PingPong") track->loopMode = AnimationLoopMode::PingPong;
+
+		track->repeat = trackJson.get("repeat", 0).asInt();
+
+		auto keysJson = trackJson.get("keys", Json::Value(Json::ValueType::arrayValue));
+
+		for (auto& keyJson : keysJson)
 		{
 			AnimationKey key;
 
@@ -173,9 +65,11 @@ bool AnimationResource::load(Json::Value& json)
 			track->keys.push_back(key);
 		}
 
-		if (track->keys.size() && totalTime < track->keys[track->keys.size() - 1].time)
+		track->computeTotalTime();
+
+		if (totalTime < track->endTime)
 		{
-			totalTime = track->keys[track->keys.size() - 1].time;
+			totalTime = track->endTime;
 		}
 
 		tracks[trackType] = track;
@@ -191,10 +85,14 @@ void AnimationResource::unload()
 		delete track.second;
 	}
 
+	totalTime = 0;
+	speed = 1.0f;
+	repeat = 0;
+	loopMode = AnimationLoopMode::Normal;
 	tracks.clear();
 }
 
-bool AnimationResource::hasTrack(AnimationTrack::Type trackType)
+bool AnimationResource::hasTrack(AnimationTrackType trackType)
 {
 	auto iter = tracks.find(trackType);
 

@@ -25,7 +25,7 @@ struct SpriteInstanceResource
 	std::string name;
 	std::string animationName = "default";
 	Vec2 position;
-	f32 scale = 1.0f;
+	Vec2 scale = { 1.0f, 1.0f };
 	bool verticalFlip = false;
 	bool horizontalFlip = false;
 	f32 rotation = 0;
@@ -33,6 +33,7 @@ struct SpriteInstanceResource
 	bool collide = true;
 	bool visible = true;
 	bool shadow = true;
+	bool relativeToRoot = true;
 	f32 health = 100.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;

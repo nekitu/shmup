@@ -22,42 +22,6 @@
 		"unit": "units/bg2",
 		"position": "120 -572"
 	},
-	{
-		"name": "Turret",
-		"layerIndex": 1,
-		"unit": "units/turret",
-		"position": "70 -300"
-	},
-	{
-		"name": "Turret2",
-		"layerIndex": 1,
-		"unit": "units/turret",
-		"position": "70 -380"
-	},
-	{
-		"name": "Turret2",
-		"layerIndex": 1,
-		"unit": "units/turret",
-		"position": "60 -800"
-	},
-	{
-		"name": "Turret2",
-		"layerIndex": 1,
-		"unit": "units/turret",
-		"position": "150 60"
-	},
-	{
-		"name": "Some1",
-		"layerIndex": 1,
-		"unit": "units/boss",
-		"position": "180 -510"
-	},
-  {
-    "name": "End",
-    "layerIndex": 1,
-    "unit": "units/trigger",
-    "position": "180 -810"
-  },
   {
 		"name": "intro_bg",
 		"unit": "units/intro_story",

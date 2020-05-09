@@ -1,0 +1,33 @@
+{
+  "loopMode": "Normal",
+  "tracks":
+  {
+    "PositionX":
+    {
+      "keys":
+      [
+        { "value": 100, "time": 0 },
+        { "value": 100, "time": 0.5 }
+      ]
+    },
+    "PositionY":
+    {
+      "loopMode": "PingPong",
+      "keys":
+      [
+        { "value": 80, "time": 0, "triggerEvent": true, "eventName": "BEGIN" },
+        { "value": 100, "time": 5, "triggerEvent": true, "eventName": "MIDDLE" },
+        { "value": 110, "time": 10, "triggerEvent": true, "eventName": "END" }
+      ]
+    },
+    "ColorG":
+    {
+      "loopMode": "Normal",
+      "keys":
+      [
+        { "value": 0, "time": 0 },
+        { "value": 1, "time": 5 }
+      ]
+    }
+  }
+}

@@ -27,6 +27,7 @@ void Sprite::copyFrom(Sprite* other)
 	defaultColor = other->defaultColor;
 	color = other->color;
 	colorMode = other->colorMode;
+	relativeToRoot = other->relativeToRoot;
 
 	hitColor = other->hitColor;
 	hitOldColorMode = other->hitOldColorMode;
@@ -61,6 +62,7 @@ void Sprite::initializeFrom(SpriteInstanceResource* res)
 	visible = res->visible;
 	shadow = res->shadow;
 	maxHealth = health = res->health;
+	relativeToRoot = res->relativeToRoot;
 	animationFrame = 0;
 	animationRepeatCount = 0;
 	animationDirection = 1;
@@ -213,7 +215,8 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 		auto frmRc = spr->spriteResource->getSheetFramePixelRect(spr->animationFrame);
 		pixels.resize(localRc.width * localRc.height);
 		int i = 0;
-		f32 step = 1.0f / spr->scale;
+		f32 stepX = 1.0f / spr->scale.x;
+		f32 stepY = 1.0f / spr->scale.y;
 		f32 srcx = 0;
 		f32 srcy = 0;
 		f32 rcx = floorf(frmRc.width * (localRc.x / spr->rect.width));
@@ -228,10 +231,10 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 				u32 offs = ((u32)frmRc.y + srcy + (u32)rcy) * spr->spriteResource->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx;
 				u8* px = (u8*)&spr->spriteResource->image->imageData[offs];
 				pixels[i++] = px[3];
-				srcx += step;
+				srcx += stepX;
 			}
 
-			srcy += step;
+			srcy += stepY;
 		}
 
 		return pixels;

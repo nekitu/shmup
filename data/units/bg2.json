@@ -15,7 +15,7 @@
       "name": "body",
       "sprite": "sprites/asteroids",
       "position": "0 0",
-      "scale": 0.7,
+      "scale": "0.7 0.7",
       "rotation": 0,
       "horizontalFlip": false,
       "verticalFlip": false,

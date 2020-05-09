@@ -16,7 +16,7 @@
       "name": "body",
       "sprite": "sprites/bg1",
       "position": "0 0",
-      "scale": 2,
+      "scale": "2 2",
       "rotation": 0,
       "horizontalFlip": false,
       "verticalFlip": false,

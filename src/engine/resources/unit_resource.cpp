@@ -86,7 +86,7 @@ bool UnitResource::load(Json::Value& json)
 		spr->animationName = sprJson.get("animationName", "default").asString();
 		spr->position.parse(sprJson.get("position", "0 0").asString());
 		spr->rotation = sprJson.get("rotation", 0).asInt();
-		spr->scale = sprJson.get("scale", 1.0f).asFloat();
+		spr->scale.parse(sprJson.get("scale", "1 1").asString());
 		spr->horizontalFlip = sprJson.get("horizontalFlip", false).asBool();
 		spr->verticalFlip = sprJson.get("verticalFlip", false).asBool();
 		spr->orderIndex = i;
@@ -95,6 +95,7 @@ bool UnitResource::load(Json::Value& json)
 		spr->visible = sprJson.get("visible", true).asBool();
 		spr->health = sprJson.get("health", 100.0f).asFloat();
 		spr->color.parse(sprJson.get("color", spr->color.toString()).asString());
+		spr->relativeToRoot = sprJson.get("relativeToRoot", spr->relativeToRoot).asBool();
 		auto colMode = json.get("colorMode", "Add").asString();
 
 		if (colMode == "Add") spr->colorMode = ColorMode::Add;
@@ -136,7 +137,11 @@ bool UnitResource::load(Json::Value& json)
 		{
 			auto sprName = animJson.getMemberNames()[k];
 			auto filename = animJson[sprName].asString();
-			sprites[sprName]->animations[animName] = loader->loadAnimation(filename);
+
+			if (sprites.find(sprName) != sprites.end())
+			{
+				sprites[sprName]->animations[animName] = loader->loadAnimation(filename);
+			}
 		}
 	}
 

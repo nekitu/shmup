@@ -404,8 +404,8 @@ void Unit::computeBoundingBox()
 	{
 		if (root->rotation != 0)
 		{
-			boundingBox.width = root->spriteResource->frameWidth * root->scale;
-			boundingBox.height = root->spriteResource->frameHeight * root->scale;
+			boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
+			boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
 			boundingBox.x = root->position.x - boundingBox.width / 2;
 			boundingBox.y = root->position.y - boundingBox.height / 2;
 
@@ -430,8 +430,8 @@ void Unit::computeBoundingBox()
 		}
 		else
 		{
-			boundingBox.width = root->spriteResource->frameWidth * root->scale;
-			boundingBox.height = root->spriteResource->frameHeight * root->scale;
+			boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
+			boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
 			boundingBox.x = root->position.x - boundingBox.width / 2;
 			boundingBox.y = root->position.y - boundingBox.height / 2;
 		}
@@ -465,8 +465,8 @@ void Unit::computeBoundingBox()
 		pos.x += spr->position.x * mirrorH;
 		pos.y += spr->position.y * mirrorV;
 
-		f32 renderW = spr->spriteResource->frameWidth * spr->scale * root->scale;
-		f32 renderH = spr->spriteResource->frameHeight * spr->scale * root->scale;
+		f32 renderW = spr->spriteResource->frameWidth * spr->scale.x * root->scale.x;
+		f32 renderH = spr->spriteResource->frameHeight * spr->scale.y * root->scale.y;
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;

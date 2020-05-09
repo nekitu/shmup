@@ -10,6 +10,41 @@
 
 namespace engine
 {
+enum class AnimationLoopMode
+{
+	None,
+	Normal,
+	Reversed,
+	PingPong
+};
+
+enum class AnimationTrackType
+{
+	Unknown = 0,
+	PositionX,
+	PositionY,
+	ScaleX,
+	ScaleY,
+	UniformScale,
+	VerticalFlip,
+	HorizontalFlip,
+	Rotation,
+	Visible,
+	Shadow,
+	ShadowOffsetX,
+	ShadowOffsetY,
+	ShadowScaleX,
+	ShadowScaleY,
+	ShadowUniformScale,
+	ColorR,
+	ColorG,
+	ColorB,
+	ColorA,
+	ColorMode,
+
+	Count
+};
+
 struct AnimationKey
 {
 	f32 value = 0;
@@ -20,53 +55,41 @@ struct AnimationKey
 
 struct AnimationTrack
 {
-	enum class Type
-	{
-		Unknown,
-		PositionX,
-		PositionY,
-		Scale,
-		VerticalFlip,
-		HorizontalFlip,
-		Rotation,
-		Visible,
-		Shadow,
-		ShadowOffsetX,
-		ShadowOffsetY,
-		ShadowScaleX,
-		ShadowScaleY,
-		ColorR,
-		ColorG,
-		ColorB,
-		ColorA,
-		ColorMode,
-
-		Count
-	};
-
+	u32 repeat = 0;
+	f32 totalTime = 0;
+	f32 startTime = 0;
+	f32 endTime = 0;
+	AnimationLoopMode loopMode = AnimationLoopMode::Normal;
 	std::vector<AnimationKey> keys;
 
-	f32 animate(f32 atTime, struct Animation* anim, struct Sprite* sprite);
-};
+	void computeTotalTime()
+	{
+		if (keys.empty())
+			return;
 
-enum class AnimationType
-{
-	Normal,
-	Reversed,
-	PingPong
+		if (keys.size() == 1)
+		{
+			totalTime = startTime = endTime = keys.back().time;
+			return;
+		}
+
+		startTime = keys.front().time;
+		endTime = keys.back().time;
+		totalTime = endTime - startTime;
+	}
 };
 
 struct AnimationResource : Resource
 {
-	std::map<AnimationTrack::Type, AnimationTrack*> tracks;
+	std::map<AnimationTrackType, AnimationTrack*> tracks;
 	f32 speed = 1.0f;
-	f32 totalTime = 0.0f;
-	AnimationType animationType = AnimationType::Normal;
-	u32 repeatCount = 0; /// zero means infinite
+	f32 totalTime = 0;
+	u32 repeat = 0;
+	AnimationLoopMode loopMode = AnimationLoopMode::Normal;
 
 	virtual bool load(Json::Value& json) override;
 	void unload() override;
-	bool hasTrack(AnimationTrack::Type trackType);
+	bool hasTrack(AnimationTrackType trackType);
 };
 
 }

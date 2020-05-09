@@ -1,17 +1,30 @@
 {
-    "type": "PingPong",
-    "tracks":
+  "loopMode": "Normal",
+  "tracks":
+  {
+    "PositionX":
     {
-        "PositionX":
+      "loopMode": "PingPong",
+      "keys":
+      [
+        { "value": 120, "time": 0 }
+      ]
+    },
+    "PositionY":
+    {
+      "keys":
         [
-            { "value": 0, "time": 0, "triggerEvent": true, "eventName": "-------------------begin" },
-            { "value": 15, "time": 1, "triggerEvent": true, "eventName": "------middle" },
-            { "value": 30, "time": 2, "triggerEvent": true, "eventName": "end" }
-        ],
-        "ColorR":
-        [
-            { "value": 0, "time": 0 },
-            { "value": 1, "time": 2 }
+          { "value": 70, "time": 0, "triggerEvent": true, "eventName": "-------------------begin" },
+          { "value": 90, "time": 25, "triggerEvent": true, "eventName": "----end" }
         ]
+    },
+    "ColorR":
+    {
+      "keys":
+      [
+        { "value": 0, "time": 0 },
+        { "value": 1, "time": 20 }
+      ]
     }
+  }
 }
