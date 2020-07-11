@@ -1,12 +1,12 @@
 {
 "layers":
 [
-	{ "name": "hud", "parallaxScale": 0},
-	{ "name": "player", "parallaxScale": 1},
-	{ "name": "foreground", "parallaxScale": 4},
-	{ "name": "background1", "parallaxScale": 3},
-	{ "name": "background2", "parallaxScale": 2},
-	{ "name": "background3", "parallaxScale": 1}
+	{ "name": "hud", "cameraParallaxScale": 0},
+	{ "name": "player", "cameraParallax": false, "cameraScroll": false},
+	{ "name": "foreground", "cameraParallaxScale": 4},
+	{ "name": "background1", "cameraParallaxScale": 3},
+	{ "name": "background2", "cameraParallaxScale": 2},
+	{ "name": "background3", "cameraParallaxScale": 1}
 ],
 "units":
 [
@@ -22,7 +22,7 @@
 		"unit": "units/bg2",
 		"position": "120 -572"
 	},
-  {
+	{
 		"name": "intro_bg",
 		"unit": "units/intro_story",
 		"layerIndex": 0,

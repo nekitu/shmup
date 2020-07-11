@@ -19,7 +19,9 @@ bool LevelResource::load(Json::Value& json)
 	{
 		Layer layer;
 
-		layer.parallaxScale = item.get("parallaxScale", 1.0f).asFloat();
+		layer.cameraParallaxScale = item.get("cameraParallaxScale", 1.0f).asFloat();
+		layer.cameraParallax = item.get("cameraParallax", true).asBool();
+		layer.cameraScroll = item.get("cameraScroll", true).asBool();
 		layers.push_back(layer);
 	}
 

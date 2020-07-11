@@ -117,7 +117,7 @@ struct Game
 	struct ScriptClassInstanceBase* scriptClass;
 	static Game* instance;
 	Vec2 cameraPosition;
-	Vec2 cameraPositionOffset;
+	Vec2 cameraPositionOffset; // used by camera fx, shake etc
 	f32 cameraSpeed = 10;
 	f32 cameraParallaxOffset = 0;
 	f32 cameraParallaxScale = 0.2f;

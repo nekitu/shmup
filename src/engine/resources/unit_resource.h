@@ -81,7 +81,6 @@ struct UnitResource : Resource
 	UnitType unitType = UnitType::None;
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;
-	f32 parallaxScale = 1.0f;
 	bool shadow = false;
 	Vec2 shadowOffset;
 	bool visible = true;

@@ -306,8 +306,16 @@ void Game::updateCamera()
 		}
 	}
 
-	cameraPosition.y += cameraSpeed * deltaTime;
-	cameraPosition.x = cameraParallaxOffset;
+	if (screenMode == ScreenMode::Vertical)
+	{
+		cameraPosition.y += cameraSpeed * deltaTime;
+		cameraPosition.x = cameraParallaxOffset;
+	}
+	else
+	{
+		cameraPosition.x += cameraSpeed * deltaTime;
+		cameraPosition.x = cameraParallaxOffset;
+	}
 }
 
 void Game::mainLoop()
@@ -776,8 +784,23 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
-	newPos.x += (cameraPosition.x + cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
-	newPos.y += (cameraPosition.y + cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+	if (!Game::instance->layers[layerIndex].cameraScroll
+		&& !Game::instance->layers[layerIndex].cameraParallax)
+	{
+		return pos;
+	}
+
+	if (!Game::instance->layers[layerIndex].cameraScroll
+		&& Game::instance->layers[layerIndex].cameraParallax)
+	{
+		newPos.x += cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
+		newPos.y += cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+
+		return newPos;
+	}
+
+	newPos.x += cameraPosition.x + cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
+	newPos.y += cameraPosition.y + cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -786,8 +809,23 @@ Vec2 Game::screenToWorld(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
-	newPos.x -= (cameraPosition.x + cameraPositionOffset.x) * Game::instance->layers[layerIndex].parallaxScale;
-	newPos.y -= (cameraPosition.y + cameraPositionOffset.y) * Game::instance->layers[layerIndex].parallaxScale;
+	if (!Game::instance->layers[layerIndex].cameraScroll
+		&& !Game::instance->layers[layerIndex].cameraParallax)
+	{
+		return pos;
+	}
+
+	if (!Game::instance->layers[layerIndex].cameraScroll
+		&& Game::instance->layers[layerIndex].cameraParallax)
+	{
+		newPos.x -= cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
+		newPos.y -= cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+
+		return newPos;
+	}
+
+	newPos.x -= cameraPosition.x + cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
+	newPos.y -= cameraPosition.y + cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }

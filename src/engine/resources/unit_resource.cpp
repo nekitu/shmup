@@ -33,7 +33,6 @@ bool UnitResource::load(Json::Value& json)
 		unitType = UnitType::PlayerProjectile;
 
 	speed = json.get("speed", speed).asFloat();
-	parallaxScale = json.get("parallaxScale", parallaxScale).asFloat();
 	visible = json.get("visible", visible).asBool();
 	collide = json.get("collide", collide).asBool();
 	rootName = json.get("root", "").asString();
