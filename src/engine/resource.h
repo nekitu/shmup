@@ -16,6 +16,7 @@ enum class ResourceType
 	Sound,
 	Sprite,
 	Tilemap,
+	Tileset,
 	Unit,
 	Weapon,
 

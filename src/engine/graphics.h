@@ -20,6 +20,7 @@ extern void checkErrorGL(const char* where);
 struct Graphics
 {
 	static const u32 maxVertexCount = 6 * 3000;
+	static const u32 textureAtlasWidth = 4096;
 
 	struct Game* game = nullptr;
 	f32 videoWidth = 240;

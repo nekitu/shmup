@@ -126,7 +126,7 @@ Graphics::Graphics(Game* game)
 	this->game = game;
 	createScreenRenderTarget();
 	createGpuPrograms();
-	atlas = new ImageAtlas(4092, 4092);
+	atlas = new ImageAtlas(textureAtlasWidth, textureAtlasWidth);
 	vertexBuffer = new VertexBuffer();
 	vertexBuffer->resize(maxVertexCount);
 	vertices.resize(maxVertexCount);

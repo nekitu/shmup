@@ -366,14 +366,11 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 		// update first interpolation key
 		tstate.previousKeyIndex = key1Index;
 
-		//return Easing::outElastic(t, key1->value, key2->value - key1->value, 1);
-
 		return key1->value + fabs(t) * (key2->value - key1->value);
 	}
 
 	return 0.0f;
 }
-
 
 void Animation::animateSprite(Sprite* spr)
 {

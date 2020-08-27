@@ -26,5 +26,7 @@ struct ResourceLoader
 	struct ScriptResource* loadScript(const std::string& filename);
 	struct AnimationResource* loadAnimation(const std::string& filename);
 	struct FontResource* loadFont(const std::string& filename);
+	struct TilemapResource* loadTilemap(const std::string& filename);
+	struct TilesetResource* loadTileset(const std::string& filename);
 };
 }

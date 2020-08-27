@@ -35,6 +35,7 @@ void ImageAtlas::create(u32 textureWidth, u32 textureHeight)
 {
 	width = textureWidth;
 	height = textureHeight;
+	delete textureArray;
 	textureArray = new TextureArray();
 	textureArray->resize(1, textureWidth, textureHeight);
 }

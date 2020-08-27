@@ -9,6 +9,9 @@
 #include "resources/script_resource.h"
 #include "resources/animation_resource.h"
 #include "resources/font_resource.h"
+#include "resources/tilemap_resource.h"
+#include "resources/tileset_resource.h"
+#include "graphics.h"
 #include "image_atlas.h"
 #include "weapon.h"
 #include "game.h"
@@ -104,6 +107,30 @@ void ResourceLoader::reloadWeapons()
 			wpn.second->initializeFrom(wpn.second->weaponResource);
 		}
 	}
+}
+
+void ResourceLoader::reloadSprites()
+{
+	LOG_INFO("Reloading sprites...");
+	Json::Value json;
+
+	Game::instance->graphics->atlas->create(Graphics::textureAtlasWidth, Graphics::textureAtlasWidth);
+
+	for (auto res : resources)
+	{
+		if (res.second->type == ResourceType::Sprite)
+		{
+			std::string fullFilename = Game::instance->dataRoot + res.first;
+
+			if (!loadJson(fullFilename + ".json", json))
+			{
+				continue;
+			}
+
+			res.second->load(json);
+		}
+	}
+
 }
 
 SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
@@ -377,6 +404,64 @@ FontResource* ResourceLoader::loadFont(const std::string& filename)
 	FontResource* res = new FontResource();
 
 	res->type = ResourceType::Font;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
+
+	return res;
+}
+
+TilemapResource* ResourceLoader::loadTilemap(const std::string& filename)
+{
+	checkEmptyFilename("loadTilemap", filename);
+	std::string fullFilename = Game::instance->dataRoot + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (TilemapResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
+	TilemapResource* res = new TilemapResource();
+
+	res->type = ResourceType::Tilemap;
+	res->loader = this;
+	res->fileName = filename;
+	res->load(json);
+	resources[filename] = res;
+
+	return res;
+}
+
+TilesetResource* ResourceLoader::loadTileset(const std::string& filename)
+{
+	checkEmptyFilename("loadTileset", filename);
+	std::string fullFilename = Game::instance->dataRoot + filename;
+
+	if (resources[filename])
+	{
+		resources[filename]->usageCount++;
+		return (TilesetResource*)resources[filename];
+	}
+
+	Json::Value json;
+
+	if (!loadJson(fullFilename + ".json", json))
+	{
+		return nullptr;
+	}
+
+	TilesetResource* res = new TilesetResource();
+
+	res->type = ResourceType::Tileset;
 	res->loader = this;
 	res->fileName = filename;
 	res->load(json);

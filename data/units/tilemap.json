@@ -1,0 +1,8 @@
+{
+  "name": "tilemap1",
+  "type": "Tilemap",
+  "speed": 0.0,
+  "healthPoints": 1000,
+  "root": "body",
+  "collide": false
+}
