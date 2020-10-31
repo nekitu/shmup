@@ -257,11 +257,10 @@ void Unit::load(ResourceLoader* loader, const Json::Value& json)
 	if (unitFilename == "")
 	{
 		LOG_ERROR("No unitResource filename specified for unitResource instance ({0})", name);
-		return;
 	}
 
 	auto unitResource = loader->loadUnit(unitFilename);
-	initializeFrom(unitResource);
+	if (unitResource) initializeFrom(unitResource);
 	name = json.get("name", name).asCString();
 	currentAnimationName = json.get("animationName", "").asString();
 	boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
@@ -269,27 +268,31 @@ void Unit::load(ResourceLoader* loader, const Json::Value& json)
 	shadow = json.get("shadow", visible).asBool();
 	speed = json.get("speed", speed).asFloat();
 	layerIndex = json.get("layerIndex", layerIndex).asInt();
-	root->position.parse(json.get("position", "0 0").asString());
+	if (root) root->position.parse(json.get("position", "0 0").asString());
 	stageIndex = 0;
+	if (!root) root = new Sprite();
 }
 
 void Unit::update(Game* game)
 {
 	computeHealth();
 
-	for (auto stage : unitResource->stages)
+	if (unitResource)
 	{
-		if (health <= stage->triggerOnHealth && stage != currentStage)
+		for (auto stage : unitResource->stages)
 		{
-			//TODO: maybe just use a currentStageIndex
-			auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
+			if (health <= stage->triggerOnHealth && stage != currentStage)
+			{
+				//TODO: maybe just use a currentStageIndex
+				auto iter = std::find(triggeredStages.begin(), triggeredStages.end(), stage);
 
-			if (iter != triggeredStages.end()) continue;
+				if (iter != triggeredStages.end()) continue;
 
-			triggeredStages.push_back(stage);
-			CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
-			currentStage = stage;
-			break;
+				triggeredStages.push_back(stage);
+				CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
+				currentStage = stage;
+				break;
+			}
 		}
 	}
 
@@ -322,7 +325,7 @@ void Unit::update(Game* game)
 
 	computeBoundingBox();
 
-	if (appeared)
+	if (appeared && unitResource)
 	{
 		if (unitResource->autoDeleteType == AutoDeleteType::EndOfScreen)
 		{
@@ -400,7 +403,7 @@ void Unit::setAnimation(const std::string& animName)
 
 void Unit::computeBoundingBox()
 {
-	if (root)
+	if (root && unitResource)
 	{
 		if (root->rotation != 0)
 		{

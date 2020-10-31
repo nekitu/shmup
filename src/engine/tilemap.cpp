@@ -4,9 +4,16 @@
 #include "resources/tileset_resource.h"
 #include "graphics.h"
 #include "image_atlas.h"
+#include "resource_loader.h"
 
 namespace engine
 {
+void Tilemap::load(struct ResourceLoader* loader, const Json::Value& json)
+{
+	Unit::load(loader, json);
+	tilemapResource = loader->loadTilemap(json["tilemap"].asString());
+}
+
 void Tilemap::update(struct Game* game)
 {
 	Unit::update(game);
@@ -24,26 +31,31 @@ void Tilemap::render(struct Graphics* gfx)
 
 			for (auto& tile : chunk.tiles)
 			{
-				auto tileset = tilemapResource->getTilesetByTileId(tile);
+				auto tilesetInfo = tilemapResource->getTilesetInfoByTileId(tile);
 
-				gfx->atlasTextureIndex = tileset->image->atlasTexture->textureIndex;
+				gfx->atlasTextureIndex = tilesetInfo.tileset->image->atlasTexture->textureIndex;
 				gfx->color = 0;
 				gfx->colorMode = (u32)ColorMode::Add;
 
 				Rect rc;
 
-				u32 col = tileIndex % chunk.width;
-				u32 row = tileIndex / chunk.width;
+				u32 col = tileIndex % (u32)chunk.width;
+				u32 row = tileIndex / (u32)chunk.width;
 
 				auto offsX = tilemapResource->tileWidth * col;
 				auto offsY = tilemapResource->tileHeight * row;
 
-				rc.x = boundingBox.x + chunk.x + offsX;
-				rc.y = boundingBox.y + chunk.y + offsY;
+				rc.x = boundingBox.x + chunk.x * tilemapResource->tileWidth + offsX - layer.startX * tilemapResource->tileWidth;
+				rc.y = boundingBox.y + chunk.y * tilemapResource->tileHeight + offsY - layer.startY * tilemapResource->tileHeight;
 				rc.width = tilemapResource->tileWidth;
 				rc.height = tilemapResource->tileHeight;
+				auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);
 
-				gfx->drawQuad(rc, tileset->getTileRectTexCoord(tile));
+				if (tilesetInfo.tileset->image->rotated)
+					gfx->drawQuadWithTexCoordRotated90(rc, uv);
+				else
+					gfx->drawQuad(rc, uv);
+
 				++tileIndex;
 			}
 		}

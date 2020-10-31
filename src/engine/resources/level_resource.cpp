@@ -4,13 +4,14 @@
 #include "resource_loader.h"
 #include "sprite.h"
 #include "game.h"
+#include "tilemap.h"
 
 namespace engine
 {
 bool LevelResource::load(Json::Value& json)
 {
-	auto layersJson = json.get("layers", Json::Value());
-	auto unitsJson = json.get("units", Json::Value());
+	auto& layersJson = json.get("layers", Json::Value());
+	auto& unitsJson = json.get("units", Json::Value());
 
 	if (!unitsJson.size())
 		return true;
@@ -27,7 +28,16 @@ bool LevelResource::load(Json::Value& json)
 
 	for (auto& item : unitsJson)
 	{
-		Unit* unit = new Unit();
+		Unit* unit = nullptr;
+
+		if (item["type"].asString() == "tilemap")
+		{
+			unit = new Tilemap();
+		}
+		else
+		{
+			unit = new Unit();
+		}
 
 		unit->load(loader, item);
 		units.push_back(unit);

@@ -7,10 +7,12 @@ namespace engine
 {
 struct FontResource : Resource
 {
+	typedef std::pair<u32, u32> GlyphCodePair;
+
 	struct SpriteResource* charsSprite = nullptr;
 	u32 startGlyphFrame = 0;
 	std::map<u32, u32 /*frame*/> glyphCodes;
-	std::map<std::pair<u32, u32>, i32> kernings;
+	std::map<GlyphCodePair, i32 /*kern value*/> kernings;
 
 	bool load(Json::Value& json) override;
 	void unload() override;

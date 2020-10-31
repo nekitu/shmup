@@ -19,18 +19,21 @@ bool UnitResource::load(Json::Value& json)
 
 	if (typeStr == "Enemy")
 		unitType = UnitType::Enemy;
-
+	else
 	if (typeStr == "Item")
 		unitType = UnitType::Item;
-
+	else
 	if (typeStr == "Player")
 		unitType = UnitType::Player;
-
+	else
 	if (typeStr == "EnemyProjectile")
 		unitType = UnitType::EnemyProjectile;
-
+	else
 	if (typeStr == "PlayerProjectile")
 		unitType = UnitType::PlayerProjectile;
+	else
+	if (typeStr == "Tilemap")
+		unitType = UnitType::Tilemap;
 
 	speed = json.get("speed", speed).asFloat();
 	visible = json.get("visible", visible).asBool();

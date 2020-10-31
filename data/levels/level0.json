@@ -11,22 +11,11 @@
 "units":
 [
 	{
-		"name": "bg",
-		"unit": "units/bg",
-		"layerIndex": 3,
-		"position": "120 -572"
-	},
-	{
-		"name": "bg2",
-		"layerIndex": 2,
-		"unit": "units/bg2",
-		"position": "120 -572"
-	},
-	{
-		"name": "intro_bg",
-		"unit": "units/intro_story",
+    "name": "tm1",
+    "type": "tilemap",
+		"tilemap": "tilemaps/test",
 		"layerIndex": 0,
-		"position": "0 1"
+		"position": "0 0"
 	}
 ]
 }

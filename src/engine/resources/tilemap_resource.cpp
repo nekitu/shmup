@@ -8,7 +8,7 @@ bool TilemapResource::load(Json::Value& json)
 {
 	tileWidth = json.get("tilewidth", 0).asInt();
 	tileHeight = json.get("tileheight", 0).asInt();
-	auto layersArray = json.get("layers", Json::ValueType::arrayValue);
+	auto& layersArray = json.get("layers", Json::ValueType::arrayValue);
 
 	for (auto& layerJson : layersArray)
 	{
@@ -53,8 +53,13 @@ bool TilemapResource::load(Json::Value& json)
 	for (auto& tilesetJson : tilesetsArray)
 	{
 		TilesetInfo info;
+		auto filename = tilesetJson.get("source", "").asString();
 
-		info.tileset = Game::instance->resourceLoader->loadTileset(tilesetJson.get("source", "").asString());
+		replaceAll(filename, "..", "");
+		replaceAll(filename, "\/", "/");
+		replaceAll(filename, ".json", "");
+
+		info.tileset = Game::instance->resourceLoader->loadTileset(filename);
 		info.firstGid = tilesetJson.get("firstgid", 0).asInt();
 		tilesets.push_back(info);
 	}
@@ -67,7 +72,7 @@ void TilemapResource::unload()
 	layers.clear();
 }
 
-TilesetResource* TilemapResource::getTilesetByTileId(u32 tileId)
+TilesetInfo TilemapResource::getTilesetInfoByTileId(u32 tileId)
 {
 	for (int i = 0; i < tilesets.size(); i++)
 	{
@@ -76,16 +81,16 @@ TilesetResource* TilemapResource::getTilesetByTileId(u32 tileId)
 			if (tileId >= tilesets[i].firstGid
 				&& tileId < tilesets[i + 1].firstGid)
 			{
-				return tilesets[i].tileset;
+				return tilesets[i];
 			}
 		}
 		else
 		{
-			return tilesets[i].tileset;
+			return tilesets[i];
 		}
 	}
 
-	return nullptr;
+	return TilesetInfo();
 }
 
 }

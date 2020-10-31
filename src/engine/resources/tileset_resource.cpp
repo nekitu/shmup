@@ -15,8 +15,9 @@ bool TilesetResource::load(Json::Value& json)
 	tileWidth = json.get("tilewidth", 0).asInt();
 	tileHeight = json.get("tileheight", 0).asInt();
 	imageFilename = json.get("image", "").asString();
-
+	imageFilename = "tilesets/" + imageFilename;
 	imageFilename = Game::instance->makeFullDataPath(imageFilename);
+	LOG_DEBUG("Loading tileset image: {0}", imageFilename);
 
 	int width = 0;
 	int height = 0;
@@ -28,11 +29,6 @@ bool TilesetResource::load(Json::Value& json)
 		return false;
 
 	image = Game::instance->graphics->atlas->addImage((Rgba32*)data, width, height);
-
-	uvMargin = (f32)margin / (f32)width;
-	uvSpacing = (f32)spacing / (f32)width;
-	uvTileWidth = (f32)tileWidth / (f32)width;
-	uvTileHeight = (f32)tileHeight / (f32)height;
 
 	return true;
 }
@@ -51,13 +47,17 @@ Rect TilesetResource::getTileRectTexCoord(u32 index)
 
 	if (image->rotated)
 	{
-		rc.x = image->uvRect.x + uvMargin + uvTileWidth * (f32)row + uvSpacing * (f32)row;
-		rc.y = image->uvRect.y + uvMargin + uvTileHeight * (f32)(columns - col - 1) + uvSpacing * (f32)(columns - col - 1);
+		uvTileWidth = image->uvRect.width / (f32)(image->height / tileHeight);
+		uvTileHeight = image->uvRect.height / (f32)columns;
+		rc.x = image->uvRect.x + uvMargin + uvTileHeight * (f32)row + uvSpacing * (f32)row;
+		rc.y = image->uvRect.y + uvMargin + uvTileWidth * (f32)(columns - col - 1) + uvSpacing * (f32)(columns - col - 1);
 		rc.width = uvTileWidth;
 		rc.height = uvTileHeight;
 	}
 	else
 	{
+		uvTileWidth = image->uvRect.width / (f32)columns;
+		uvTileHeight = image->uvRect.height / (f32)(image->height / tileHeight);
 		rc.x = image->uvRect.x + uvMargin + uvTileWidth * (f32)col + uvSpacing * (f32)col;
 		rc.y = image->uvRect.y + uvMargin + uvTileHeight * (f32)row + uvSpacing * (f32)row;
 		rc.width = uvTileWidth;

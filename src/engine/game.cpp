@@ -466,6 +466,8 @@ void Game::checkCollisions()
 		for (auto unit2 : units)
 		{
 			if (!unit2->collide) continue;
+			if (!unit1->unitResource) continue;
+			if (!unit2->unitResource) continue;
 
 			if (unit1 == unit2
 				|| unit1->unitResource->type == unit2->unitResource->type) continue;
@@ -519,6 +521,8 @@ void Game::checkCollisions()
 		for (auto unit2 : units)
 		{
 			if (!unit2->collide) continue;
+			if (!unitProj->unitResource) continue;
+			if (!unit2->unitResource) continue;
 
 			if (unitProj == unit2
 				|| unitProj->unitResource->unitType == unit2->unitResource->unitType) continue;
@@ -565,6 +569,8 @@ void Game::checkCollisions()
 	for (auto& cp : collisionPairs)
 	{
 		pixelCols.clear();
+		if (!cp.first->unitResource) continue;
+		if (!cp.second->unitResource) continue;
 
 		if (cp.first->checkPixelCollision(cp.second, pixelCols))
 		{
