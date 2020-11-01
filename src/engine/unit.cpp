@@ -403,7 +403,7 @@ void Unit::setAnimation(const std::string& animName)
 
 void Unit::computeBoundingBox()
 {
-	if (root && unitResource)
+	if (root && root->spriteResource)
 	{
 		if (root->rotation != 0)
 		{
@@ -442,7 +442,6 @@ void Unit::computeBoundingBox()
 		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
 
 		root->rect = boundingBox;
-
 		root->rect.x = roundf(root->rect.x);
 		root->rect.y = roundf(root->rect.y);
 		root->rect.width = roundf(root->rect.width);
@@ -515,6 +514,12 @@ void Unit::computeBoundingBox()
 			boundingBox.add(spriteRc);
 			spr->rect = spriteRc;
 		}
+	}
+
+	if (root && !root->spriteResource)
+	{
+		boundingBox.setPosition(root->position);
+		boundingBox.setSize(root->scale);
 	}
 
 	boundingBox.x = roundf(boundingBox.x);

@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "rect.h"
 
+
 namespace engine
 {
 struct TilesetResource : Resource

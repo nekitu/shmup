@@ -50,6 +50,18 @@ struct Rect
 		sscanf(str.c_str(), "%f %f %f %f", &x, &y, &width, &height);
 	}
 
+	void setPosition(const Vec2& pos)
+	{
+		x = pos.x;
+		y = pos.y;
+	}
+
+	void setSize(const Vec2& size)
+	{
+		width = size.x;
+		height = size.y;
+	}
+
 	std::string toString() const
 	{
 		char buff[300] = { 0 };

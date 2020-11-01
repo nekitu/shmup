@@ -5,6 +5,7 @@
 #include "graphics.h"
 #include "image_atlas.h"
 #include "resource_loader.h"
+#include "sprite.h"
 
 namespace engine
 {
@@ -17,6 +18,7 @@ void Tilemap::load(struct ResourceLoader* loader, const Json::Value& json)
 void Tilemap::update(struct Game* game)
 {
 	Unit::update(game);
+	root->position.y += game->deltaTime * 10.0f;
 }
 
 void Tilemap::render(struct Graphics* gfx)
@@ -34,8 +36,8 @@ void Tilemap::render(struct Graphics* gfx)
 				auto tilesetInfo = tilemapResource->getTilesetInfoByTileId(tile);
 
 				gfx->atlasTextureIndex = tilesetInfo.tileset->image->atlasTexture->textureIndex;
-				gfx->color = 0;
-				gfx->colorMode = (u32)ColorMode::Add;
+				gfx->color = root->color;
+				gfx->colorMode = root->colorMode;
 
 				Rect rc;
 
