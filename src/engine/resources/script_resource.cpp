@@ -2,6 +2,7 @@
 #include "resources/unit_resource.h"
 #include "resources/font_resource.h"
 #include "resources/sprite_resource.h"
+#include "resources/animation_resource.h"
 #include "utils.h"
 #include "resource_loader.h"
 #include "weapon.h"
@@ -188,6 +189,15 @@ bool initializeLua()
 	LUA.beginExtendClass<FontResource, UnitResource>("FontResource")
 		.endClass();
 
+	LUA.beginExtendClass<AnimationResource, UnitResource>("AnimationResource")
+		.endClass();
+
+	LUA.beginClass<AnimationKey>("AnimationKey")
+		.endClass();
+
+	LUA.beginClass<AnimationTrack>("AnimationTrack")
+		.endClass();
+
 	LUA.beginClass<UnitLifeStage>("UnitLifeStage")
 		.addVariable("name", &UnitLifeStage::name)
 		.addVariable("triggerOnHealth", &UnitLifeStage::triggerOnHealth)
@@ -358,12 +368,43 @@ bool initializeLua()
 
 	l.setGlobal("game", Game::instance);
 	l.setGlobal("gfx", Game::instance->graphics);
+	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
+
+	// constants and enums
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
+
 	l.setGlobal("AlphaMode_Blend", AlphaMode::Blend);
 	l.setGlobal("AlphaMode_Mask", AlphaMode::Mask);
-	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
+
+	l.setGlobal("AnimationLoopMode_None", AnimationLoopMode::None);
+	l.setGlobal("AnimationLoopMode_Normal", AnimationLoopMode::Normal);
+	l.setGlobal("AnimationLoopMode_Reversed", AnimationLoopMode::Reversed);
+	l.setGlobal("AnimationLoopMode_PingPong", AnimationLoopMode::PingPong);
+
+	l.setGlobal("AnimationTrackType_Unknown", AnimationTrackType::Unknown);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+
 	return true;
 }
 

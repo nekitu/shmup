@@ -1,31 +1,96 @@
 #include "tilemap_resource.h"
 #include "game.h"
 #include "resource_loader.h"
+#include <stb_image.h>
+#include "image_atlas.h"
+#include "graphics.h"
 
 namespace engine
 {
-bool TilemapResource::load(Json::Value& json)
+void TilemapObject::load(Json::Value& json)
 {
-	tileWidth = json.get("tilewidth", 0).asInt();
-	tileHeight = json.get("tileheight", 0).asInt();
-	auto& layersArray = json.get("layers", Json::ValueType::arrayValue);
+	gid = objJson.get("gid", obj.gid).asInt();
+	size.x = objJson.get("width", obj.size.x).asFloat();
+	size.y = objJson.get("height", obj.size.y).asFloat();
+	id = objJson.get("id", obj.id).asInt();
+	name = objJson.get("name", obj.id).asInt();
+}
 
-	for (auto& layerJson : layersArray)
+void TilemapLayer::load(Json::Value& json)
+{
+	id = json.get("id", 0).asInt();
+	name = json.get("name", "").asString();
+	size.x = json.get("width", 0).asInt();
+	size.y = json.get("height", 0).asInt();
+	start.x = json.get("startx", 0).asInt();
+	start.y = json.get("starty", 0).asInt();
+	visible = json.get("visible", 0).asBool();
+	position.x = json.get("x", 0).asInt();
+	position.y = json.get("y", 0).asInt();
+	opacity = json.get("opacity", 0).asFloat();
+
+	auto typeName = json.get("type", 0).asString();
+
+	if (typeName == "tilelayer") type = TilemapLayer::Type::Tiles;
+
+	if (typeName == "group")
 	{
-		TilemapLayer layer;
+		type = TilemapLayer::Type::Group;
 
-		layer.id = layerJson.get("id", 0).asInt();
-		layer.name = layerJson.get("name", "").asString();
-		layer.width = layerJson.get("width", 0).asInt();
-		layer.height = layerJson.get("height", 0).asInt();
-		layer.startX = layerJson.get("startx", 0).asInt();
-		layer.startY = layerJson.get("starty", 0).asInt();
-		layer.x = layerJson.get("x", 0).asInt();
-		layer.y = layerJson.get("y", 0).asInt();
-		layer.opacity = layerJson.get("opacity", 0).asFloat();
+		auto& layersJson = json.get("layers", Json::ValueType::arrayValue);
 
-		auto& chunksJson = layerJson.get("chunks", Json::ValueType::arrayValue);
+		for (auto& layerJson : layersJson)
+		{
+			TilemapLayer layer;
 
+			layer.load(layerJson);
+			layers.push_back(layer);
+		}
+	}
+
+	if (typeName == "imagelayer")
+	{
+		type = TilemapLayer::Type::Image;
+		imagePath = json.get("image", 0).asString();
+		imagePath = getParentPath(tilemapResource->fileName) + imagePath;
+		replaceAll(imagePath, "\\/", "/");
+
+		int imgWidth = 0;
+		int imgHeight = 0;
+		int comp = 0;
+
+		stbi_uc* imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
+		LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
+
+		if (imgData)
+		{
+			image = Game::instance->graphics->atlas->addImage((Rgba32*)imgData, imgWidth, imgHeight);
+		}
+	}
+
+	if (typeName == "objectgroup")
+	{
+		type = TilemapLayer::Type::Objects;
+		auto& objectsJson = json.get("objects", Json::ValueType::arrayValue);
+
+		for (auto& objJson : objectsJson)
+		{
+			TilemapObject obj;
+
+			obj.tilemapResource = this;
+			obj.load(objJson);
+
+
+		}
+	}
+
+	auto& chunksJson = json.get("chunks", Json::ValueType::arrayValue);
+	auto& dataJson = json.get("data", Json::ValueType::arrayValue);
+
+	bool infinite = dataJson.isNull();
+
+	if (infinite)
+	{
 		for (auto& chunkJson : chunksJson)
 		{
 			TilemapChunk chunk;
@@ -42,9 +107,42 @@ bool TilemapResource::load(Json::Value& json)
 				chunk.tiles.push_back(tileIndex.asInt());
 			}
 
-			layer.chunks.push_back(chunk);
+			chunks.push_back(chunk);
+		}
+	}
+	else
+	{
+		TilemapChunk chunk;
+
+		chunk.width = width;
+		chunk.height = height;
+		chunk.x = x;
+		chunk.y = y;
+
+		for (auto& tileIndex : dataJson)
+		{
+			chunk.tiles.push_back(tileIndex.asInt());
 		}
 
+		chunks.push_back(chunk);
+	}
+}
+
+bool TilemapResource::load(Json::Value& json)
+{
+	// loading Tiled json map
+	tileSize.x = json.get("tilewidth", 0).asInt();
+	tileSize.y = json.get("tileheight", 0).asInt();
+	infinite = json.get("infinite", 0).asBool();
+
+	auto& layersArray = json.get("layers", Json::ValueType::arrayValue);
+
+	for (auto& layerJson : layersArray)
+	{
+		TilemapLayer layer;
+
+		layer.tilemapResource = this;
+		layer.load(layerJson);
 		layers.push_back(layer);
 	}
 

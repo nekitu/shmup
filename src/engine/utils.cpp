@@ -4,6 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cstring>
+#include <filesystem>
 
 namespace engine
 {
@@ -175,6 +176,13 @@ void replaceAll(std::string& source, const std::string& from, const std::string&
 	newString += source.substr(lastPos);
 
 	source.swap(newString);
+}
+
+std::string getParentPath(const std::string& path)
+{
+	std::filesystem::path p(path);
+
+	return p.parent_path().generic_u8string();
 }
 
 }

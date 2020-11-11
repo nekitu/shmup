@@ -6,19 +6,76 @@ namespace engine
 struct TilemapChunk
 {
 	std::vector<u32> tiles;
-	f32 width = 0, height = 0;
-	f32 x = 0, y = 0;
+	Vec2 size;
+	Vec2 position;
+};
+
+struct TilemapObject
+{
+	enum class Type
+	{
+		Polygon,
+		Polyline,
+		Rect,
+		Point,
+		Ellipse,
+		Image,
+		Text,
+
+		Count
+	};
+
+	struct TilemapResource* tilemapResource = nullptr;
+	Type type = Type::Point;
+	Vec2 size;
+	Vec2 position;
+	u32 gid = 0;
+	u32 id = 0;
+	std::string name;
+	f32 rotation = 0;
+	std::string templateFilename;
+	std::string text;
+	std::string typeString;
+	std::vector<Vec2> points;
+
+	void load(Json::Value& json);
 };
 
 struct TilemapLayer
 {
+	enum class Type
+	{
+		Tiles,
+		Objects,
+		Group,
+		Image,
+
+		Count
+	};
+
+	struct TilemapResource* tilemapResource = nullptr;
+	Type type = Type::Tiles;
 	std::vector<TilemapChunk> chunks;
+	std::vector<TilemapObject> objects;
+	std::vector<TilemapLayer> layers;
+	std::string imagePath;
 	std::string name;
 	u32 id = 0;
-	f32 width = 0, height = 0;
-	f32 startX = 0, startY = 0;
-	f32 x = 0, y = 0;
+	Vec2 size;
+	Vec2 start;
+	Vec2 offset;
+	Vec2 position;
 	f32 opacity = 1.0f;
+	bool visible = true;
+	struct AtlasImage* image = nullptr;
+	Color tintColor;
+
+	// custom properties
+	f32 cameraParallaxScale = 1.0f;
+	bool cameraParallax = true; // used by player layer to not parallax its position by camera side moves
+	bool cameraScroll = true; // if true, the layer is scrolled, if false, the layer is not scrolled by camera position, used for enemies/bosses to stay in place and player to not be affected by camera scroll progression in the level
+
+	void load(Json::Value& json);
 };
 
 struct TilesetInfo
@@ -29,9 +86,13 @@ struct TilesetInfo
 
 struct TilemapResource : Resource
 {
-	f32 tileWidth = 0, tileHeight = 0;
+	Vec2 tileSize;
+	Vec2 size;
 	std::vector<TilemapLayer> layers;
 	std::vector<TilesetInfo> tilesets;
+	std::vector<struct Unit*> units;
+	Color backgroundColor;
+	bool infinite = false;
 
 	bool load(Json::Value& json) override;
 	void unload() override;

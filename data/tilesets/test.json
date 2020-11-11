@@ -5,6 +5,11 @@
  "margin":0,
  "name":"test",
  "spacing":0,
+ "terrains":[
+        {
+         "name":"New Terrain",
+         "tile":22
+        }],
  "tilecount":168,
  "tiledversion":"1.3.3",
  "tileheight":8,
@@ -34,6 +39,22 @@
          "id":24
         }, 
         {
+         "id":34,
+         "probability":222,
+         "properties":[
+                {
+                 "name":"dfgsdfg",
+                 "type":"float",
+                 "value":0
+                }, 
+                {
+                 "name":"dsdafsdf",
+                 "type":"float",
+                 "value":121
+                }],
+         "type":"Enemy"
+        }, 
+        {
          "animation":[
                 {
                  "duration":100,
@@ -44,6 +65,22 @@
                  "tileid":57
                 }],
          "id":49
+        }, 
+        {
+         "id":105,
+         "terrain":[0, 0, 0, 0]
+        }, 
+        {
+         "id":106,
+         "terrain":[0, 0, 0, 0]
+        }, 
+        {
+         "id":113,
+         "terrain":[0, 0, 0, 0]
+        }, 
+        {
+         "id":114,
+         "terrain":[0, 0, 0, 0]
         }],
  "tilewidth":8,
  "type":"tileset",
