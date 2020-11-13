@@ -19,13 +19,12 @@ struct TilemapObject
 		Rect,
 		Point,
 		Ellipse,
-		Image,
+		Tile,
 		Text,
 
 		Count
 	};
 
-	struct TilemapResource* tilemapResource = nullptr;
 	Type type = Type::Point;
 	Vec2 size;
 	Vec2 position;
@@ -33,8 +32,9 @@ struct TilemapObject
 	u32 id = 0;
 	std::string name;
 	f32 rotation = 0;
-	std::string templateFilename;
+	std::string templatePath;
 	std::string text;
+	bool wrap = true;
 	std::string typeString;
 	std::vector<Vec2> points;
 

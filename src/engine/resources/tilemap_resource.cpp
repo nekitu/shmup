@@ -9,11 +9,44 @@ namespace engine
 {
 void TilemapObject::load(Json::Value& json)
 {
-	gid = objJson.get("gid", obj.gid).asInt();
-	size.x = objJson.get("width", obj.size.x).asFloat();
-	size.y = objJson.get("height", obj.size.y).asFloat();
-	id = objJson.get("id", obj.id).asInt();
-	name = objJson.get("name", obj.id).asInt();
+	gid = json.get("gid", gid).asInt();
+	id = json.get("id", id).asInt();
+	size.x = json.get("width", size.x).asFloat();
+	size.y = json.get("height", size.y).asFloat();
+	position.x = json.get("x", position.x).asFloat();
+	position.y = json.get("y", position.y).asFloat();
+	rotation = json.get("rotation", rotation).asFloat();
+	name = json.get("name", name).asString();
+	typeString = json.get("type", typeString).asString();
+	templatePath = json.get("template", templatePath).asString();
+
+	if (json.get("ellipse", "").asBool()) type = Type::Ellipse;
+	else if (json.get("point", "").asBool()) type = Type::Point;
+	else if (json.isMember("polygon")) type = Type::Polygon;
+	else if (json.isMember("polyline")) type = Type::Polyline;
+	else if (json.isMember("gid")) type = Type::Tile;
+	else if (json.isMember("text")) type = Type::Text;
+	else type = Type::Rect;
+
+	if (type == Type::Polygon || type == Type::Polyline)
+	{
+		auto& ptsJson = json.get("points", Json::ValueType::arrayValue);
+
+		for (auto& ptJson : ptsJson)
+		{
+			Vec2 pt;
+
+			pt.x = ptJson.get("x", 0).asFloat();
+			pt.y = ptJson.get("y", 0).asFloat();
+			points.push_back(pt);
+		}
+	}
+	else if (type == Type::Text)
+	{
+		auto& textJson = json.get("text", Json::ValueType::objectValue);
+		text = textJson.get("text", text).asString();
+		wrap = textJson.get("wrap", wrap).asBool();
+	}
 }
 
 void TilemapLayer::load(Json::Value& json)
@@ -24,12 +57,15 @@ void TilemapLayer::load(Json::Value& json)
 	size.y = json.get("height", 0).asInt();
 	start.x = json.get("startx", 0).asInt();
 	start.y = json.get("starty", 0).asInt();
-	visible = json.get("visible", 0).asBool();
+	visible = json.get("visible", true).asBool();
 	position.x = json.get("x", 0).asInt();
 	position.y = json.get("y", 0).asInt();
-	opacity = json.get("opacity", 0).asFloat();
+	opacity = json.get("opacity", 1).asFloat();
 
-	auto typeName = json.get("type", 0).asString();
+	auto& properties = json.get("properties", Json::ValueType::arrayValue);
+
+
+	auto typeName = json.get("type", "").asString();
 
 	if (typeName == "tilelayer") type = TilemapLayer::Type::Tiles;
 
@@ -76,11 +112,20 @@ void TilemapLayer::load(Json::Value& json)
 		for (auto& objJson : objectsJson)
 		{
 			TilemapObject obj;
+			std::string tplPath = objJson.get("template", "").asString();
 
-			obj.tilemapResource = this;
+			if (tplPath != "")
+			{
+				Json::Value tplJson;
+
+				if (loadJson(tplPath, tplJson))
+				{
+					obj.load(tplJson);
+				}
+			}
+
 			obj.load(objJson);
-
-
+			objects.push_back(obj);
 		}
 	}
 
@@ -95,10 +140,10 @@ void TilemapLayer::load(Json::Value& json)
 		{
 			TilemapChunk chunk;
 
-			chunk.width = chunkJson.get("width", 0).asInt();
-			chunk.height = chunkJson.get("height", 0).asInt();
-			chunk.x = chunkJson.get("x", 0).asInt();
-			chunk.y = chunkJson.get("y", 0).asInt();
+			chunk.size.x = chunkJson.get("width", 0).asInt();
+			chunk.size.y = chunkJson.get("height", 0).asInt();
+			chunk.position.x = chunkJson.get("x", 0).asInt();
+			chunk.position.y = chunkJson.get("y", 0).asInt();
 
 			auto& tiles = chunkJson.get("data", Json::ValueType::arrayValue);
 
@@ -114,10 +159,8 @@ void TilemapLayer::load(Json::Value& json)
 	{
 		TilemapChunk chunk;
 
-		chunk.width = width;
-		chunk.height = height;
-		chunk.x = x;
-		chunk.y = y;
+		chunk.size = size;
+		chunk.position = position;
 
 		for (auto& tileIndex : dataJson)
 		{
@@ -133,7 +176,7 @@ bool TilemapResource::load(Json::Value& json)
 	// loading Tiled json map
 	tileSize.x = json.get("tilewidth", 0).asInt();
 	tileSize.y = json.get("tileheight", 0).asInt();
-	infinite = json.get("infinite", 0).asBool();
+	infinite = json.get("infinite", true).asBool();
 
 	auto& layersArray = json.get("layers", Json::ValueType::arrayValue);
 
@@ -151,13 +194,13 @@ bool TilemapResource::load(Json::Value& json)
 	for (auto& tilesetJson : tilesetsArray)
 	{
 		TilesetInfo info;
-		auto filename = tilesetJson.get("source", "").asString();
+		auto srcPath = tilesetJson.get("source", "").asString();
 
-		replaceAll(filename, "..", "");
-		replaceAll(filename, "\/", "/");
-		replaceAll(filename, ".json", "");
+		replaceAll(srcPath, "..", "");
+		replaceAll(srcPath, "\/", "/");
+		replaceAll(srcPath, ".json", "");
 
-		info.tileset = Game::instance->resourceLoader->loadTileset(filename);
+		info.tileset = Game::instance->resourceLoader->loadTileset(srcPath);
 		info.firstGid = tilesetJson.get("firstgid", 0).asInt();
 		tilesets.push_back(info);
 	}

@@ -384,26 +384,26 @@ bool initializeLua()
 	l.setGlobal("AnimationLoopMode_PingPong", AnimationLoopMode::PingPong);
 
 	l.setGlobal("AnimationTrackType_Unknown", AnimationTrackType::Unknown);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
-	l.setGlobal("AnimationTrackType_", AnimationTrackType::);
+	l.setGlobal("AnimationTrackType_PositionX", AnimationTrackType::PositionX);
+	l.setGlobal("AnimationTrackType_PositionY", AnimationTrackType::PositionY);
+	l.setGlobal("AnimationTrackType_ScaleX", AnimationTrackType::ScaleX);
+	l.setGlobal("AnimationTrackType_ScaleY", AnimationTrackType::ScaleY);
+	l.setGlobal("AnimationTrackType_UniformScale", AnimationTrackType::UniformScale);
+	l.setGlobal("AnimationTrackType_VerticalFlip", AnimationTrackType::VerticalFlip);
+	l.setGlobal("AnimationTrackType_HorizontalFlip", AnimationTrackType::HorizontalFlip);
+	l.setGlobal("AnimationTrackType_Rotation", AnimationTrackType::Rotation);
+	l.setGlobal("AnimationTrackType_Visible", AnimationTrackType::Visible);
+	l.setGlobal("AnimationTrackType_Shadow", AnimationTrackType::Shadow);
+	l.setGlobal("AnimationTrackType_ShadowOffsetX", AnimationTrackType::ShadowOffsetX);
+	l.setGlobal("AnimationTrackType_ShadowOffsetY", AnimationTrackType::ShadowOffsetY);
+	l.setGlobal("AnimationTrackType_ShadowScaleX", AnimationTrackType::ShadowScaleX);
+	l.setGlobal("AnimationTrackType_ShadowScaleY", AnimationTrackType::ShadowScaleY);
+	l.setGlobal("AnimationTrackType_ShadowUniformScale", AnimationTrackType::ShadowUniformScale);
+	l.setGlobal("AnimationTrackType_ColorR", AnimationTrackType::ColorR);
+	l.setGlobal("AnimationTrackType_ColorG", AnimationTrackType::ColorG);
+	l.setGlobal("AnimationTrackType_ColorB", AnimationTrackType::ColorB);
+	l.setGlobal("AnimationTrackType_ColorA", AnimationTrackType::ColorA);
+	l.setGlobal("AnimationTrackType_ColorMode", AnimationTrackType::ColorMode);
 
 	return true;
 }
