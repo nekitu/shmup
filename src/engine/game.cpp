@@ -15,7 +15,7 @@
 #include "resources/unit_resource.h"
 #include "resources/sprite_resource.h"
 #include "resources/weapon_resource.h"
-#include "resources/level_resource.h"
+#include "resources/tilemap_resource.h"
 #include "resources/script_resource.h"
 #include "resources/font_resource.h"
 #include "unit.h"

@@ -161,7 +161,7 @@ struct Game
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
-	bool changeLevel(i32 index);
+	bool changeMap(i32 index);
 	static std::string makeFullDataPath(const std::string relativeDataFilename);
 	struct Unit* createUnit(struct UnitResource* unitRes);
 	struct Weapon* createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite);

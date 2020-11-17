@@ -20,8 +20,8 @@ void TilemapObject::load(Json::Value& json)
 	typeString = json.get("type", typeString).asString();
 	templatePath = json.get("template", templatePath).asString();
 
-	if (json.get("ellipse", "").asBool()) type = Type::Ellipse;
-	else if (json.get("point", "").asBool()) type = Type::Point;
+	if (json.get("ellipse", false).asBool()) type = Type::Ellipse;
+	else if (json.get("point", false).asBool()) type = Type::Point;
 	else if (json.isMember("polygon")) type = Type::Polygon;
 	else if (json.isMember("polyline")) type = Type::Polyline;
 	else if (json.isMember("gid")) type = Type::Tile;
