@@ -42,7 +42,7 @@ struct SpriteResource : Resource
 	std::string rotationAnimPrefix = "r";
 	u32 rotationAnimCount = 0;
 
-	struct AtlasImage* loadImage(const std::string& filename);
+	struct AtlasImage* loadImage(const std::string& path);
 	Rect getFrameUvRect(u32 frame);
 	Rect getFramePixelRect(u32 frame);
 	Rect getSheetFramePixelRect(u32 frame);

@@ -138,11 +138,11 @@ bool UnitResource::load(Json::Value& json)
 		for (int k = 0; k < animJson.getMemberNames().size(); k++)
 		{
 			auto sprName = animJson.getMemberNames()[k];
-			auto filename = animJson[sprName].asString();
+			auto path = animJson[sprName].asString();
 
 			if (sprites.find(sprName) != sprites.end())
 			{
-				sprites[sprName]->animations[animName] = loader->loadAnimation(filename);
+				sprites[sprName]->animations[animName] = loader->loadAnimation(path);
 			}
 		}
 	}

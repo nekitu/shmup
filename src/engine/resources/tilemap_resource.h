@@ -1,5 +1,8 @@
+#pragma once
 #include "types.h"
 #include "resource.h"
+#include "vec2.h"
+#include "color.h"
 
 namespace engine
 {
@@ -37,6 +40,7 @@ struct TilemapObject
 	bool wrap = true;
 	std::string typeString;
 	std::vector<Vec2> points;
+	std::unordered_map<std::string, std::string> properties;
 
 	void load(Json::Value& json);
 };
@@ -58,6 +62,7 @@ struct TilemapLayer
 	std::vector<TilemapChunk> chunks;
 	std::vector<TilemapObject> objects;
 	std::vector<TilemapLayer> layers;
+	std::unordered_map<std::string, std::string> properties;
 	std::string imagePath;
 	std::string name;
 	u32 id = 0;
@@ -73,7 +78,7 @@ struct TilemapLayer
 	// custom properties
 	f32 cameraParallaxScale = 1.0f;
 	bool cameraParallax = true; // used by player layer to not parallax its position by camera side moves
-	bool cameraScroll = true; // if true, the layer is scrolled, if false, the layer is not scrolled by camera position, used for enemies/bosses to stay in place and player to not be affected by camera scroll progression in the level
+	bool cameraScroll = true; // if true, the layer is scrolled, if false, the layer is not scrolled by camera position, used for enemies/bosses to stay in place and player to not be affected by camera scroll progression in the map
 
 	void load(Json::Value& json);
 };
@@ -90,7 +95,6 @@ struct TilemapResource : Resource
 	Vec2 size;
 	std::vector<TilemapLayer> layers;
 	std::vector<TilesetInfo> tilesets;
-	std::vector<struct Unit*> units;
 	Color backgroundColor;
 	bool infinite = false;
 

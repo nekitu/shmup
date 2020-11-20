@@ -43,7 +43,7 @@ namespace engine
 	f32 randomNormalizedFloat(); // 0.0f -> 1.0f range
 	bool utf8ToUtf32(const char* text, UnicodeString& outText);
 	u32 singleUtf8ToUtf32(const char* glyph);
-	bool loadJson(const std::string& filename, Json::Value& json);
+	bool loadJson(const std::string& path, Json::Value& json);
 	std::string readTextFile(const std::string& path);
 	f32 deg2rad(f32 deg);
 	f32 rad2deg(f32 rad);

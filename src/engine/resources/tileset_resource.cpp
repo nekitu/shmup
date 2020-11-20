@@ -14,16 +14,16 @@ bool TilesetResource::load(Json::Value& json)
 	tileCount = json.get("tilecount", 0).asInt();
 	tileWidth = json.get("tilewidth", 0).asInt();
 	tileHeight = json.get("tileheight", 0).asInt();
-	imageFilename = json.get("image", "").asString();
-	imageFilename = "tilesets/" + imageFilename;
-	imageFilename = Game::instance->makeFullDataPath(imageFilename);
-	LOG_DEBUG("Loading tileset image: {0}", imageFilename);
+	imagePath = json.get("image", "").asString();
+	imagePath = "tilesets/" + imagePath;
+	imagePath = Game::instance->makeFullDataPath(imagePath);
+	LOG_DEBUG("Loading tileset image: {0}", imagePath);
 
 	int width = 0;
 	int height = 0;
 	int comp = 0;
 
-	stbi_uc* data = stbi_load(imageFilename.c_str(), &width, &height, &comp, 4);
+	stbi_uc* data = stbi_load(imagePath.c_str(), &width, &height, &comp, 4);
 
 	if (!data)
 		return false;

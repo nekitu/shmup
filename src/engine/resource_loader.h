@@ -7,7 +7,7 @@ namespace engine
 {
 struct ResourceLoader
 {
-	std::unordered_map<std::string/*filename*/, struct Resource*> resources;
+	std::unordered_map<std::string/*path*/, struct Resource*> resources;
 	std::vector<struct ScriptResource*> scripts;
 	std::vector<struct SpriteResource*> sprites;
 	struct ImageAtlas* atlas = nullptr;
@@ -16,17 +16,17 @@ struct ResourceLoader
 	void reloadScripts();
 	void reloadWeapons();
 	void reloadSprites();
+
 	// example: "sprites/sample_sprite"
-	struct SpriteResource* loadSprite(const std::string& filename);
-	struct SoundResource* loadSound(const std::string& filename);
-	struct MusicResource* loadMusic(const std::string& filename);
-	struct UnitResource* loadUnit(const std::string& filename);
-	struct LevelResource* loadLevel(const std::string& filename);
-	struct WeaponResource* loadWeapon(const std::string& filename);
-	struct ScriptResource* loadScript(const std::string& filename);
-	struct AnimationResource* loadAnimation(const std::string& filename);
-	struct FontResource* loadFont(const std::string& filename);
-	struct TilemapResource* loadTilemap(const std::string& filename);
-	struct TilesetResource* loadTileset(const std::string& filename);
+	struct SpriteResource* loadSprite(const std::string& path);
+	struct SoundResource* loadSound(const std::string& path);
+	struct MusicResource* loadMusic(const std::string& path);
+	struct UnitResource* loadUnit(const std::string& path);
+	struct WeaponResource* loadWeapon(const std::string& path);
+	struct ScriptResource* loadScript(const std::string& path);
+	struct AnimationResource* loadAnimation(const std::string& path);
+	struct FontResource* loadFont(const std::string& path);
+	struct TilemapResource* loadTilemap(const std::string& path);
+	struct TilesetResource* loadTileset(const std::string& path);
 };
 }

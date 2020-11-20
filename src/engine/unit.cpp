@@ -252,14 +252,14 @@ void Unit::initializeFrom(UnitResource* res)
 void Unit::load(ResourceLoader* loader, const Json::Value& json)
 {
 	name = json.get("name", name).asCString();
-	auto unitFilename = json["unit"].asString();
+	auto unitPath = json["unit"].asString();
 
-	if (unitFilename == "")
+	if (unitPath == "")
 	{
-		LOG_ERROR("No unitResource filename specified for unitResource instance ({0})", name);
+		LOG_ERROR("No unitResource path specified for unitResource instance ({0})", name);
 	}
 
-	auto unitResource = loader->loadUnit(unitFilename);
+	auto unitResource = loader->loadUnit(unitPath);
 	if (unitResource) initializeFrom(unitResource);
 	name = json.get("name", name).asCString();
 	currentAnimationName = json.get("animationName", "").asString();

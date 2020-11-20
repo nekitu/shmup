@@ -39,16 +39,16 @@ Game::~Game()
 {
 }
 
-std::string Game::makeFullDataPath(const std::string relativeDataFilename)
+std::string Game::makeFullDataPath(const std::string relativeDataPath)
 {
-	return instance->dataRoot + relativeDataFilename;
+	return instance->dataRoot + relativeDataPath;
 }
 
 void Game::loadConfig()
 {
 	Json::Value json;
 
-	if (!loadJson(makeFullDataPath(configFilename), json)) return;
+	if (!loadJson(makeFullDataPath(configPath), json)) return;
 
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
@@ -57,13 +57,13 @@ void Game::loadConfig()
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
 
-	auto levelsJson = json.get("levels", Json::ValueType::arrayValue);
+	auto mapsJson = json.get("tilemaps", Json::ValueType::arrayValue);
 
-	for (u32 i = 0; i < levelsJson.size(); i++)
+	for (u32 i = 0; i < mapsJson.size(); i++)
 	{
-		Json::Value& lvlInfoJson = levelsJson[i];
-		LOG_INFO("Level: {0} in {1}", lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asCString());
-		levels.push_back(std::make_pair(lvlInfoJson["title"].asCString(), lvlInfoJson["file"].asString()));
+		Json::Value& mapInfoJson = mapsJson[i];
+		LOG_INFO("Map: {0} in {1}", mapInfoJson["title"].asCString(), mapInfoJson["path"].asCString());
+		maps.push_back(std::make_pair(mapInfoJson["title"].asCString(), mapInfoJson["path"].asString()));
 	}
 }
 
@@ -151,7 +151,7 @@ bool Game::initialize()
 	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
 
 	initializeLua();
-	changeLevel(0);
+	changeMap(0);
 	createPlayers();
 
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
@@ -790,23 +790,23 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
-	if (!Game::instance->layers[layerIndex].cameraScroll
-		&& !Game::instance->layers[layerIndex].cameraParallax)
+	if (!Game::instance->map->layers[layerIndex].cameraScroll
+		&& !Game::instance->map->layers[layerIndex].cameraParallax)
 	{
 		return pos;
 	}
 
-	if (!Game::instance->layers[layerIndex].cameraScroll
-		&& Game::instance->layers[layerIndex].cameraParallax)
+	if (!Game::instance->map->layers[layerIndex].cameraScroll
+		&& Game::instance->map->layers[layerIndex].cameraParallax)
 	{
-		newPos.x += cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
-		newPos.y += cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+		newPos.x += cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.y += cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 		return newPos;
 	}
 
-	newPos.x += cameraPosition.x + cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
-	newPos.y += cameraPosition.y + cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+	newPos.x += cameraPosition.x + cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.y += cameraPosition.y + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -815,23 +815,23 @@ Vec2 Game::screenToWorld(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
-	if (!Game::instance->layers[layerIndex].cameraScroll
-		&& !Game::instance->layers[layerIndex].cameraParallax)
+	if (!Game::instance->map->layers[layerIndex].cameraScroll
+		&& !Game::instance->map->layers[layerIndex].cameraParallax)
 	{
 		return pos;
 	}
 
-	if (!Game::instance->layers[layerIndex].cameraScroll
-		&& Game::instance->layers[layerIndex].cameraParallax)
+	if (!Game::instance->map->layers[layerIndex].cameraScroll
+		&& Game::instance->map->layers[layerIndex].cameraParallax)
 	{
-		newPos.x -= cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
-		newPos.y -= cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+		newPos.x -= cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.y -= cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 		return newPos;
 	}
 
-	newPos.x -= cameraPosition.x + cameraPositionOffset.x * Game::instance->layers[layerIndex].cameraParallaxScale;
-	newPos.y -= cameraPosition.y + cameraPositionOffset.y * Game::instance->layers[layerIndex].cameraParallaxScale;
+	newPos.x -= cameraPosition.x + cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.y -= cameraPosition.y + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -1040,39 +1040,27 @@ void Game::deleteNonPersistentUnits()
 	}
 }
 
-bool Game::changeLevel(i32 index)
+bool Game::changeMap(i32 index)
 {
 	deleteNonPersistentUnits();
 	projectilePool.clear();
 	projectilePool.resize(maxProjectileCount);
 	projectiles.clear();
-	layers.clear();
 
 	if (index == -1)
 	{
-		currentLevelIndex++;
+		currentMapIndex++;
 	}
 
-	if (index >= levels.size())
+	if (index >= maps.size())
 	{
-		LOG_ERROR("Level index out of range {0}", index);
+		LOG_ERROR("Map index out of range {0}", index);
 		return false;
 	}
 
-	currentLevelIndex = index;
-	auto level = resourceLoader->loadLevel(levels[currentLevelIndex].second);
+	currentMapIndex = index;
+	map = resourceLoader->loadTilemap(maps[currentMapIndex].second);
 
-	for (auto& layer : level->layers)
-	{
-		layers.push_back(layer);
-	}
-
-	for (auto& unit : level->units)
-	{
-		units.push_back(unit);
-	}
-
-	resourceLoader->unload(level);
 
 	return true;
 }
@@ -1087,10 +1075,10 @@ Unit* Game::createUnit(UnitResource* unitResource)
 	return unit;
 }
 
-Weapon* Game::createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite)
+Weapon* Game::createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite)
 {
 	Weapon* weapon = new Weapon();
-	auto weaponRes = resourceLoader->loadWeapon(weaponResFilename);
+	auto weaponRes = resourceLoader->loadWeapon(weaponResPath);
 
 	weapon->parentUnit = unit;
 	weapon->attachTo = sprite;

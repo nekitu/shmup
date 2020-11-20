@@ -36,21 +36,21 @@ void Tilemap::render(struct Graphics* gfx)
 				auto tilesetInfo = tilemapResource->getTilesetInfoByTileId(tile);
 
 				gfx->atlasTextureIndex = tilesetInfo.tileset->image->atlasTexture->textureIndex;
-				gfx->color = root->color;
-				gfx->colorMode = root->colorMode;
+				gfx->color = root->color.getRgba();
+				gfx->colorMode = (int)root->colorMode;
 
 				Rect rc;
 
-				u32 col = tileIndex % (u32)chunk.width;
-				u32 row = tileIndex / (u32)chunk.width;
+				u32 col = tileIndex % (u32)chunk.size.x;
+				u32 row = tileIndex / (u32)chunk.size.x;
 
-				auto offsX = tilemapResource->tileWidth * col;
-				auto offsY = tilemapResource->tileHeight * row;
+				auto offsX = tilemapResource->tileSize.x * col;
+				auto offsY = tilemapResource->tileSize.y * row;
 
-				rc.x = boundingBox.x + chunk.x * tilemapResource->tileWidth + offsX - layer.startX * tilemapResource->tileWidth;
-				rc.y = boundingBox.y + chunk.y * tilemapResource->tileHeight + offsY - layer.startY * tilemapResource->tileHeight;
-				rc.width = tilemapResource->tileWidth;
-				rc.height = tilemapResource->tileHeight;
+				rc.x = boundingBox.x + chunk.size.x * tilemapResource->tileSize.x + offsX - layer.start.x * tilemapResource->tileSize.x;
+				rc.y = boundingBox.y + chunk.size.y * tilemapResource->tileSize.y + offsY - layer.start.y * tilemapResource->tileSize.y;
+				rc.width = tilemapResource->tileSize.x;
+				rc.height = tilemapResource->tileSize.y;
 				auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);
 
 				if (tilesetInfo.tileset->image->rotated)

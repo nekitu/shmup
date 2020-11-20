@@ -4,7 +4,6 @@
 #include "resources/sound_resource.h"
 #include "resources/music_resource.h"
 #include "resources/unit_resource.h"
-#include "resources/level_resource.h"
 #include "resources/weapon_resource.h"
 #include "resources/script_resource.h"
 #include "resources/animation_resource.h"
@@ -20,11 +19,11 @@
 
 namespace engine
 {
-#define checkEmptyFilename(where, filename)\
+#define checkForEmptyPath(where, path)\
 {\
-	if (filename.size() == 0)\
+	if (path.size() == 0)\
 	{\
-		LOG_ERROR("{0}: Empty filename", where);\
+		LOG_ERROR("{0}: Empty path", where);\
 	}\
 }
 
@@ -34,7 +33,7 @@ void ResourceLoader::unload(struct Resource* res)
 
 	if (res->usageCount <= 0)
 	{
-		auto iter = resources.find(res->fileName);
+		auto iter = resources.find(res->path);
 
 		if (iter != resources.end())
 		{
@@ -89,9 +88,9 @@ void ResourceLoader::reloadWeapons()
 	{
 		if (res.second->type == ResourceType::Weapon)
 		{
-			std::string fullFilename = Game::instance->dataRoot + res.first;
+			auto absPath = Game::instance->dataRoot + res.first;
 
-			if (!loadJson(fullFilename + ".json", json))
+			if (!loadJson(absPath + ".json", json))
 			{
 				continue;
 			}
@@ -120,9 +119,9 @@ void ResourceLoader::reloadSprites()
 	{
 		if (res.second->type == ResourceType::Sprite)
 		{
-			std::string fullFilename = Game::instance->dataRoot + res.first;
+			auto absPath = Game::instance->dataRoot + res.first;
 
-			if (!loadJson(fullFilename + ".json", json))
+			if (!loadJson(absPath + ".json", json))
 			{
 				continue;
 			}
@@ -133,23 +132,23 @@ void ResourceLoader::reloadSprites()
 
 }
 
-SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
+SpriteResource* ResourceLoader::loadSprite(const std::string& path)
 {
-	checkEmptyFilename("loadSprite", filename);
+	checkForEmptyPath("loadSprite", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return dynamic_cast<SpriteResource*>(resources[filename]);
+		resources[path]->usageCount++;
+		return dynamic_cast<SpriteResource*>(resources[path]);
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -159,31 +158,31 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& filename)
 	res->type = ResourceType::Sprite;
 	res->loader = this;
 	res->atlas = atlas;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 	sprites.push_back(res);
 
 	return res;
 }
 
-SoundResource* ResourceLoader::loadSound(const std::string& filename)
+SoundResource* ResourceLoader::loadSound(const std::string& path)
 {
-	checkEmptyFilename("loadSound", filename);
+	checkForEmptyPath("loadSound", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (SoundResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (SoundResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -192,30 +191,30 @@ SoundResource* ResourceLoader::loadSound(const std::string& filename)
 
 	res->type = ResourceType::Sound;
 	res->loader = this;
-	res->fileName = fullFilename;
+	res->path = absPath;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-MusicResource* ResourceLoader::loadMusic(const std::string& filename)
+MusicResource* ResourceLoader::loadMusic(const std::string& path)
 {
-	checkEmptyFilename("loadMusic", filename);
+	checkForEmptyPath("loadMusic", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (MusicResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (MusicResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -224,30 +223,30 @@ MusicResource* ResourceLoader::loadMusic(const std::string& filename)
 
 	res->type = ResourceType::Music;
 	res->loader = this;
-	res->fileName = fullFilename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-UnitResource* ResourceLoader::loadUnit(const std::string& filename)
+UnitResource* ResourceLoader::loadUnit(const std::string& path)
 {
-	checkEmptyFilename("loadUnit", filename);
+	checkForEmptyPath("loadUnit", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (UnitResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (UnitResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -256,62 +255,30 @@ UnitResource* ResourceLoader::loadUnit(const std::string& filename)
 
 	res->type = ResourceType::Unit;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-LevelResource* ResourceLoader::loadLevel(const std::string& filename)
+WeaponResource* ResourceLoader::loadWeapon(const std::string& path)
 {
-	checkEmptyFilename("loadLevel", filename);
+	checkForEmptyPath("loadWeapon", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (LevelResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (WeaponResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
-	{
-		return nullptr;
-	}
-
-	LevelResource* res = new LevelResource();
-
-	res->type = ResourceType::Level;
-	res->loader = this;
-	res->fileName = filename;
-	res->load(json);
-	resources[filename] = res;
-
-	return res;
-}
-
-WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
-{
-	checkEmptyFilename("loadWeapon", filename);
-
-	if (filename.empty()) return nullptr;
-
-	std::string fullFilename = Game::instance->dataRoot + filename;
-
-	if (resources[filename])
-	{
-		resources[filename]->usageCount++;
-		return (WeaponResource*)resources[filename];
-	}
-
-	Json::Value json;
-
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -320,25 +287,25 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& filename)
 
 	res->type = ResourceType::Weapon;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-ScriptResource* ResourceLoader::loadScript(const std::string& filename)
+ScriptResource* ResourceLoader::loadScript(const std::string& path)
 {
-	checkEmptyFilename("loadScript", filename);
+	checkForEmptyPath("loadScript", path);
 
-	if (filename.empty()) return nullptr;
+	if (path.empty()) return nullptr;
 
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (ScriptResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (ScriptResource*)resources[path];
 	}
 
 	Json::Value json;
@@ -346,28 +313,28 @@ ScriptResource* ResourceLoader::loadScript(const std::string& filename)
 
 	res->type = ResourceType::Script;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 	scripts.push_back(res);
 
 	return res;
 }
 
-AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
+AnimationResource* ResourceLoader::loadAnimation(const std::string& path)
 {
-	checkEmptyFilename("loadAnimation", filename);
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	checkForEmptyPath("loadAnimation", path);
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (AnimationResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (AnimationResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -376,27 +343,27 @@ AnimationResource* ResourceLoader::loadAnimation(const std::string& filename)
 
 	res->type = ResourceType::Animation;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-FontResource* ResourceLoader::loadFont(const std::string& filename)
+FontResource* ResourceLoader::loadFont(const std::string& path)
 {
-	checkEmptyFilename("loadFont", filename);
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	checkForEmptyPath("loadFont", path);
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (FontResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (FontResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -405,27 +372,27 @@ FontResource* ResourceLoader::loadFont(const std::string& filename)
 
 	res->type = ResourceType::Font;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-TilemapResource* ResourceLoader::loadTilemap(const std::string& filename)
+TilemapResource* ResourceLoader::loadTilemap(const std::string& path)
 {
-	checkEmptyFilename("loadTilemap", filename);
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	checkForEmptyPath("loadTilemap", path);
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (TilemapResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (TilemapResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -434,27 +401,27 @@ TilemapResource* ResourceLoader::loadTilemap(const std::string& filename)
 
 	res->type = ResourceType::Tilemap;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }
 
-TilesetResource* ResourceLoader::loadTileset(const std::string& filename)
+TilesetResource* ResourceLoader::loadTileset(const std::string& path)
 {
-	checkEmptyFilename("loadTileset", filename);
-	std::string fullFilename = Game::instance->dataRoot + filename;
+	checkForEmptyPath("loadTileset", path);
+	auto absPath = Game::instance->dataRoot + path;
 
-	if (resources[filename])
+	if (resources[path])
 	{
-		resources[filename]->usageCount++;
-		return (TilesetResource*)resources[filename];
+		resources[path]->usageCount++;
+		return (TilesetResource*)resources[path];
 	}
 
 	Json::Value json;
 
-	if (!loadJson(fullFilename + ".json", json))
+	if (!loadJson(absPath + ".json", json))
 	{
 		return nullptr;
 	}
@@ -463,9 +430,9 @@ TilesetResource* ResourceLoader::loadTileset(const std::string& filename)
 
 	res->type = ResourceType::Tileset;
 	res->loader = this;
-	res->fileName = filename;
+	res->path = path;
 	res->load(json);
-	resources[filename] = res;
+	resources[path] = res;
 
 	return res;
 }

@@ -4,13 +4,24 @@
 #include <stb_image.h>
 #include "image_atlas.h"
 #include "graphics.h"
+#include "json/writer.h"
 
 namespace engine
 {
+std::string jsonAsString(const Json::Value& json)
+{
+	std::string result;
+	Json::StreamWriterBuilder wbuilder;
+
+	wbuilder["indentation"] = ""; // Optional
+	result = Json::writeString(wbuilder, json);
+	return result;
+}
+
 void TilemapObject::load(Json::Value& json)
 {
-	gid = json.get("gid", gid).asInt();
-	id = json.get("id", id).asInt();
+	gid = json.get("gid", gid).asUInt();
+	id = json.get("id", id).asUInt();
 	size.x = json.get("width", size.x).asFloat();
 	size.y = json.get("height", size.y).asFloat();
 	position.x = json.get("x", position.x).asFloat();
@@ -47,11 +58,21 @@ void TilemapObject::load(Json::Value& json)
 		text = textJson.get("text", text).asString();
 		wrap = textJson.get("wrap", wrap).asBool();
 	}
+
+	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
+
+	LOG_INFO("Properties:");
+	for (auto& propJson : propertiesJson)
+	{
+		auto str = jsonAsString(propJson.get("value", Json::Value()));
+		properties[propJson.get("name", "").asString()] = str;
+		LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
+	}
 }
 
 void TilemapLayer::load(Json::Value& json)
 {
-	id = json.get("id", 0).asInt();
+	id = json.get("id", 0).asUInt();
 	name = json.get("name", "").asString();
 	size.x = json.get("width", 0).asInt();
 	size.y = json.get("height", 0).asInt();
@@ -62,8 +83,28 @@ void TilemapLayer::load(Json::Value& json)
 	position.y = json.get("y", 0).asInt();
 	opacity = json.get("opacity", 1).asFloat();
 
-	auto& properties = json.get("properties", Json::ValueType::arrayValue);
+	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
 
+	LOG_INFO("Properties:");
+	for (auto& propJson : propertiesJson)
+	{
+		if (propJson.get("name", "").asString() == "cameraParallax")
+		{
+			cameraParallax = propJson.get("value", 0).asFloat();
+		}
+		else if (propJson.get("name", "").asString() == "cameraParallaxScale")
+		{
+			cameraParallaxScale = propJson.get("value", 0).asFloat();
+		}
+		else if (propJson.get("name", "").asString() == "cameraScroll")
+		{
+			cameraScroll = propJson.get("value", 0).asFloat();
+		}
+
+		auto str = jsonAsString(propJson.get("value", Json::Value()));
+			properties[propJson.get("name", "").asString()] = str;
+			LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
+	}
 
 	auto typeName = json.get("type", "").asString();
 
@@ -79,6 +120,7 @@ void TilemapLayer::load(Json::Value& json)
 		{
 			TilemapLayer layer;
 
+			layer.tilemapResource = tilemapResource;
 			layer.load(layerJson);
 			layers.push_back(layer);
 		}
@@ -87,8 +129,8 @@ void TilemapLayer::load(Json::Value& json)
 	if (typeName == "imagelayer")
 	{
 		type = TilemapLayer::Type::Image;
-		imagePath = json.get("image", 0).asString();
-		imagePath = getParentPath(tilemapResource->fileName) + imagePath;
+		imagePath = json.get("image", "").asString();
+		imagePath = getParentPath(tilemapResource->path) + imagePath;
 		replaceAll(imagePath, "\\/", "/");
 
 		int imgWidth = 0;

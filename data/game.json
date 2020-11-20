@@ -5,11 +5,11 @@
   "fullscreen": false,
   "vSync": false,
   "pauseOnAppDeactivate": false,
-  "levels":
+  "tilemaps":
   [
     {
       "title": "Intro",
-      "file": "levels/level0"
+      "path": "tilemaps/test"
     }
   ]
 }

@@ -1,3 +1,4 @@
+#pragma once
 #include "types.h"
 #include "resource.h"
 #include "rect.h"
@@ -24,7 +25,7 @@ struct TilesetResource : Resource
 {
 	struct AtlasImage* image = nullptr;
 
-	std::string imageFilename;
+	std::string imagePath;
 	u32 columns = 0;
 	u32 margin = 0;
 	u32 spacing = 0;

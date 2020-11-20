@@ -27,7 +27,7 @@ struct Resource
 {
 	ResourceType type = ResourceType::None;
 	struct ResourceLoader* loader = nullptr;
-	std::string fileName;
+	std::string path;
 	u32 usageCount = 1;
 	bool mustReload = false;
 

@@ -29,19 +29,19 @@ ScriptClassInstanceBase::~ScriptClassInstanceBase()
 
 		if (iter != script->classInstances.end())
 		{
-			LOG_INFO("Destroying the script class instance for script: {0} ", script->fileName);
+			LOG_INFO("Destroying the script class instance for script: {0} ", script->path);
 			script->classInstances.erase(iter);
 		}
 		else
 		{
-			LOG_ERROR("Cannot find the script class instance for script: {0} ", script->fileName);
+			LOG_ERROR("Cannot find the script class instance for script: {0} ", script->path);
 		}
 	}
 }
 
 bool ScriptResource::load(Json::Value& json)
 {
-	code = readTextFile(Game::makeFullDataPath(fileName + ".lua"));
+	code = readTextFile(Game::makeFullDataPath(path + ".lua"));
 	auto res = luaL_loadstring(L, code.c_str());
 
 	// if we already have some class instances, recreate them with the new script
@@ -56,7 +56,7 @@ bool ScriptResource::load(Json::Value& json)
 void ScriptResource::unload()
 {
 	code = "";
-	LOG_INFO("Unloading script {0} with {1} instances", fileName, classInstances.size());
+	LOG_INFO("Unloading script {0} with {1} instances", path, classInstances.size());
 
 	for (auto& ci : classInstances)
 	{
@@ -76,7 +76,7 @@ LuaIntf::LuaRef ScriptClassInstanceBase::getFunction(const std::string& funcName
 
 		if (!f.isFunction())
 		{
-			spdlog::error("Could not find the function '%s' in script '%s'\n", funcName.c_str(), script->fileName.c_str());
+			spdlog::error("Could not find the function '%s' in script '%s'\n", funcName.c_str(), script->path.c_str());
 			return LuaIntf::LuaRef::fromPtr(L, nullptr);
 		}
 
@@ -114,8 +114,8 @@ bool initializeLua()
 		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
-		.addFunction("changeLevel", &Game::changeLevel)
-		.addFunction("loadNextLevel", [](Game* g) { g->changeLevel(~0); })
+		.addFunction("changeMap", &Game::changeMap)
+		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{
 				auto u = g->createUnit(Game::instance->resourceLoader->loadUnit(unitResource));
@@ -124,8 +124,8 @@ bool initializeLua()
 				return u;
 			}
 		)
-		.addFunction("loadFont", [](Game* g, const std::string& filename) { return g->resourceLoader->loadFont(filename); })
-		.addFunction("loadSprite", [](Game* g, const std::string& filename) { return g->resourceLoader->loadSprite(filename); })
+		.addFunction("loadFont", [](Game* g, const std::string& path) { return g->resourceLoader->loadFont(path); })
+		.addFunction("loadSprite", [](Game* g, const std::string& path) { return g->resourceLoader->loadSprite(path); })
 		.addVariable("cameraParallaxOffset", &Game::cameraParallaxOffset)
 		.addVariable("cameraParallaxScale", &Game::cameraParallaxScale)
 		.addVariableRef("cameraPosition", &Game::cameraPosition)
@@ -178,7 +178,7 @@ bool initializeLua()
 
 	LUA.beginExtendClass<UnitResource, Resource>("UnitResource")
 		.addVariable("name", &UnitResource::name)
-		.addVariable("fileName", &UnitResource::fileName)
+		.addVariable("path", &UnitResource::path)
 		.addVariable("unitType", &UnitResource::unitType)
 		.endClass();
 

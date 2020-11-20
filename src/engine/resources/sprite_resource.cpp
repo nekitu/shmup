@@ -5,14 +5,14 @@
 
 namespace engine
 {
-AtlasImage* SpriteResource::loadImage(const std::string& filename)
+AtlasImage* SpriteResource::loadImage(const std::string& path)
 {
 	int width = 0;
 	int height = 0;
 	int comp = 0;
 
-	stbi_uc* data = stbi_load(filename.c_str(), &width, &height, &comp, 4);
-	LOG_INFO("Loaded image: {0} {1}x{2}", filename, width, height);
+	stbi_uc* data = stbi_load(path.c_str(), &width, &height, &comp, 4);
+	LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
 
 	if (!data)
 		return nullptr;
@@ -89,7 +89,7 @@ Rect SpriteResource::getSheetFramePixelRect(u32 frame)
 
 bool SpriteResource::load(Json::Value& json)
 {
-	auto imageFilename = fileName + ".png";
+	auto imagePath = path + ".png";
 
 	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
@@ -153,7 +153,7 @@ bool SpriteResource::load(Json::Value& json)
 		if (type == "PingPong") anim->type = SpriteFrameAnimation::Type::PingPong;
 	}
 
-	image = loadImage(Game::makeFullDataPath(imageFilename));
+	image = loadImage(Game::makeFullDataPath(imagePath));
 
 	if (image)
 	{

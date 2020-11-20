@@ -8,7 +8,7 @@ MusicResource::~MusicResource()
 
 bool MusicResource::load(Json::Value& json)
 {
-	music = Mix_LoadMUS(fileName.c_str());
+	music = Mix_LoadMUS(path.c_str());
 
 	if (music == NULL)
 		return false;

@@ -10,7 +10,7 @@
 #include "rect.h"
 #include "utils.h"
 #include "color.h"
-#include "resources/level_resource.h"
+#include "resources/tilemap_resource.h"
 #include "lua_scripting.h"
 #include "projectile.h"
 
@@ -89,7 +89,7 @@ struct Game
 	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
 	bool vSync = false;
-	std::string configFilename = "game.json";
+	std::string configPath = "game.json";
 	std::string dataRoot = "../data/";
 	bool exitGame = false;
 	bool editing = false;
@@ -111,8 +111,9 @@ struct Game
 	bool controls[(u32)InputControl::Count] = { false };
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct Music* music = nullptr;
-	std::vector<std::pair<std::string /*level name*/, std::string /*level file*/>> levels;
-	u32 currentLevelIndex = 0;
+	std::vector<std::pair<std::string /*map name*/, std::string /*map path*/>> maps;
+	u32 currentMapIndex = 0;
+	TilemapResource* map = nullptr;
 	struct ScriptResource* currentMainScript = nullptr;
 	struct ScriptClassInstanceBase* scriptClass;
 	static Game* instance;
@@ -121,7 +122,6 @@ struct Game
 	f32 cameraSpeed = 10;
 	f32 cameraParallaxOffset = 0;
 	f32 cameraParallaxScale = 0.2f;
-	std::vector<Layer> layers;
 	f32 cameraSpeedAnimateSpeed = 1.0f;
 	bool animatingCameraSpeed = false;
 	f32 cameraSpeedAnimateTime = 0;
@@ -162,9 +162,9 @@ struct Game
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);
-	static std::string makeFullDataPath(const std::string relativeDataFilename);
+	static std::string makeFullDataPath(const std::string relativeDataPath);
 	struct Unit* createUnit(struct UnitResource* unitRes);
-	struct Weapon* createWeapon(const std::string& weaponResFilename, struct Unit* unit, struct Sprite* sprite);
+	struct Weapon* createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite);
 	struct Projectile* newProjectile();
 	std::vector<Projectile*>::iterator releaseProjectile(Projectile* proj);
 };

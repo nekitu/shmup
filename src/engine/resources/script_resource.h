@@ -20,7 +20,7 @@ namespace engine
 				{\
 					std::string str = e.what();\
 					replaceAll(str, "\r", " ");\
-					LOG_ERROR("Lua Error in {0}: {1}", scriptClass->script->fileName, str);\
+					LOG_ERROR("Lua Error in {0}: {1}", scriptClass->script->path, str);\
 				}\
 			}\
 		}
@@ -52,7 +52,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 	{
 		if (script->code.empty())
 		{
-			LOG_WARN("No code in: '{0}'", script->fileName);
+			LOG_WARN("No code in: '{0}'", script->path);
 			return false;
 		}
 
@@ -88,16 +88,16 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 			{
 				std::string str = e.what();
 				replaceAll(str, "\r", " ");
-				LOG_ERROR("Lua Error in {0}: {1}", script->fileName, str);
+				LOG_ERROR("Lua Error in {0}: {1}", script->path, str);
 			}
 		}
 		else
 		{
-			LOG_ERROR("Lua: Please return class table in '{0}'", script->fileName);
+			LOG_ERROR("Lua: Please return class table in '{0}'", script->path);
 			return false;
 		}
 
-		LOG_INFO("Lua: Created class instance for {0}'", script->fileName);
+		LOG_INFO("Lua: Created class instance for {0}'", script->path);
 
 		return true;
 	}
