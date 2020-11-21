@@ -1061,6 +1061,11 @@ bool Game::changeMap(i32 index)
 	currentMapIndex = index;
 	map = resourceLoader->loadTilemap(maps[currentMapIndex].second);
 
+	for (auto& layer : map->layers)
+	{
+
+
+	}
 
 	return true;
 }
