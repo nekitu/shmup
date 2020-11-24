@@ -146,6 +146,8 @@ struct Game
 	Rect screenToWorld(const Rect& rc, u32 layerIndex);
 	void preloadSprites();
 	void mainLoop();
+	void updateTilemap();
+	void renderTilemap();
 	void computeDeltaTime();
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);

@@ -31,9 +31,6 @@ bool UnitResource::load(Json::Value& json)
 	else
 	if (typeStr == "PlayerProjectile")
 		unitType = UnitType::PlayerProjectile;
-	else
-	if (typeStr == "Tilemap")
-		unitType = UnitType::Tilemap;
 
 	speed = json.get("speed", speed).asFloat();
 	visible = json.get("visible", visible).asBool();

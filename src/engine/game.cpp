@@ -361,6 +361,7 @@ void Game::mainLoop()
 
 		updateScreenFx();
 		updateCamera();
+		updateTilemap();
 
 		for (u32 i = 0; i < units.size(); i++)
 		{
@@ -1063,7 +1064,26 @@ bool Game::changeMap(i32 index)
 
 	for (auto& layer : map->layers)
 	{
+		for (auto& obj : layer.objects)
+		{
+			switch (obj.type)
+			{
+			case TilemapObject::Type::Point:
+			{
+				auto& unitClass = obj.typeString;
 
+				if (unitClass == "")
+				{
+					auto& unitPath = obj.properties["path"];
+					Unit* unit = createUnit(resourceLoader->loadUnit(unitPath));
+
+					if (unit) units.push_back(unit);
+				}
+
+				break;
+			}
+			}
+		}
 
 	}
 

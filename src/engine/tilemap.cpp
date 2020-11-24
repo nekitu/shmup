@@ -1,4 +1,4 @@
-#include "tilemap.h"
+#include "tilemap_layer.h"
 #include "game.h"
 #include "resources/tilemap_resource.h"
 #include "resources/tileset_resource.h"
@@ -9,19 +9,13 @@
 
 namespace engine
 {
-void Tilemap::load(struct ResourceLoader* loader, const Json::Value& json)
-{
-	Unit::load(loader, json);
-	tilemapResource = loader->loadTilemap(json["tilemap"].asString());
-}
-
-void Tilemap::update(struct Game* game)
+void TilemapLayer::update(struct Game* game)
 {
 	Unit::update(game);
 	root->position.y += game->deltaTime * 10.0f;
 }
 
-void Tilemap::render(struct Graphics* gfx)
+void TilemapLayer::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
 

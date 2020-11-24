@@ -50,4 +50,5 @@ namespace engine
 	f32 dir2deg(const Vec2& dir);
 	void replaceAll(std::string& source, const std::string& from, const std::string& to);
 	std::string getParentPath(const std::string& path);
+	std::string jsonAsString(const Json::Value& json);
 }

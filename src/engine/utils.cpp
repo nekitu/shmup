@@ -185,4 +185,14 @@ std::string getParentPath(const std::string& path)
 	return p.parent_path().generic_u8string();
 }
 
+std::string jsonAsString(const Json::Value& json)
+{
+	std::string result;
+	Json::StreamWriterBuilder wbuilder;
+
+	wbuilder["indentation"] = ""; // Optional
+	result = Json::writeString(wbuilder, json);
+	return result;
+}
+
 }
