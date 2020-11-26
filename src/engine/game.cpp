@@ -1077,6 +1077,8 @@ bool Game::changeMap(i32 index)
 					auto& unitPath = obj.properties["path"];
 					Unit* unit = createUnit(resourceLoader->loadUnit(unitPath));
 
+					unit->load(obj);
+
 					if (unit) units.push_back(unit);
 				}
 

@@ -249,22 +249,11 @@ void Unit::initializeFrom(UnitResource* res)
 	}
 }
 
-void Unit::load(ResourceLoader* loader, const Json::Value& json)
+void Unit::load(const TilemapObject& object)
 {
-	name = json.get("name", name).asCString();
-	auto unitPath = json["unit"].asString();
-
-	if (unitPath == "")
-	{
-		LOG_ERROR("No unitResource path specified for unitResource instance ({0})", name);
-	}
-
-	auto unitResource = loader->loadUnit(unitPath);
-	if (unitResource) initializeFrom(unitResource);
-	name = json.get("name", name).asCString();
-	currentAnimationName = json.get("animationName", "").asString();
-	boundingBox.parse(json.get("boundingBox", "0 0 0 0").asString());
-	visible = json.get("visible", visible).asBool();
+	name = object.name;
+	currentAnimationName = object.properties["animationName"];
+	visible = object.visible;
 	shadow = json.get("shadow", visible).asBool();
 	speed = json.get("speed", speed).asFloat();
 	layerIndex = json.get("layerIndex", layerIndex).asInt();

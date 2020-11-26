@@ -38,6 +38,7 @@ struct TilemapObject
 	std::string templatePath;
 	std::string text;
 	bool wrap = true;
+	bool visible = true;
 	std::string typeString;
 	std::vector<Vec2> points;
 	std::unordered_map<std::string, std::string> properties;

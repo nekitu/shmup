@@ -13,6 +13,7 @@ void TilemapObject::load(Json::Value& json)
 {
 	gid = json.get("gid", gid).asUInt();
 	id = json.get("id", id).asUInt();
+	visible = json.get("visible", visible).asBool();
 	size.x = json.get("width", size.x).asFloat();
 	size.y = json.get("height", size.y).asFloat();
 	position.x = json.get("x", position.x).asFloat();

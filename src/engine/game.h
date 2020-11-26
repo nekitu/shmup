@@ -103,7 +103,7 @@ struct Game
 	u32 hiscore = 0;
 	u32 credit = 0;
 	bool pauseGame = false;
-	std::vector<Unit*> units;
+	std::vector<Unit*> units; // all units from all layers
 	std::vector<Unit*> newUnits;
 	std::vector<Projectile> projectilePool;
 	std::vector<Projectile*> projectiles;
