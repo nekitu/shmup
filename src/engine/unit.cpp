@@ -249,17 +249,16 @@ void Unit::initializeFrom(UnitResource* res)
 	}
 }
 
-void Unit::load(const TilemapObject& object)
+void Unit::load(TilemapObject& object)
 {
 	name = object.name;
 	currentAnimationName = object.properties["animationName"];
 	visible = object.visible;
-	shadow = json.get("shadow", visible).asBool();
-	speed = json.get("speed", speed).asFloat();
-	layerIndex = json.get("layerIndex", layerIndex).asInt();
-	if (root) root->position.parse(json.get("position", "0 0").asString());
-	stageIndex = 0;
+	shadow = object.properties["shadow"] == "true";
+	speed = atof(object.properties["speed"].c_str());
 	if (!root) root = new Sprite();
+	if (root) root->position = object.position;
+	stageIndex = 0;
 }
 
 void Unit::update(Game* game)

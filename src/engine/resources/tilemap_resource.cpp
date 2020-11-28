@@ -62,7 +62,7 @@ void TilemapObject::load(Json::Value& json)
 	}
 }
 
-void TilemapLayerData::load(Json::Value& json)
+void TilemapLayer::load(Json::Value& json)
 {
 	id = json.get("id", 0).asUInt();
 	name = json.get("name", "").asString();
@@ -100,17 +100,17 @@ void TilemapLayerData::load(Json::Value& json)
 
 	auto typeName = json.get("type", "").asString();
 
-	if (typeName == "tilelayer") type = TilemapLayerData::Type::Tiles;
+	if (typeName == "tilelayer") type = TilemapLayer::Type::Tiles;
 
 	if (typeName == "group")
 	{
-		type = TilemapLayerData::Type::Group;
+		type = TilemapLayer::Type::Group;
 
 		auto& layersJson = json.get("layers", Json::ValueType::arrayValue);
 
 		for (auto& layerJson : layersJson)
 		{
-			TilemapLayerData layer;
+			TilemapLayer layer;
 
 			layer.tilemapResource = tilemapResource;
 			layer.load(layerJson);
@@ -120,7 +120,7 @@ void TilemapLayerData::load(Json::Value& json)
 
 	if (typeName == "imagelayer")
 	{
-		type = TilemapLayerData::Type::Image;
+		type = TilemapLayer::Type::Image;
 		imagePath = json.get("image", "").asString();
 		imagePath = getParentPath(tilemapResource->path) + imagePath;
 		replaceAll(imagePath, "\\/", "/");
@@ -140,7 +140,7 @@ void TilemapLayerData::load(Json::Value& json)
 
 	if (typeName == "objectgroup")
 	{
-		type = TilemapLayerData::Type::Objects;
+		type = TilemapLayer::Type::Objects;
 		auto& objectsJson = json.get("objects", Json::ValueType::arrayValue);
 
 		for (auto& objJson : objectsJson)
@@ -166,7 +166,7 @@ void TilemapLayerData::load(Json::Value& json)
 	auto& chunksJson = json.get("chunks", Json::ValueType::arrayValue);
 	auto& dataJson = json.get("data", Json::ValueType::arrayValue);
 
-	bool infinite = dataJson.isNull();
+	bool infinite = dataJson.size() == 0;
 
 	if (infinite)
 	{
@@ -216,7 +216,7 @@ bool TilemapResource::load(Json::Value& json)
 
 	for (auto& layerJson : layersArray)
 	{
-		TilemapLayerData layer;
+		TilemapLayer layer;
 
 		layer.tilemapResource = this;
 		layer.load(layerJson);

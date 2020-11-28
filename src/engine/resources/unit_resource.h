@@ -78,6 +78,7 @@ enum class UnitType
 struct UnitResource : Resource
 {
 	std::string name;
+	std::string className;
 	UnitType unitType = UnitType::None;
 	f32 speed = 10.0f;
 	f32 shadowScale = 1.0f;

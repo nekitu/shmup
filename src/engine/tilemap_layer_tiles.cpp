@@ -1,4 +1,4 @@
-#include "tilemap_layer.h"
+#include "tilemap_layer_tiles.h"
 #include "game.h"
 #include "resources/tilemap_resource.h"
 #include "resources/tileset_resource.h"
@@ -10,17 +10,18 @@
 
 namespace engine
 {
-void TilemapLayer::update(struct Game* game)
+void TilemapLayerTiles::update(struct Game* game)
 {
 	Unit::update(game);
+	speed = 25;
 	root->position.y += game->deltaTime * speed;
 }
 
-void TilemapLayer::render(struct Graphics* gfx)
+void TilemapLayerTiles::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
 
-	auto& layer = *tilemapLayerData;
+	auto& layer = *tilemapLayer;
 	for (auto& chunk : layer.chunks)
 	{
 		int tileIndex = 0;
@@ -41,11 +42,16 @@ void TilemapLayer::render(struct Graphics* gfx)
 			auto offsX = layer.tilemapResource->tileSize.x * col;
 			auto offsY = layer.tilemapResource->tileSize.y * row;
 
-			rc.x = boundingBox.x + chunk.size.x * layer.tilemapResource->tileSize.x + offsX - layer.start.x * layer.tilemapResource->tileSize.x;
-			rc.y = boundingBox.y + chunk.size.y * layer.tilemapResource->tileSize.y + offsY - layer.start.y * layer.tilemapResource->tileSize.y;
+			rc.x = root->position.x + chunk.position.x * layer.tilemapResource->tileSize.x + offsX - layer.start.x * layer.tilemapResource->tileSize.x;
+			rc.y = root->position.y + chunk.position.y * layer.tilemapResource->tileSize.y + offsY - layer.start.y * layer.tilemapResource->tileSize.y;
 			rc.width = layer.tilemapResource->tileSize.x;
 			rc.height = layer.tilemapResource->tileSize.y;
 			auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);
+
+			rc.x = roundf(rc.x);
+			rc.y = roundf(rc.y);
+			rc.width = roundf(rc.width);
+			rc.height = roundf(rc.height);
 
 			if (tilesetInfo.tileset->image->rotated)
 				gfx->drawQuadWithTexCoordRotated90(rc, uv);

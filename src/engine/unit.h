@@ -51,7 +51,7 @@ struct Unit
 	void reset();
 	virtual void copyFrom(Unit* other);
 	virtual void initializeFrom(UnitResource* res);
-	virtual void load(struct );
+	virtual void load(struct TilemapObject& object);
 	virtual void update(struct Game* game);
 	virtual void render(struct Graphics* gfx);
 	virtual void computeBoundingBox();

@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "libs/utf8/source/utf8.h"
 #include "json/reader.h"
+#include "json/writer.h"
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cstring>

@@ -24,6 +24,7 @@
 #include "sound.h"
 #include "weapon.h"
 #include "projectile.h"
+#include "tilemap_layer_tiles.h"
 #include <filesystem>
 
 namespace engine
@@ -151,8 +152,8 @@ bool Game::initialize()
 	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
 
 	initializeLua();
-	changeMap(0);
 	createPlayers();
+	changeMap(0);
 
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
 	mapSdlToControl[SDLK_PAUSE] = InputControl::Pause;
@@ -361,21 +362,24 @@ void Game::mainLoop()
 
 		updateScreenFx();
 		updateCamera();
-		updateTilemap();
 
-		for (u32 i = 0; i < units.size(); i++)
+		for (auto& unit : units)
 		{
-			units[i]->update(this);
+			unit->update(this);
 		}
 
-		for (auto proj : projectiles)
+		for (auto& proj : projectiles)
 		{
 			proj->update(this);
 		}
 
 		// add the new created units
-		units.insert(units.end(), newUnits.begin(), newUnits.end());
-		newUnits.clear();
+		if (newUnits.size())
+		{
+			units.insert(units.end(), newUnits.begin(), newUnits.end());
+			newUnits.clear();
+			std::stable_sort(units.begin(), units.end(), [](Unit* a, Unit* b) { return a->layerIndex < b->layerIndex; });
+		}
 
 		Unit::updateShadowToggle();
 
@@ -410,17 +414,9 @@ void Game::mainLoop()
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
-
-		static std::vector<Unit*> allUnitsToRender;
-
-		//allUnitsToRender.clear();
-		//allUnitsToRender.insert(allUnitsToRender.end(), units.begin(), units.end());
-
-		//std::stable_sort(allUnitsToRender.begin(), allUnitsToRender.end(), [](Unit* a, Unit* b) { return a->layerIndex > b->layerIndex; });
-
 		u32 currentLayer = ~0;
 
-		for (auto unit : units)
+		for (auto& unit : units)
 		{
 			unit->render(graphics);
 
@@ -431,7 +427,7 @@ void Game::mainLoop()
 			}
 		}
 
-		for (auto unit : projectiles)
+		for (auto& unit : projectiles)
 		{
 			unit->render(graphics);
 		}
@@ -1061,9 +1057,17 @@ bool Game::changeMap(i32 index)
 
 	currentMapIndex = index;
 	map = resourceLoader->loadTilemap(maps[currentMapIndex].second);
+	int layerIndex = 0;
 
 	for (auto& layer : map->layers)
 	{
+		TilemapLayerTiles* layerTiles = new TilemapLayerTiles();
+
+		layerTiles->tilemapLayer = &layer;
+		layerTiles->layerIndex = layerIndex;
+		layerTiles->root = new Sprite();
+		newUnits.push_back(layerTiles);
+
 		for (auto& obj : layer.objects)
 		{
 			switch (obj.type)
@@ -1078,6 +1082,7 @@ bool Game::changeMap(i32 index)
 					Unit* unit = createUnit(resourceLoader->loadUnit(unitPath));
 
 					unit->load(obj);
+					unit->layerIndex = layerIndex;
 
 					if (unit) units.push_back(unit);
 				}
@@ -1087,6 +1092,15 @@ bool Game::changeMap(i32 index)
 			}
 		}
 
+		++layerIndex;
+	}
+
+	for (int i = 0; i < maxPlayerCount; i++)
+	{
+		if (players[i].unit)
+		{
+			players[i].unit->layerIndex = layerIndex - 1;
+		}
 	}
 
 	return true;
@@ -1094,7 +1108,12 @@ bool Game::changeMap(i32 index)
 
 Unit* Game::createUnit(UnitResource* unitResource)
 {
-	auto unit = new Unit();
+	Unit* unit = nullptr;
+
+	if (unitResource->className == "")
+	{
+		unit = new Unit();
+	}
 
 	unit->initializeFrom(unitResource);
 	newUnits.push_back(unit);
