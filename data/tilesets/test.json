@@ -1,4 +1,12 @@
 { "columns":8,
+ "editorsettings":
+    {
+     "export":
+        {
+         "format":"",
+         "target":"."
+        }
+    },
  "image":"galletcity_tiles.png",
  "imageheight":168,
  "imagewidth":64,
@@ -17,14 +25,18 @@
         {
          "animation":[
                 {
-                 "duration":100,
+                 "duration":140,
                  "tileid":1
                 }, 
                 {
-                 "duration":100,
+                 "duration":140,
                  "tileid":2
+                }, 
+                {
+                 "duration":140,
+                 "tileid":3
                 }],
-         "id":1
+         "id":0
         }, 
         {
          "animation":[
@@ -34,9 +46,39 @@
                 }, 
                 {
                  "duration":100,
-                 "tileid":16
+                 "tileid":2
                 }],
-         "id":24
+         "id":1,
+         "terrain":[0, -1, 0, -1]
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":140,
+                 "tileid":88
+                }, 
+                {
+                 "duration":140,
+                 "tileid":81
+                }],
+         "id":12
+        }, 
+        {
+         "animation":[
+                {
+                 "duration":1111,
+                 "tileid":1
+                }, 
+                {
+                 "duration":1001,
+                 "tileid":16
+                }, 
+                {
+                 "duration":1111,
+                 "tileid":44
+                }],
+         "id":24,
+         "terrain":[-1, -1, -1, 0]
         }, 
         {
          "id":34,
@@ -64,7 +106,8 @@
                  "duration":100,
                  "tileid":57
                 }],
-         "id":49
+         "id":49,
+         "terrain":[0, -1, -1, -1]
         }, 
         {
          "id":105,

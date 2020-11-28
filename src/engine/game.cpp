@@ -16,6 +16,7 @@
 #include "resources/sprite_resource.h"
 #include "resources/weapon_resource.h"
 #include "resources/tilemap_resource.h"
+#include "resources/tileset_resource.h"
 #include "resources/script_resource.h"
 #include "resources/font_resource.h"
 #include "unit.h"
@@ -197,10 +198,10 @@ void Game::createPlayers()
 	{
 		players[i].unit = new Unit();
 		players[i].unit->initializeFrom(resourceLoader->loadUnit("units/player"));
-		units.push_back(players[i].unit);
 		players[i].unit->name = "Player" + std::to_string(i + 1);
 		players[i].unit->root->position.x = graphics->videoWidth / 2;
 		players[i].unit->root->position.y = graphics->videoHeight / 2;
+		newUnits.push_back(players[i].unit);
 	}
 }
 
@@ -362,6 +363,7 @@ void Game::mainLoop()
 
 		updateScreenFx();
 		updateCamera();
+		updateTileAnimations();
 
 		for (auto& unit : units)
 		{
@@ -984,6 +986,18 @@ void Game::updateScreenFx()
 	}
 }
 
+void Game::updateTileAnimations()
+{
+	for (auto& res : resourceLoader->resources)
+	{
+		if (res.second->type == ResourceType::Tileset)
+		{
+			TilesetResource* tset = (TilesetResource*)res.second;
+			tset->updateAnimations(deltaTime);
+		}
+	}
+}
+
 bool Game::isPlayerMoveLeft(u32 playerIndex)
 {
 	return controls[(u32)(playerIndex ? InputControl::Player2_MoveLeft : InputControl::Player1_MoveLeft)];
@@ -1084,7 +1098,7 @@ bool Game::changeMap(i32 index)
 					unit->load(obj);
 					unit->layerIndex = layerIndex;
 
-					if (unit) units.push_back(unit);
+					if (unit) newUnits.push_back(unit);
 				}
 
 				break;
@@ -1099,7 +1113,7 @@ bool Game::changeMap(i32 index)
 	{
 		if (players[i].unit)
 		{
-			players[i].unit->layerIndex = layerIndex - 1;
+			players[i].unit->layerIndex = map->layers.size() - 1;
 		}
 	}
 

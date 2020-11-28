@@ -152,6 +152,7 @@ struct Game
 	void fadeScreen(const Color& color1, const Color& color2, f32 duration, bool revertBackAfter, u32 layer = 1);
 	void updateScreenFx();
 	void updateCamera();
+	void updateTileAnimations();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
 	bool isPlayerMoveLeft(u32 playerIndex);
 	bool isPlayerMoveRight(u32 playerIndex);

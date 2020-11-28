@@ -26,9 +26,18 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 	{
 		int tileIndex = 0;
 
-		for (auto& tile : chunk.tiles)
+		for (auto tile : chunk.tiles)
 		{
 			auto tilesetInfo = layer.tilemapResource->getTilesetInfoByTileId(tile);
+			auto tileData = tilesetInfo.tileset->findTileData(tile - tilesetInfo.firstGid);
+
+			if (tileData)
+			{
+				if (tileData->frames.size())
+				{
+					tile = tilesetInfo.firstGid + tileData->frames[tileData->currentFrame].tileId;
+				}
+			}
 
 			gfx->atlasTextureIndex = tilesetInfo.tileset->image->atlasTexture->textureIndex;
 			gfx->color = root->color.getRgba();
@@ -39,11 +48,13 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 			u32 col = tileIndex % (u32)chunk.size.x;
 			u32 row = tileIndex / (u32)chunk.size.x;
 
-			auto offsX = layer.tilemapResource->tileSize.x * col;
-			auto offsY = layer.tilemapResource->tileSize.y * row;
+			auto& tileSize = layer.tilemapResource->tileSize;
 
-			rc.x = root->position.x + chunk.position.x * layer.tilemapResource->tileSize.x + offsX - layer.start.x * layer.tilemapResource->tileSize.x;
-			rc.y = root->position.y + chunk.position.y * layer.tilemapResource->tileSize.y + offsY - layer.start.y * layer.tilemapResource->tileSize.y;
+			auto offsX = tileSize.x * col;
+			auto offsY = tileSize.y * row;
+
+			rc.x = root->position.x + layer.offset.x * tileSize.x + chunk.position.x * tileSize.x + offsX;// +layer.start.x * tileSize.x;
+			rc.y = root->position.y + layer.offset.y * tileSize.y + chunk.position.y * tileSize.y + offsY;// +layer.start.y * tileSize.y;
 			rc.width = layer.tilemapResource->tileSize.x;
 			rc.height = layer.tilemapResource->tileSize.y;
 			auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);

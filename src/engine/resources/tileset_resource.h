@@ -19,6 +19,9 @@ struct TileData
 	std::string type;
 	f32 probability = 0;
 	std::vector<Frame> frames;
+	// animation state
+	u32 currentFrame = 0;
+	f32 animationTimer = 0;
 };
 
 struct TilesetResource : Resource
@@ -36,13 +39,14 @@ struct TilesetResource : Resource
 	f32 uvSpacing = 0;
 	f32 uvTileWidth = 0;
 	f32 uvTileHeight = 0;
-	u32 firstGid = 0;
 
 	std::unordered_map<u32/*id*/, TileData> tiles;
 
 	bool load(Json::Value& json) override;
 	void unload() override;
 	Rect getTileRectTexCoord(u32 index);
+	TileData* findTileData(u32 index);
+	void updateAnimations(f32 deltaTime);
 };
 
 }

@@ -14,6 +14,31 @@ bool TilesetResource::load(Json::Value& json)
 	tileCount = json.get("tilecount", 0).asInt();
 	tileWidth = json.get("tilewidth", 0).asInt();
 	tileHeight = json.get("tileheight", 0).asInt();
+
+	auto& tilesJson = json.get("tiles", Json::ValueType::arrayValue);
+
+	for (auto& tileJson : tilesJson)
+	{
+		TileData tileData;
+
+		tileData.id = tileJson.get("id", 0).asUInt();
+		tileData.probability = tileJson.get("probability", 0).asUInt();
+		tileData.type = tileJson.get("type", "").asString();
+
+		auto& animJson = tileJson.get("animation", Json::ValueType::arrayValue);
+
+		for (auto& frameJson : animJson)
+		{
+			TileData::Frame frame;
+
+			frame.duration = (f32)frameJson.get("duration", 0).asUInt() / 1000.0f;
+			frame.tileId = frameJson.get("tileid", 0).asUInt();
+			tileData.frames.push_back(frame);
+		}
+
+		tiles[tileData.id] = tileData;
+	}
+
 	imagePath = json.get("image", "").asString();
 	imagePath = "tilesets/" + imagePath;
 	imagePath = Game::instance->makeFullDataPath(imagePath);
@@ -65,6 +90,35 @@ Rect TilesetResource::getTileRectTexCoord(u32 index)
 	}
 
 	return rc;
+}
+
+TileData* TilesetResource::findTileData(u32 index)
+{
+	auto iter = tiles.find(index);
+
+	if (iter == tiles.end()) return nullptr;
+
+	return &iter->second;
+}
+
+void TilesetResource::updateAnimations(f32 deltaTime)
+{
+	for (auto& tile : tiles)
+	{
+		if (tile.second.frames.size())
+		{
+			tile.second.animationTimer += deltaTime;
+
+			if (tile.second.animationTimer >= tile.second.frames[tile.second.currentFrame].duration)
+			{
+				tile.second.animationTimer = 0;
+				tile.second.currentFrame++;
+
+				if (tile.second.currentFrame > tile.second.frames.size() - 1)
+					tile.second.currentFrame = 0;
+			}
+		}
+	}
 }
 
 }

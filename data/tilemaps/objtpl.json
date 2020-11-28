@@ -1,0 +1,19 @@
+{ "object":
+    {
+     "height":0,
+     "id":17,
+     "name":"",
+     "point":true,
+     "properties":[
+            {
+             "name":"Cinder",
+             "type":"float",
+             "value":0
+            }],
+     "rotation":0,
+     "type":"Enemy",
+     "visible":true,
+     "width":0
+    },
+ "type":"template"
+}
