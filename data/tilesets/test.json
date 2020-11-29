@@ -13,30 +13,21 @@
  "margin":0,
  "name":"test",
  "spacing":0,
- "terrains":[
-        {
-         "name":"New Terrain",
-         "tile":22
-        }],
  "tilecount":168,
- "tiledversion":"1.3.3",
+ "tiledversion":"2020.10.30",
  "tileheight":8,
  "tiles":[
         {
          "animation":[
                 {
-                 "duration":140,
+                 "duration":100,
                  "tileid":1
                 }, 
                 {
-                 "duration":140,
+                 "duration":100,
                  "tileid":2
-                }, 
-                {
-                 "duration":140,
-                 "tileid":3
                 }],
-         "id":0
+         "id":1
         }, 
         {
          "animation":[
@@ -46,39 +37,9 @@
                 }, 
                 {
                  "duration":100,
-                 "tileid":2
-                }],
-         "id":1,
-         "terrain":[0, -1, 0, -1]
-        }, 
-        {
-         "animation":[
-                {
-                 "duration":140,
-                 "tileid":88
-                }, 
-                {
-                 "duration":140,
-                 "tileid":81
-                }],
-         "id":12
-        }, 
-        {
-         "animation":[
-                {
-                 "duration":1111,
-                 "tileid":1
-                }, 
-                {
-                 "duration":1001,
                  "tileid":16
-                }, 
-                {
-                 "duration":1111,
-                 "tileid":44
                 }],
-         "id":24,
-         "terrain":[-1, -1, -1, 0]
+         "id":24
         }, 
         {
          "id":34,
@@ -106,26 +67,63 @@
                  "duration":100,
                  "tileid":57
                 }],
-         "id":49,
-         "terrain":[0, -1, -1, -1]
+         "id":49
         }, 
         {
-         "id":105,
-         "terrain":[0, 0, 0, 0]
-        }, 
-        {
-         "id":106,
-         "terrain":[0, 0, 0, 0]
-        }, 
-        {
-         "id":113,
-         "terrain":[0, 0, 0, 0]
-        }, 
-        {
-         "id":114,
-         "terrain":[0, 0, 0, 0]
+         "animation":[
+                {
+                 "duration":1000,
+                 "tileid":70
+                }, 
+                {
+                 "duration":1000,
+                 "tileid":78
+                }],
+         "id":70
         }],
  "tilewidth":8,
  "type":"tileset",
- "version":1.2
+ "version":1.4,
+ "wangsets":[
+        {
+         "colors":[
+                {
+                 "color":"#ff0000",
+                 "name":"New Terrain",
+                 "probability":1,
+                 "tile":22
+                }],
+         "name":"Converted Terrains",
+         "tile":-1,
+         "type":"corner",
+         "wangtiles":[
+                {
+                 "dflip":false,
+                 "hflip":false,
+                 "tileid":105,
+                 "vflip":false,
+                 "wangid":[0, 1, 0, 1, 0, 1, 0, 1]
+                }, 
+                {
+                 "dflip":false,
+                 "hflip":false,
+                 "tileid":106,
+                 "vflip":false,
+                 "wangid":[0, 1, 0, 1, 0, 1, 0, 1]
+                }, 
+                {
+                 "dflip":false,
+                 "hflip":false,
+                 "tileid":113,
+                 "vflip":false,
+                 "wangid":[0, 1, 0, 1, 0, 1, 0, 1]
+                }, 
+                {
+                 "dflip":false,
+                 "hflip":false,
+                 "tileid":114,
+                 "vflip":false,
+                 "wangid":[0, 1, 0, 1, 0, 1, 0, 1]
+                }]
+        }]
 }

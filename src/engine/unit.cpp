@@ -580,8 +580,8 @@ void Unit::render(Graphics* gfx)
 		if (!spr->visible || !spr->shadow) continue;
 
 		Game::instance->graphics->atlasTextureIndex = spr->spriteResource->image->atlasTexture->textureIndex;
-		gfx->color = 0;
-		gfx->colorMode = (u32)ColorMode::Mul;
+		gfx->color = 0x00FFFFFF;
+		gfx->colorMode = (u32)ColorMode::Sub;
 
 		if (spr->rotation > 0)
 		{

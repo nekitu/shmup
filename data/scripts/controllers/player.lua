@@ -17,7 +17,6 @@ function C:onUpdate()
   end
 
   if not self.unit.root then return end
-  self.unit.root.position.y = self.unit.root.position.y - game.cameraSpeed * game.deltaTime
 
   if game:isPlayerFire1(self.playerIndex) and not self.isFirePressed then
     self.isFirePressed = true
@@ -56,7 +55,7 @@ function C:onUpdate()
   moveDir:normalize()
   self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
   self.unit.root.position.x = util.clampValue(self.unit.root.position.x, game.cameraParallaxOffset * (-1), gfx.videoWidth - game.cameraParallaxOffset)
-  self.unit.root.position.y = util.clampValue(self.unit.root.position.y, game.cameraPosition.y * (-1), gfx.videoHeight - game.cameraPosition.y)
+  self.unit.root.position.y = util.clampValue(self.unit.root.position.y, 0, gfx.videoHeight)
   game.cameraParallaxOffset = (gfx.videoWidth / 2 - self.unit.root.position.x) * game.cameraParallaxScale
   collectgarbage()
   collectgarbage("count")

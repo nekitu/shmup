@@ -12,9 +12,10 @@ namespace engine
 {
 void TilemapLayerTiles::update(struct Game* game)
 {
-	Unit::update(game);
-	speed = 25;
+	speed = 22;
 	root->position.y += game->deltaTime * speed;
+	root->position.x = game->cameraParallaxOffset;
+	Unit::update(game);
 }
 
 void TilemapLayerTiles::render(struct Graphics* gfx)
@@ -45,8 +46,8 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 
 			Rect rc;
 
-			u32 col = tileIndex % (u32)chunk.size.x;
-			u32 row = tileIndex / (u32)chunk.size.x;
+			f32 col = tileIndex % (u32)chunk.size.x;
+			f32 row = tileIndex / (u32)chunk.size.x;
 
 			auto& tileSize = layer.tilemapResource->tileSize;
 
@@ -59,10 +60,8 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 			rc.height = layer.tilemapResource->tileSize.y;
 			auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);
 
-			rc.x = roundf(rc.x);
-			rc.y = roundf(rc.y);
-			rc.width = roundf(rc.width);
-			rc.height = roundf(rc.height);
+			rc.x = round(rc.x);
+			rc.y = round(rc.y);
 
 			if (tilesetInfo.tileset->image->rotated)
 				gfx->drawQuadWithTexCoordRotated90(rc, uv);

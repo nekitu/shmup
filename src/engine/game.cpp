@@ -201,6 +201,7 @@ void Game::createPlayers()
 		players[i].unit->name = "Player" + std::to_string(i + 1);
 		players[i].unit->root->position.x = graphics->videoWidth / 2;
 		players[i].unit->root->position.y = graphics->videoHeight / 2;
+		players[i].unit->layerIndex = ~0 - 1;
 		newUnits.push_back(players[i].unit);
 	}
 }
@@ -789,6 +790,11 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
+	if (layerIndex >= Game::instance->map->layers.size())
+	{
+		return newPos;
+	}
+
 	if (!Game::instance->map->layers[layerIndex].cameraScroll
 		&& !Game::instance->map->layers[layerIndex].cameraParallax)
 	{
@@ -813,6 +819,11 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 Vec2 Game::screenToWorld(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
+
+	if (layerIndex >= Game::instance->map->layers.size())
+	{
+		return newPos;
+	}
 
 	if (!Game::instance->map->layers[layerIndex].cameraScroll
 		&& !Game::instance->map->layers[layerIndex].cameraParallax)
@@ -1107,14 +1118,6 @@ bool Game::changeMap(i32 index)
 		}
 
 		++layerIndex;
-	}
-
-	for (int i = 0; i < maxPlayerCount; i++)
-	{
-		if (players[i].unit)
-		{
-			players[i].unit->layerIndex = map->layers.size() - 1;
-		}
 	}
 
 	return true;
