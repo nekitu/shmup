@@ -28,10 +28,4 @@ function C:onCollide(other, colPairs)
   self.unit.root:hit(1)
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

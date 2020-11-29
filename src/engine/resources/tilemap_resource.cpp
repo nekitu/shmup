@@ -92,6 +92,10 @@ void TilemapLayer::load(Json::Value& json)
 		{
 			cameraScroll = propJson.get("value", 0).asFloat();
 		}
+		else if (propJson.get("name", "").asString() == "repeatCount")
+		{
+			repeatCount = propJson.get("value", 0).asUInt();
+		}
 
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
 			properties[propJson.get("name", "").asString()] = str;

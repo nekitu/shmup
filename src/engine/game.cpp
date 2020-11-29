@@ -1103,13 +1103,16 @@ bool Game::changeMap(i32 index)
 
 				if (unitClass == "")
 				{
-					auto& unitPath = obj.properties["path"];
+					auto unitPath = obj.properties["unit"];
+					replaceAll(unitPath, "\/", "/");
+					replaceAll(unitPath, "\"", "");
 					Unit* unit = createUnit(resourceLoader->loadUnit(unitPath));
 
-					unit->load(obj);
-					unit->layerIndex = layerIndex;
-
-					if (unit) newUnits.push_back(unit);
+					if (unit)
+					{
+						unit->load(obj);
+						unit->layerIndex = layerIndex;
+					}
 				}
 
 				break;

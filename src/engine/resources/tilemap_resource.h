@@ -80,6 +80,7 @@ struct TilemapLayer
 	f32 cameraParallaxScale = 1.0f;
 	bool cameraParallax = true; // used by player layer to not parallax its position by camera side moves
 	bool cameraScroll = true; // if true, the layer is scrolled, if false, the layer is not scrolled by camera position, used for enemies/bosses to stay in place and player to not be affected by camera scroll progression in the map
+	u32 repeatCount = 0; // how many times this layer tiles are repeated, 0 no repeat, ~0 infinite, or a number of times
 
 	void load(Json::Value& json);
 };

@@ -10,3 +10,13 @@ function dump(o)
     return tostring(o)
   end
 end
+
+function newInstance(C)
+  return function(unit)
+    local o = {}
+    setmetatable(o, C)
+    C.__index = C
+    o:init(unit)
+    return o
+  end
+end

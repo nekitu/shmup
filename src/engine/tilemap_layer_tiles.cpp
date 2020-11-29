@@ -12,16 +12,50 @@ namespace engine
 {
 void TilemapLayerTiles::update(struct Game* game)
 {
-	speed = 22;
-	root->position.y += game->deltaTime * speed;
-	root->position.x = game->cameraParallaxOffset;
+
+	//speed = game->cameraSpeed;
+	//root->position.y += game->deltaTime * speed;
+	//root->position.x = game->cameraParallaxOffset;
 	Unit::update(game);
+
+	auto layerWidth = tilemapLayer->size.x * tilemapLayer->tilemapResource->tileSize.x;
+	auto layerHeight = tilemapLayer->size.y * tilemapLayer->tilemapResource->tileSize.y;
+
+	boundingBox.setSize(Vec2(layerWidth, layerHeight));
 }
 
 void TilemapLayerTiles::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
+	if (!tilemapLayer->repeatCount)
+	{
+		renderTiles(gfx, boundingBox.topLeft());
+		return;
+	}
 
+	auto layerHeight = tilemapLayer->size.y * tilemapLayer->tilemapResource->tileSize.y;
+
+	for (u32 i = 0; i < tilemapLayer->repeatCount; i++)
+	{
+		Vec2 pos;
+
+		pos.x = boundingBox.x;
+		pos.y = boundingBox.y;
+
+		pos.y -= i * layerHeight;
+
+		if (pos.y + layerHeight < 0)
+			break;
+
+		if (pos.y < gfx->videoHeight)
+		{
+			renderTiles(gfx, pos);
+		}
+	}
+}
+
+void TilemapLayerTiles::renderTiles(struct Graphics* gfx, const Vec2& location)
+{
 	auto& layer = *tilemapLayer;
 	for (auto& chunk : layer.chunks)
 	{
@@ -54,8 +88,8 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 			auto offsX = tileSize.x * col;
 			auto offsY = tileSize.y * row;
 
-			rc.x = root->position.x + layer.offset.x * tileSize.x + chunk.position.x * tileSize.x + offsX;// +layer.start.x * tileSize.x;
-			rc.y = root->position.y + layer.offset.y * tileSize.y + chunk.position.y * tileSize.y + offsY;// +layer.start.y * tileSize.y;
+			rc.x = location.x + layer.offset.x + chunk.position.x * tileSize.x + offsX;
+			rc.y = location.y + layer.offset.y + chunk.position.y * tileSize.y + offsY;
 			rc.width = layer.tilemapResource->tileSize.x;
 			rc.height = layer.tilemapResource->tileSize.y;
 			auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);

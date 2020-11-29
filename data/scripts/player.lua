@@ -1,3 +1,5 @@
+require("util")
+
 local C = {}
 
 function C:init(unit)
@@ -7,10 +9,4 @@ end
 function C:onUpdate()
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

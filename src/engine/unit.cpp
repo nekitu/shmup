@@ -391,44 +391,51 @@ void Unit::setAnimation(const std::string& animName)
 
 void Unit::computeBoundingBox()
 {
-	if (root && root->spriteResource)
+	if (root)
 	{
-		if (root->rotation != 0)
+		if (root->spriteResource)
 		{
-			boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
-			boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
-			boundingBox.x = root->position.x - boundingBox.width / 2;
-			boundingBox.y = root->position.y - boundingBox.height / 2;
+			if (root->rotation != 0)
+			{
+				boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
+				boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
+				boundingBox.x = root->position.x - boundingBox.width / 2;
+				boundingBox.y = root->position.y - boundingBox.height / 2;
 
-			Vec2 v0(boundingBox.topLeft());
-			Vec2 v1(boundingBox.topRight());
-			Vec2 v2(boundingBox.bottomRight());
-			Vec2 v3(boundingBox.bottomLeft());
+				Vec2 v0(boundingBox.topLeft());
+				Vec2 v1(boundingBox.topRight());
+				Vec2 v2(boundingBox.bottomRight());
+				Vec2 v3(boundingBox.bottomLeft());
 
-			Vec2 center = boundingBox.center();
-			auto angle = deg2rad(root->rotation);
+				Vec2 center = boundingBox.center();
+				auto angle = deg2rad(root->rotation);
 
-			v0.rotateAround(center, angle);
-			v1.rotateAround(center, angle);
-			v2.rotateAround(center, angle);
-			v3.rotateAround(center, angle);
+				v0.rotateAround(center, angle);
+				v1.rotateAround(center, angle);
+				v2.rotateAround(center, angle);
+				v3.rotateAround(center, angle);
 
-			boundingBox.set(center.x, center.y, 0, 0);
-			boundingBox.add(v0);
-			boundingBox.add(v1);
-			boundingBox.add(v2);
-			boundingBox.add(v3);
+				boundingBox.set(center.x, center.y, 0, 0);
+				boundingBox.add(v0);
+				boundingBox.add(v1);
+				boundingBox.add(v2);
+				boundingBox.add(v3);
+			}
+			else
+			{
+				boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
+				boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
+				boundingBox.x = root->position.x - boundingBox.width / 2;
+				boundingBox.y = root->position.y - boundingBox.height / 2;
+			}
 		}
 		else
 		{
-			boundingBox.width = root->spriteResource->frameWidth * root->scale.x;
-			boundingBox.height = root->spriteResource->frameHeight * root->scale.y;
-			boundingBox.x = root->position.x - boundingBox.width / 2;
-			boundingBox.y = root->position.y - boundingBox.height / 2;
+			boundingBox.setPosition(root->position);
+			boundingBox.setSize(root->scale);
 		}
 
 		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
-
 		root->rect = boundingBox;
 		root->rect.x = roundf(root->rect.x);
 		root->rect.y = roundf(root->rect.y);
@@ -502,12 +509,6 @@ void Unit::computeBoundingBox()
 			boundingBox.add(spriteRc);
 			spr->rect = spriteRc;
 		}
-	}
-
-	if (root && !root->spriteResource)
-	{
-		boundingBox.setPosition(root->position);
-		boundingBox.setSize(root->scale);
 	}
 
 	boundingBox.x = roundf(boundingBox.x);
