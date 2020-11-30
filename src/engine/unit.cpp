@@ -263,6 +263,9 @@ void Unit::load(TilemapObject& object)
 
 void Unit::update(Game* game)
 {
+	if (!visible)
+		return;
+
 	computeHealth();
 
 	if (unitResource)

@@ -12,51 +12,31 @@ namespace engine
 {
 void TilemapLayerTiles::update(struct Game* game)
 {
-
-	//speed = game->cameraSpeed;
-	//root->position.y += game->deltaTime * speed;
-	//root->position.x = game->cameraParallaxOffset;
 	Unit::update(game);
-
-	auto layerWidth = tilemapLayer->size.x * tilemapLayer->tilemapResource->tileSize.x;
-	auto layerHeight = tilemapLayer->size.y * tilemapLayer->tilemapResource->tileSize.y;
-
-	boundingBox.setSize(Vec2(layerWidth, layerHeight));
 }
 
 void TilemapLayerTiles::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
-	if (!tilemapLayer->repeatCount)
-	{
-		renderTiles(gfx, boundingBox.topLeft());
+
+	if (!tilemapLayer->visible)
 		return;
-	}
 
-	auto layerHeight = tilemapLayer->size.y * tilemapLayer->tilemapResource->tileSize.y;
-
-	for (u32 i = 0; i < tilemapLayer->repeatCount; i++)
+	switch (tilemapLayer->type)
 	{
-		Vec2 pos;
-
-		pos.x = boundingBox.x;
-		pos.y = boundingBox.y;
-
-		pos.y -= i * layerHeight;
-
-		if (pos.y + layerHeight < 0)
-			break;
-
-		if (pos.y < gfx->videoHeight)
-		{
-			renderTiles(gfx, pos);
-		}
+	case TilemapLayer::Type::Tiles:
+		renderTiles(gfx);
+		break;
+	case TilemapLayer::Type::Image:
+		renderImage(gfx);
+		break;
 	}
 }
 
-void TilemapLayerTiles::renderTiles(struct Graphics* gfx, const Vec2& location)
+void TilemapLayerTiles::renderTiles(struct Graphics* gfx)
 {
 	auto& layer = *tilemapLayer;
+
 	for (auto& chunk : layer.chunks)
 	{
 		int tileIndex = 0;
@@ -74,6 +54,12 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx, const Vec2& location)
 				}
 			}
 
+			if (!tile)
+			{
+				++tileIndex;
+				continue;
+			}
+
 			gfx->atlasTextureIndex = tilesetInfo.tileset->image->atlasTexture->textureIndex;
 			gfx->color = root->color.getRgba();
 			gfx->colorMode = (int)root->colorMode;
@@ -88,8 +74,8 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx, const Vec2& location)
 			auto offsX = tileSize.x * col;
 			auto offsY = tileSize.y * row;
 
-			rc.x = location.x + layer.offset.x + chunk.position.x * tileSize.x + offsX;
-			rc.y = location.y + layer.offset.y + chunk.position.y * tileSize.y + offsY;
+			rc.x = boundingBox.x + layer.offset.x + chunk.position.x * tileSize.x + offsX;
+			rc.y = boundingBox.y + layer.offset.y + chunk.position.y * tileSize.y + offsY;
 			rc.width = layer.tilemapResource->tileSize.x;
 			rc.height = layer.tilemapResource->tileSize.y;
 			auto uv = tilesetInfo.tileset->getTileRectTexCoord(tile - tilesetInfo.firstGid);
@@ -103,6 +89,51 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx, const Vec2& location)
 				gfx->drawQuad(rc, uv);
 
 			++tileIndex;
+		}
+	}
+}
+
+void TilemapLayerTiles::renderImage(Graphics* gfx)
+{
+	if (!tilemapLayer->repeatCount)
+	{
+		Rect rc = boundingBox;
+
+		rc.width = tilemapLayer->image->width;
+		rc.height = tilemapLayer->image->height;
+
+		if (tilemapLayer->image->rotated)
+			gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
+		else
+			gfx->drawQuad(rc, tilemapLayer->image->uvRect);
+
+		return;
+	}
+
+	for (u32 i = 0; i < tilemapLayer->repeatCount; i++)
+	{
+		Vec2 pos;
+
+		pos.x = boundingBox.x + tilemapLayer->offset.x;
+		pos.y = boundingBox.y + tilemapLayer->offset.y;
+		pos.y -= i * tilemapLayer->image->height;
+
+		if (pos.y + tilemapLayer->image->height < 0)
+			break;
+
+		if (pos.y < gfx->videoHeight)
+		{
+			Rect rc;
+
+			rc.x = pos.x;
+			rc.y = pos.y;
+			rc.width = tilemapLayer->image->width;
+			rc.height = tilemapLayer->image->height;
+
+			if (tilemapLayer->image->rotated)
+				gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
+			else
+				gfx->drawQuad(rc, tilemapLayer->image->uvRect);
 		}
 	}
 }

@@ -3,8 +3,9 @@
   "windowHeight": 800,
   "windowTitle": "Stellar Eagle",
   "fullscreen": false,
-  "vSync": true,
+  "vSync": false,
   "pauseOnAppDeactivate": false,
+  "cameraSpeed": 40,
   "tilemaps":
   [
     {

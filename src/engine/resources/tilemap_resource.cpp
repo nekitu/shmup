@@ -73,6 +73,8 @@ void TilemapLayer::load(Json::Value& json)
 	visible = json.get("visible", true).asBool();
 	position.x = json.get("x", 0).asInt();
 	position.y = json.get("y", 0).asInt();
+	offset.x = json.get("offsetx", 0).asFloat();
+	offset.y = json.get("offsety", 0).asFloat();
 	opacity = json.get("opacity", 1).asFloat();
 
 	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
@@ -82,7 +84,7 @@ void TilemapLayer::load(Json::Value& json)
 	{
 		if (propJson.get("name", "").asString() == "cameraParallax")
 		{
-			cameraParallax = propJson.get("value", 0).asFloat();
+			cameraParallax = propJson.get("value", cameraParallax).asBool();
 		}
 		else if (propJson.get("name", "").asString() == "cameraParallaxScale")
 		{
@@ -90,11 +92,11 @@ void TilemapLayer::load(Json::Value& json)
 		}
 		else if (propJson.get("name", "").asString() == "cameraScroll")
 		{
-			cameraScroll = propJson.get("value", 0).asFloat();
+			cameraScroll = propJson.get("value", cameraScroll).asBool();
 		}
 		else if (propJson.get("name", "").asString() == "repeatCount")
 		{
-			repeatCount = propJson.get("value", 0).asUInt();
+			repeatCount = propJson.get("value", 0).asInt();
 		}
 
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
@@ -126,7 +128,8 @@ void TilemapLayer::load(Json::Value& json)
 	{
 		type = TilemapLayer::Type::Image;
 		imagePath = json.get("image", "").asString();
-		imagePath = getParentPath(tilemapResource->path) + imagePath;
+		//TODO: maybe not hardcode the data path
+		imagePath = "../data/" + getParentPath(tilemapResource->path) + "/" + imagePath;
 		replaceAll(imagePath, "\\/", "/");
 
 		int imgWidth = 0;
@@ -182,13 +185,84 @@ void TilemapLayer::load(Json::Value& json)
 			chunk.size.y = chunkJson.get("height", 0).asInt();
 			chunk.position.x = chunkJson.get("x", 0).asInt();
 			chunk.position.y = chunkJson.get("y", 0).asInt();
+			chunk.contentSize.x = 0;
+			chunk.contentSize.y = 0;
+			chunk.contentStartOffset.x = FLT_MAX;
+			chunk.contentStartOffset.y = FLT_MAX;
 
 			auto& tiles = chunkJson.get("data", Json::ValueType::arrayValue);
 
 			for (auto& tileIndex : tiles)
 			{
-				chunk.tiles.push_back(tileIndex.asInt());
+				auto tile = tileIndex.asInt();
+				chunk.tiles.push_back(tile);
 			}
+
+			// scan for content start x
+			for (int x = 0; x < chunk.size.x; x++)
+			{
+				for (int y = 0; y < chunk.size.y; y++)
+				{
+					u32 tile = chunk.tiles[y * chunk.size.x + x];
+
+					if (tile)
+					{
+						if (x < chunk.contentStartOffset.x)
+							chunk.contentStartOffset.x = x;
+					}
+				}
+			}
+
+			// scan for content start y
+			for (int y = 0; y < chunk.size.y; y++)
+			{
+				for (int x = 0; x < chunk.size.x; x++)
+				{
+					u32 tile = chunk.tiles[y * chunk.size.x + x];
+
+					if (tile)
+					{
+						if (y < chunk.contentStartOffset.y)
+							chunk.contentStartOffset.y = y;
+					}
+				}
+			}
+
+			// scan for content size x
+			for (int x = chunk.size.x - 1; x >= 0; x--)
+			{
+				for (int y = 0; y < chunk.size.y; y++)
+				{
+					u32 tile = chunk.tiles[y * chunk.size.x + x];
+
+					if (tile)
+					{
+						if (x > chunk.contentSize.x)
+							chunk.contentSize.x = x;
+					}
+				}
+			}
+
+			// scan for content size y
+			for (int y = chunk.size.y - 1; y >= 0; y--)
+			{
+				for (int x = 0; x < chunk.size.x; x++)
+				{
+					u32 tile = chunk.tiles[y * chunk.size.x + x];
+
+					if (tile)
+					{
+						if (y > chunk.contentSize.y)
+							chunk.contentSize.y = y;
+					}
+				}
+			}
+
+			// compute proper size inside the chunk
+			chunk.contentSize.x -= chunk.contentStartOffset.x;
+			chunk.contentSize.y -= chunk.contentStartOffset.y;
+
+			LOG_INFO("Layer chunk content rect: {0} {1},{2},{3},{4}", name, chunk.contentStartOffset.x, chunk.contentStartOffset.y, chunk.contentSize.x, chunk.contentSize.y);
 
 			chunks.push_back(chunk);
 		}

@@ -10,6 +10,7 @@ struct TilemapLayerTiles : Unit
 
 	virtual void update(struct Game* game) override;
 	virtual void render(struct Graphics* gfx) override;
-	void renderTiles(struct Graphics* gfx, const Vec2& location);
+	void renderTiles(struct Graphics* gfx);
+	void renderImage(struct Graphics* gfx);
 };
 }

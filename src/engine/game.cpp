@@ -58,6 +58,7 @@ void Game::loadConfig()
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
+	cameraSpeed = json.get("cameraSpeed", cameraSpeed).asFloat();
 
 	auto mapsJson = json.get("tilemaps", Json::ValueType::arrayValue);
 
@@ -811,7 +812,7 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 	}
 
 	newPos.x += cameraPosition.x + cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
-	newPos.y += cameraPosition.y + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.y += cameraPosition.y * Game::instance->map->layers[layerIndex].cameraParallaxScale + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -1091,6 +1092,7 @@ bool Game::changeMap(i32 index)
 		layerTiles->tilemapLayer = &layer;
 		layerTiles->layerIndex = layerIndex;
 		layerTiles->root = new Sprite();
+		layerTiles->speed = atof(layer.properties["speed"].c_str());
 		newUnits.push_back(layerTiles);
 
 		for (auto& obj : layer.objects)

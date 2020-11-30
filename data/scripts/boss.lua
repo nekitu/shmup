@@ -26,7 +26,7 @@ function C:onUpdate()
     self.unit.deleteMeNow = true
     local unit = game:spawn("units/turret_expl", "expl2", self.unit.root.position)
     unit.layerIndex = self.unit.layerIndex
-    game:animateCameraSpeed(110, 0.6)
+    game:animateCameraSpeed(410, 0.6)
     game:shakeCamera(Vec2(10, 10), 3, 200)
   end
   --self.unit.root.position.x = self.unit.root.position.x + math.sin(s) * 20 * game.deltaTime
