@@ -11,8 +11,6 @@ struct TilemapChunk
 	std::vector<u32> tiles;
 	Vec2 size;
 	Vec2 position;
-	Vec2 contentSize;
-	Vec2 contentStartOffset;
 };
 
 struct TilemapObject
@@ -73,7 +71,6 @@ struct TilemapLayer
 	Vec2 start;
 	Vec2 offset;
 	Vec2 position;
-	Vec2 contentSize;
 	f32 opacity = 1.0f;
 	bool visible = true;
 	struct AtlasImage* image = nullptr;

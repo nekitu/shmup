@@ -185,10 +185,6 @@ void TilemapLayer::load(Json::Value& json)
 			chunk.size.y = chunkJson.get("height", 0).asInt();
 			chunk.position.x = chunkJson.get("x", 0).asInt();
 			chunk.position.y = chunkJson.get("y", 0).asInt();
-			chunk.contentSize.x = 0;
-			chunk.contentSize.y = 0;
-			chunk.contentStartOffset.x = FLT_MAX;
-			chunk.contentStartOffset.y = FLT_MAX;
 
 			auto& tiles = chunkJson.get("data", Json::ValueType::arrayValue);
 
@@ -197,72 +193,6 @@ void TilemapLayer::load(Json::Value& json)
 				auto tile = tileIndex.asInt();
 				chunk.tiles.push_back(tile);
 			}
-
-			// scan for content start x
-			for (int x = 0; x < chunk.size.x; x++)
-			{
-				for (int y = 0; y < chunk.size.y; y++)
-				{
-					u32 tile = chunk.tiles[y * chunk.size.x + x];
-
-					if (tile)
-					{
-						if (x < chunk.contentStartOffset.x)
-							chunk.contentStartOffset.x = x;
-					}
-				}
-			}
-
-			// scan for content start y
-			for (int y = 0; y < chunk.size.y; y++)
-			{
-				for (int x = 0; x < chunk.size.x; x++)
-				{
-					u32 tile = chunk.tiles[y * chunk.size.x + x];
-
-					if (tile)
-					{
-						if (y < chunk.contentStartOffset.y)
-							chunk.contentStartOffset.y = y;
-					}
-				}
-			}
-
-			// scan for content size x
-			for (int x = chunk.size.x - 1; x >= 0; x--)
-			{
-				for (int y = 0; y < chunk.size.y; y++)
-				{
-					u32 tile = chunk.tiles[y * chunk.size.x + x];
-
-					if (tile)
-					{
-						if (x > chunk.contentSize.x)
-							chunk.contentSize.x = x;
-					}
-				}
-			}
-
-			// scan for content size y
-			for (int y = chunk.size.y - 1; y >= 0; y--)
-			{
-				for (int x = 0; x < chunk.size.x; x++)
-				{
-					u32 tile = chunk.tiles[y * chunk.size.x + x];
-
-					if (tile)
-					{
-						if (y > chunk.contentSize.y)
-							chunk.contentSize.y = y;
-					}
-				}
-			}
-
-			// compute proper size inside the chunk
-			chunk.contentSize.x -= chunk.contentStartOffset.x;
-			chunk.contentSize.y -= chunk.contentStartOffset.y;
-
-			LOG_INFO("Layer chunk content rect: {0} {1},{2},{3},{4}", name, chunk.contentStartOffset.x, chunk.contentStartOffset.y, chunk.contentSize.x, chunk.contentSize.y);
 
 			chunks.push_back(chunk);
 		}
