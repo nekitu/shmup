@@ -9,11 +9,23 @@ namespace engine
 {
 struct WeaponResource : Resource
 {
-    enum class Type
-    {
-        Projectile,
-        Beam
-    };
+	enum class Type
+	{
+		Projectile,
+		Beam
+	};
+
+	enum class RotationType
+	{
+		Constant,
+		PingPong,
+		EasedPingPong,
+		Rewind,
+		Custom,
+
+		Count
+	};
+
 
 	struct Parameters
 	{
@@ -37,6 +49,7 @@ struct WeaponResource : Resource
 		bool autoAim = false;
 		i32 spawnLayerOffset = 0; /// on which layer index offset should the projectile units spawn (default, below spawner unit)
 		Type type = Type::Projectile;
+		RotationType rotationType = RotationType::Constant;
 	};
 
 	Parameters params;
