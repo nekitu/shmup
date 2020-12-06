@@ -99,8 +99,8 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 	{
 		Rect rc = boundingBox;
 
-		rc.width = tilemapLayer->image->width;
-		rc.height = tilemapLayer->image->height;
+		rc.width = tilemapLayer->image->width * imageScale.x;
+		rc.height = tilemapLayer->image->height * imageScale.y;
 
 		if (tilemapLayer->image->rotated)
 			gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
@@ -113,22 +113,38 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 	for (u32 i = 0; i < tilemapLayer->repeatCount; i++)
 	{
 		Vec2 pos;
+		bool imgVisible = false;
 
 		pos.x = boundingBox.x + tilemapLayer->offset.x;
 		pos.y = boundingBox.y + tilemapLayer->offset.y;
-		pos.y -= i * tilemapLayer->image->height;
 
-		if (pos.y + tilemapLayer->image->height < 0)
-			break;
+		if (Game::instance->screenMode == ScreenMode::Vertical)
+		{
+			pos.y -= i * tilemapLayer->image->height * imageScale.y;
 
-		if (pos.y < gfx->videoHeight)
+			if (pos.y + tilemapLayer->image->height * imageScale.y < 0)
+				break;
+
+			imgVisible = pos.y < gfx->videoHeight;
+		}
+		else if (Game::instance->screenMode == ScreenMode::Horizontal)
+		{
+			pos.x -= i * tilemapLayer->image->width * imageScale.x;
+
+			if (pos.x + tilemapLayer->image->width * imageScale.x < 0)
+				break;
+
+			imgVisible = pos.x < gfx->videoWidth;
+		}
+
+		if (imgVisible)
 		{
 			Rect rc;
 
 			rc.x = pos.x;
 			rc.y = pos.y;
-			rc.width = tilemapLayer->image->width;
-			rc.height = tilemapLayer->image->height;
+			rc.width = tilemapLayer->image->width * imageScale.x;
+			rc.height = tilemapLayer->image->height * imageScale.y;
 
 			if (tilemapLayer->image->rotated)
 				gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
