@@ -17,11 +17,10 @@ struct WeaponResource : Resource
 
 	enum class RotationType
 	{
-		Constant,
+		Custom,
 		PingPong,
 		EasedPingPong,
 		Rewind,
-		Custom,
 
 		Count
 	};
@@ -49,7 +48,7 @@ struct WeaponResource : Resource
 		bool autoAim = false;
 		i32 spawnLayerOffset = 0; /// on which layer index offset should the projectile units spawn (default, below spawner unit)
 		Type type = Type::Projectile;
-		RotationType rotationType = RotationType::Constant;
+		RotationType rotationType = RotationType::Custom;
 	};
 
 	Parameters params;

@@ -24,10 +24,18 @@ bool WeaponResource::load(Json::Value& json)
 	params.spawnLayerOffset = json.get("spawnLayerOffset", -1).asInt();
 	params.activeTime = json.get("activeTime", 0.0f).asFloat();
 	params.pauseDelay = json.get("pauseDelay", 0.0f).asFloat();
+
 	auto typeStr = json.get("type", "Projectile").asString();
+	auto rotTypeStr = json.get("rotationType", "custom").asString();
 
 	if (typeStr == "Projectile") params.type = Type::Projectile;
 	else if (typeStr == "Beam") params.type = Type::Beam;
+
+	if (rotTypeStr == "Custom") params.rotationType = RotationType::Custom;
+	if (rotTypeStr == "PingPong") params.rotationType = RotationType::PingPong;
+	if (rotTypeStr == "EasedPingPong") params.rotationType = RotationType::EasedPingPong;
+	if (rotTypeStr == "Rewind") params.rotationType = RotationType::Rewind;
+
 
 	params.autoAim = json.get("autoAim", params.autoAim).asBool();
 
