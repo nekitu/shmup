@@ -175,6 +175,7 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_g] = InputControl::Player2_Fire2;
 	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
 	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
+	mapSdlToControl[SDLK_F6] = InputControl::ReloadSprites;
 
 	//TODO: remove
 	music = new Music();
@@ -332,20 +333,31 @@ void Game::mainLoop()
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
 
-		static bool reloadKeyDown = false;
+		static bool reloadScriptsKeyDown = false;
+		static bool reloadSpritesKeyDown = false;
 		static bool pauseKeyDown = false;
 
-		bool reload = isControlDown(InputControl::ReloadScripts);
+		bool reloadScripts = isControlDown(InputControl::ReloadScripts);
+		bool reloadSprites = isControlDown(InputControl::ReloadSprites);
 		bool pause = isControlDown(InputControl::Pause);
 
-		if (!reloadKeyDown && reload)
+		if (!reloadScriptsKeyDown && reloadScripts)
 		{
-			reloadKeyDown = true;
+			reloadScriptsKeyDown = true;
 			resourceLoader->reloadScripts();
 		}
 
-		if (!reload)
-			reloadKeyDown = false;
+		if (!reloadScripts)
+			reloadScriptsKeyDown = false;
+
+		if (!reloadSpritesKeyDown && reloadSprites)
+		{
+			reloadSpritesKeyDown = true;
+			resourceLoader->reloadSprites();
+		}
+
+		if (!reloadSprites)
+			reloadSpritesKeyDown = false;
 
 		if (!pauseKeyDown && pause)
 		{

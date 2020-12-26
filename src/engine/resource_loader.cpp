@@ -115,7 +115,7 @@ void ResourceLoader::reloadSprites()
 
 	Game::instance->graphics->atlas->create(Graphics::textureAtlasWidth, Graphics::textureAtlasWidth);
 
-	for (auto res : resources)
+	for (auto& res : resources)
 	{
 		if (res.second->type == ResourceType::Sprite)
 		{
@@ -130,6 +130,50 @@ void ResourceLoader::reloadSprites()
 		}
 	}
 
+	// resolve/reload the tilesets also
+	for (auto& res : resources)
+	{
+		if (res.second->type == ResourceType::Tileset)
+		{
+			auto absPath = Game::instance->dataRoot + res.first;
+
+			if (!loadJson(absPath + ".json", json))
+			{
+				continue;
+			}
+
+			res.second->load(json);
+		}
+		else if (res.second->type == ResourceType::Tilemap)
+		{
+			auto absPath = Game::instance->dataRoot + res.first;
+
+			if (!loadJson(absPath + ".json", json))
+			{
+				continue;
+			}
+
+			TilemapResource* tr = (TilemapResource*)res.second;
+
+			for (auto& layer : tr->layers)
+			{
+				if (layer.type == TilemapLayer::Type::Image)
+				{
+					layer.loadImage();
+				}
+			}
+		}
+	}
+
+	LOG_INFO("Packing atlas sprites...");
+	Game::instance->graphics->atlas->packWithLastUsedParams();
+
+	LOG_INFO("Computing sprite params after packing...");
+
+	for (auto& spriteResource : sprites)
+	{
+		spriteResource->computeParamsAfterAtlasGeneration();
+	}
 }
 
 SpriteResource* ResourceLoader::loadSprite(const std::string& path)

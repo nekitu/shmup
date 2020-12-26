@@ -44,6 +44,7 @@ struct TilesetResource : Resource
 
 	bool load(Json::Value& json) override;
 	void unload() override;
+	bool loadImage();
 	Rect getTileRectTexCoord(u32 index);
 	TileData* findTileData(u32 index);
 	void updateAnimations(f32 deltaTime);

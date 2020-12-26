@@ -43,7 +43,6 @@ struct Graphics
 	std::vector<ColorMode> colorModeStack;
 	std::vector<AlphaMode> alphaModeStack;
 
-
 	Graphics(struct Game* game);
 	void createScreenRenderTarget();
 	bool createGpuPrograms();

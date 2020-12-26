@@ -83,6 +83,8 @@ struct TilemapLayer
 	u32 repeatCount = 0; // how many times this layer is repeated, 0 no repeat, ~0 infinite, or a number of times. This is valid for image layers only
 
 	void load(Json::Value& json);
+	void unload();
+	void loadImage();
 };
 
 struct TilesetInfo

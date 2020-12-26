@@ -268,9 +268,9 @@ void Unit::update(Game* game)
 
 	computeHealth();
 
-	if (unitResource)
+	if (unitResource && appeared)
 	{
-		for (auto stage : unitResource->stages)
+		for (auto& stage : unitResource->stages)
 		{
 			if (health <= stage->triggerOnHealth && stage != currentStage)
 			{
@@ -291,8 +291,8 @@ void Unit::update(Game* game)
 	{
 		for (auto iter : *spriteAnimationMap)
 		{
-			auto spr = iter.first;
-			auto sprAnim = iter.second;
+			auto& spr = iter.first;
+			auto& sprAnim = iter.second;
 
 			sprAnim->update(game->deltaTime);
 			sprAnim->animateSprite(spr);

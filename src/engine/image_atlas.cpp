@@ -35,6 +35,14 @@ void ImageAtlas::create(u32 textureWidth, u32 textureHeight)
 {
 	width = textureWidth;
 	height = textureHeight;
+
+	for (auto& at : atlasTextures)
+	{
+		delete [] at->textureImage;
+		delete at;
+	}
+	atlasTextures.clear();
+	clearImages();
 	delete textureArray;
 	textureArray = new TextureArray();
 	textureArray->resize(1, textureWidth, textureHeight);
@@ -457,14 +465,15 @@ void ImageAtlas::clearImages()
 {
 	deletePackerImages();
 
-	for (auto image : images)
+	for (auto& image : images)
 	{
+		delete [] image.second->imageData;
 		delete image.second;
 	}
 
 	for (auto& image : pendingPackImages)
 	{
-		delete[] image.imageData;
+		delete [] image.imageData;
 	}
 
 	images.clear();

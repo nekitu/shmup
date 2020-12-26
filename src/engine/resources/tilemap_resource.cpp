@@ -62,6 +62,21 @@ void TilemapObject::load(Json::Value& json)
 	}
 }
 
+void TilemapLayer::loadImage()
+{
+	int imgWidth = 0;
+	int imgHeight = 0;
+	int comp = 0;
+
+	stbi_uc* imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
+	LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
+
+	if (imgData)
+	{
+		image = Game::instance->graphics->atlas->addImage((Rgba32*)imgData, imgWidth, imgHeight);
+	}
+}
+
 void TilemapLayer::load(Json::Value& json)
 {
 	id = json.get("id", 0).asUInt();
@@ -131,18 +146,7 @@ void TilemapLayer::load(Json::Value& json)
 		//TODO: maybe not hardcode the data path
 		imagePath = "../data/" + getParentPath(tilemapResource->path) + "/" + imagePath;
 		replaceAll(imagePath, "\\/", "/");
-
-		int imgWidth = 0;
-		int imgHeight = 0;
-		int comp = 0;
-
-		stbi_uc* imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
-		LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
-
-		if (imgData)
-		{
-			image = Game::instance->graphics->atlas->addImage((Rgba32*)imgData, imgWidth, imgHeight);
-		}
+		loadImage();
 	}
 
 	if (typeName == "objectgroup")
@@ -213,6 +217,11 @@ void TilemapLayer::load(Json::Value& json)
 	}
 }
 
+void TilemapLayer::unload()
+{
+	image = nullptr;
+}
+
 bool TilemapResource::load(Json::Value& json)
 {
 	// loading Tiled json map
@@ -252,6 +261,12 @@ bool TilemapResource::load(Json::Value& json)
 
 void TilemapResource::unload()
 {
+	for (auto& tl : layers)
+	{
+		tl.unload();
+	}
+
+	tilesets.clear();
 	layers.clear();
 }
 

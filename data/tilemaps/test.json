@@ -65,7 +65,7 @@
          "startx":0,
          "starty":0,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":0,
          "x":0,
          "y":0
@@ -79,7 +79,7 @@
          "startx":0,
          "starty":0,
          "type":"tilelayer",
-         "visible":false,
+         "visible":true,
          "width":0,
          "x":0,
          "y":0
@@ -188,14 +188,14 @@
                         {
                          "name":"unit",
                          "type":"string",
-                         "value":"units\/turret"
+                         "value":"units\/boss"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":156,
-                 "y":68.666666666667
+                 "x":126,
+                 "y":8.666666666667
                 }],
          "opacity":1,
          "properties":[
@@ -227,7 +227,7 @@
  "nextobjectid":45,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.3.3",
+ "tiledversion":"2020.10.30",
  "tileheight":8,
  "tilesets":[
         {
@@ -236,6 +236,6 @@
         }],
  "tilewidth":8,
  "type":"map",
- "version":1.2,
+ "version":1.4,
  "width":33
 }

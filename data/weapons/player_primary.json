@@ -5,7 +5,7 @@
   "direction" : "0 -1",
   "offsetRadius": 10,
   "fireRaysRotationSpeed": 0,
-  "initialProjectileSpeed": 250,
+  "initialProjectileSpeed": 2250,
   "minProjectileSpeed": 150,
   "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/fire",
