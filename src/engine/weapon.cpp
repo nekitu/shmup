@@ -13,12 +13,13 @@ namespace engine
 Weapon::~Weapon()
 {
 	LOG_INFO("Deleting weapon");
-	delete scriptClass;
+	reset();
 }
 
 void Weapon::reset()
 {
-	delete scriptClass;
+	if (scriptClass)
+		delete scriptClass;
 	scriptClass = nullptr;
 }
 

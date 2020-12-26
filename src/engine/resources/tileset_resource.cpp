@@ -42,6 +42,12 @@ bool TilesetResource::load(Json::Value& json)
 	imagePath = json.get("image", "").asString();
 	imagePath = "tilesets/" + imagePath;
 	imagePath = Game::instance->makeFullDataPath(imagePath);
+
+	return loadImage();
+}
+
+bool TilesetResource::loadImage()
+{
 	LOG_DEBUG("Loading tileset image: {0}", imagePath);
 
 	int width = 0;
@@ -55,7 +61,7 @@ bool TilesetResource::load(Json::Value& json)
 
 	image = Game::instance->graphics->atlas->addImage((Rgba32*)data, width, height);
 
-	return true;
+	return image != nullptr;
 }
 
 void TilesetResource::unload()

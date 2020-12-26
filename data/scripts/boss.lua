@@ -5,13 +5,15 @@ function C:init(unit)
 end
 
 function C:onStageChange(old, new)
+  print("CHANGE STAGE '" .. old .. "' to '" .. new .. "'")
   if not self.unit.appeared then return end
   if new == "stage0" then
-    print("ACTIVATING MEGABLAST "..tostring(self).. " " ..tostring(self.unit))
+    print("ACTIVATING STAGE0 "..tostring(self).. " " ..tostring(self.unit))
     local wp = self.unit:findWeapon("gun1")
     if wp then
       wp.active = true
     end
+    self.unit:setAnimation("stage0_intro")
   end
   if new == "stage1" then
     self.unit:findWeapon("gun2").active = true

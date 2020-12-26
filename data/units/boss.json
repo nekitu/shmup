@@ -72,7 +72,7 @@
       "position": "0 60",
       "scale": 0.4,
       "rotation": 0,
-      "visible": false,
+      "visible": true,
       "horizontalFlip": false,
       "verticalFlip": false,
       "color": "1 0 0 1",
