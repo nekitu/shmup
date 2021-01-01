@@ -11,6 +11,7 @@
 #include "game.h"
 #include "graphics.h"
 #include "projectile.h"
+#include "image_atlas.h"
 
 namespace LuaIntf
 {
@@ -142,6 +143,10 @@ bool initializeLua()
 		.addFunction("isPlayerFire1", &Game::isPlayerFire1)
 		.addFunction("isPlayerFire2", &Game::isPlayerFire2)
 		.addFunction("isPlayerFire3", &Game::isPlayerFire3)
+		.addFunction("worldToScreen", [](Game* game, const Vec2& v, int layerIndex)
+			{
+				return game->worldToScreen(v, layerIndex);
+			})
 		.endClass();
 
 	LUA.beginModule("util")
@@ -159,6 +164,21 @@ bool initializeLua()
 		.addVariable("colorMode", &Graphics::colorMode)
 		.addVariable("alphaMode", &Graphics::alphaMode)
 		.addFunction("drawText", &Graphics::drawText)
+		.addFunction("drawSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, int frame, f32 angle)
+			{
+				gfx->atlasTextureIndex = spr->image->atlasTexture->textureIndex;
+				gfx->colorMode = (int)ColorMode::Add;
+				gfx->color = 0;
+
+				if (spr->image->rotated)
+				{
+					gfx->drawRotatedQuadWithTexCoordRotated90(rc, spr->getFrameUvRect(frame), angle);
+				}
+				else
+				{
+					gfx->drawRotatedQuad(rc, spr->getFrameUvRect(frame), angle);
+				}
+			})
 		.endClass();
 
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
@@ -208,6 +228,7 @@ bool initializeLua()
 		.addVariable("id", &Unit::id, false)
 		.addVariable("name", &Unit::name, true)
 		.addVariable("layerIndex", &Unit::layerIndex)
+		.addVariable("stageIndex", &Unit::stageIndex)
 		.addVariable("appeared", &Unit::appeared)
 		.addVariable("unitResource", &Unit::unitResource, false)
 		.addVariable("age", &Unit::age, false)
@@ -216,7 +237,17 @@ bool initializeLua()
 		.addVariable("stage", &Unit::currentStage)
 		.addVariable("deleteMeNow", &Unit::deleteMeNow)
 		.addVariable("root", &Unit::root)
+		.addFunction("replaceSprite", &Unit::replaceSprite)
 		.addFunction("findSprite", &Unit::findSprite)
+		.addFunction("hideAllSprites", &Unit::hideAllSprites)
+		.addFunction("disableAllWeapons", &Unit::disableAllWeapons)
+		.addFunction("localToScreen", [](Unit* unit, const Vec2& v)
+			{
+				Vec2 sv = v;
+				sv += unit->root->position;
+				return Game::instance->worldToScreen(sv, unit->layerIndex);
+			}
+		)
 		.addFunction("findWeapon",
 			[](Unit* unit, const std::string& weaponName)
 			{
@@ -308,6 +339,7 @@ bool initializeLua()
 		.addConstructor(LUA_ARGS(LuaIntf::_opt<f32>, LuaIntf::_opt<f32>))
 		.addVariable("x", &Vec2::x)
 		.addVariable("y", &Vec2::y)
+		.addFunction("set", &Vec2::set)
 		.addFunction("getCopy", [](Vec2* v) {return Vec2(v->x, v->y); })
 		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
 		.addFunction("normalize", &Vec2::normalize)
@@ -332,6 +364,10 @@ bool initializeLua()
 		.addFunction("subScalarReturn", [](Vec2* v1, f32 val) { return *v1 - val; })
 		.addFunction("mulScalarReturn", [](Vec2* v1, f32 val) { return *v1 * val; })
 		.addFunction("divScalarReturn", [](Vec2* v1, f32 val) { return *v1 / val; })
+		.addFunction("lerp", [](Vec2* v1, Vec2* v2, f32 t) { return *v1 + (*v2 - *v1) * t; })
+		.addFunction("dir2deg", [](Vec2* v) {
+				return dir2deg(*v);
+			})
 		.endClass();
 
 	LUA.beginClass<Rect>("Rect")
@@ -347,13 +383,18 @@ bool initializeLua()
 		.addVariableRef("position", &Sprite::position)
 		.addVariable("name", &Sprite::name)
 		.addVariable("rotation", &Sprite::rotation)
-		.addVariable("scale", &Sprite::scale)
+		.addVariableRef("scale", &Sprite::scale)
 		.addVariable("verticalFlip", &Sprite::verticalFlip)
 		.addVariable("horizontalFlip", &Sprite::horizontalFlip)
+		.addVariable("health", &Sprite::health)
+		.addVariable("visible", &Sprite::visible)
 		.addVariableRef("spriteResource", &Sprite::spriteResource)
 		.addVariable("frame", &Sprite::animationFrame)
-		.addVariable("rect", &Sprite::rect)
+		.addVariableRef("rect", &Sprite::rect)
+		.addVariableRef("localRect", &Sprite::localRect)
+		.addVariable("animationIsActive", &Sprite::animationIsActive)
 		.addVariable("relativeToRoot", &Sprite::relativeToRoot)
+		.addFunction("getFrameAnimationName", [](Sprite* spr) { return spr->frameAnimation->name; })
 		.addFunction("setFrameAnimation", &Sprite::setFrameAnimation)
 		.addFunction("setFrameAnimationFromAngle", &Sprite::setFrameAnimationFromAngle)
 		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)

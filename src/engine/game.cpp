@@ -176,12 +176,13 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
 	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
 	mapSdlToControl[SDLK_F6] = InputControl::ReloadSprites;
+	mapSdlToControl[SDLK_F7] = InputControl::ReloadAnimations;
 
 	//TODO: remove
 	music = new Music();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	//music->play();
-	//Mix_VolumeMusic(1);
+	//Mix_VolumeMusic(128);
 
 	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
 	scriptClass = currentMainScript->createClassInstance(this);
@@ -335,10 +336,12 @@ void Game::mainLoop()
 
 		static bool reloadScriptsKeyDown = false;
 		static bool reloadSpritesKeyDown = false;
+		static bool reloadAnimationsKeyDown = false;
 		static bool pauseKeyDown = false;
 
 		bool reloadScripts = isControlDown(InputControl::ReloadScripts);
 		bool reloadSprites = isControlDown(InputControl::ReloadSprites);
+		bool reloadAnimations = isControlDown(InputControl::ReloadAnimations);
 		bool pause = isControlDown(InputControl::Pause);
 
 		if (!reloadScriptsKeyDown && reloadScripts)
@@ -350,6 +353,8 @@ void Game::mainLoop()
 		if (!reloadScripts)
 			reloadScriptsKeyDown = false;
 
+		//--
+
 		if (!reloadSpritesKeyDown && reloadSprites)
 		{
 			reloadSpritesKeyDown = true;
@@ -358,6 +363,19 @@ void Game::mainLoop()
 
 		if (!reloadSprites)
 			reloadSpritesKeyDown = false;
+
+		//--
+
+		if (!reloadAnimationsKeyDown && reloadAnimations)
+		{
+			reloadAnimationsKeyDown = true;
+			resourceLoader->reloadAnimations();
+		}
+
+		if (!reloadAnimations)
+			reloadAnimationsKeyDown = false;
+
+		//--
 
 		if (!pauseKeyDown && pause)
 		{
@@ -469,7 +487,9 @@ void Game::mainLoop()
 
 void Game::checkCollisions()
 {
-	std::unordered_map<Unit*, Unit*> collisionPairs;
+	static std::unordered_map<Unit*, Unit*> collisionPairs;
+
+	collisionPairs.clear();
 
 	// check normal units
 	for (auto unit1 : units)
@@ -582,6 +602,7 @@ void Game::checkCollisions()
 	for (auto& cp : collisionPairs)
 	{
 		pixelCols.clear();
+
 		if (!cp.first->unitResource) continue;
 		if (!cp.second->unitResource) continue;
 
@@ -802,6 +823,9 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
+
+	newPos.x = roundf(newPos.x);
+	newPos.y = roundf(newPos.y);
 
 	if (layerIndex >= Game::instance->map->layers.size())
 	{

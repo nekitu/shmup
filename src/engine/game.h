@@ -39,6 +39,7 @@ enum class InputControl
 	Player2_Fire3,
 	ReloadScripts,
 	ReloadSprites,
+	ReloadAnimations,
 	Count
 };
 

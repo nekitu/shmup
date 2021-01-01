@@ -108,6 +108,27 @@ void ResourceLoader::reloadWeapons()
 	}
 }
 
+void ResourceLoader::reloadAnimations()
+{
+	LOG_INFO("Reloading animations...");
+	Json::Value json;
+
+	for (auto& res : resources)
+	{
+		if (res.second->type == ResourceType::Animation)
+		{
+			auto absPath = Game::instance->dataRoot + res.first;
+
+			if (!loadJson(absPath + ".json", json))
+			{
+				continue;
+			}
+
+			res.second->load(json);
+		}
+	}
+}
+
 void ResourceLoader::reloadSprites()
 {
 	LOG_INFO("Reloading sprites...");
@@ -267,7 +288,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& path)
 
 	res->type = ResourceType::Music;
 	res->loader = this;
-	res->path = path;
+	res->path = Game::makeFullDataPath(path);
 	res->load(json);
 	resources[path] = res;
 

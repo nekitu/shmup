@@ -58,12 +58,18 @@ struct Unit
 	virtual void computeHealth();
 	void setAnimation(const std::string& animName);
 	struct Sprite* findSprite(const std::string& sname);
+	void deleteSprite(struct Sprite* spr);
+	void deleteSprite(const std::string& sname);
+	void replaceSprite(const std::string& sname, const std::string& path);
 	bool checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>& collisions);
 	static void updateShadowToggle();
 	void onAnimationEvent(struct Sprite* sprite, const std::string& eventName);
-
+	void hideAllSprites();
+	void disableAllWeapons();
 private:
 	static bool shadowToggle;
+
+	void removeSpriteAnimations(struct Sprite* spr);
 };
 
 }

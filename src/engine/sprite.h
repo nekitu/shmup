@@ -17,6 +17,7 @@ struct Sprite
 	bool verticalFlip = false;
 	bool horizontalFlip = false;
 	f32 rotation = 0;
+	Rect localRect;
 	Rect rect;
 	Rect uvRect;
 	Rect shadowRect;

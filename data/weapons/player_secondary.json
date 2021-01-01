@@ -7,10 +7,10 @@
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,
-  "initialProjectileSpeed": 1450,
-  "minProjectileSpeed": 50,
-  "maxProjectileSpeed": 2000,
+  "initialProjectileSpeed": 550,
+  "minProjectileSpeed": 150,
+  "maxProjectileSpeed": 1500,
   "projectileAcceleration": 0,
-  "projectileUnit" : "units/projectile/fire2",
-  "script": "scripts/weapon_primary"
+  "projectileUnit" : "units/projectile/secondary",
+  "script": "scripts/weapon_secondary"
 }

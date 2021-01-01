@@ -40,11 +40,14 @@ function C:onUpdate()
   end
 
   local moveDir = Vec2()
+  
   if game:isPlayerMoveLeft(self.playerIndex) then
     moveDir.x = -1
+    self.unit.root:setFrameAnimation("left")
   end
   if game:isPlayerMoveRight(self.playerIndex) then
     moveDir.x = 1
+    self.unit.root:setFrameAnimation("right")
   end
   if game:isPlayerMoveUp(self.playerIndex) then
     moveDir.y = -1
@@ -52,6 +55,15 @@ function C:onUpdate()
   if game:isPlayerMoveDown(self.playerIndex) then
     moveDir.y = 1
   end
+  
+  if self.unit.root:getFrameAnimationName() == "left" and not self.unit.root.animationIsActive then
+    self.unit.root:setFrameAnimation("default")
+  end
+
+  if self.unit.root:getFrameAnimationName() == "right" and not self.unit.root.animationIsActive then
+    self.unit.root:setFrameAnimation("default")
+  end
+  
   moveDir:normalize()
   self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
   self.unit.root.position.x = util.clampValue(self.unit.root.position.x, 0, gfx.videoWidth)

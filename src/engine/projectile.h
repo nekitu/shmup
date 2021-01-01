@@ -10,6 +10,7 @@ struct Projectile : Unit
 	f32 minSpeed = 1, maxSpeed = 100000;
 	f32 acceleration = 0;
 	bool used = false;
+	Vec2 spawnPosition; // used for CCD
 
 	void copyFrom(struct Unit* other) override;
 	void initializeFrom(struct UnitResource* res) override;

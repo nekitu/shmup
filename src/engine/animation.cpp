@@ -27,9 +27,9 @@ void Animation::rewind()
 	active = true;
 	trackState.clear();
 
-	for (auto trackIter : animationResource->tracks)
+	for (auto& trackIter : animationResource->tracks)
 	{
-		auto track = trackIter.second;
+		auto& track = trackIter.second;
 		TrackState ts;
 
 		ts.playDirection = track->loopMode == AnimationLoopMode::Reversed ? -1 : 1;
@@ -87,12 +87,14 @@ void Animation::update(f32 deltaTime)
 		return;
 
 	currentTime += deltaTime * timeScale * animationResource->speed;
-
 	switch (animationResource->loopMode)
 	{
 	case AnimationLoopMode::None:
 		if (currentTime > animationResource->totalTime)
+		{
 			active = false;
+			currentTime = animationResource->totalTime;
+		}
 		break;
 	case AnimationLoopMode::Normal:
 		if (currentTime > animationResource->totalTime)
@@ -134,9 +136,9 @@ void Animation::update(f32 deltaTime)
 		break;
 	}
 
-	for (auto trackIter : animationResource->tracks)
+	for (auto& trackIter : animationResource->tracks)
 	{
-		auto track = trackIter.second;
+		auto& track = trackIter.second;
 		auto& state = trackState[track];
 
 		if (!state.active)
@@ -276,7 +278,7 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	auto isTimeOverLastKeyAndHasTrigger = tstate.timeWasHigherThanTotalTime && keys[keys.size() - 1].triggerEvent;
 	auto isTimeBelowFirstKeyAndHasTrigger = tstate.timeWasLowerThanZero && keys[0].triggerEvent;
-	auto isForwardDir = ((tstate.playDirection == 1 && track->loopMode == AnimationLoopMode::PingPong) || track->loopMode == AnimationLoopMode::Normal);
+	auto isForwardDir = ((tstate.playDirection == 1 && track->loopMode == AnimationLoopMode::PingPong) || track->loopMode == AnimationLoopMode::Normal || track->loopMode == AnimationLoopMode::None);
 
 	if (isTimeBelowFirstKeyAndHasTrigger)
 	{
@@ -366,7 +368,9 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 		// update first interpolation key
 		tstate.previousKeyIndex = key1Index;
 
-		return key1->value + fabs(t) * (key2->value - key1->value);
+		return Easing::easeValue(key1->easeType, t, key1->value, key2->value - key1->value, 1.0f);
+
+		//return key1->value + fabs(t) * (key2->value - key1->value);
 	}
 
 	return 0.0f;

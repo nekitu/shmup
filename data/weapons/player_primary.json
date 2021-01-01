@@ -8,6 +8,6 @@
   "initialProjectileSpeed": 2250,
   "minProjectileSpeed": 150,
   "projectileAcceleration": 0,
-  "projectileUnit" : "units/projectile/fire",
+  "projectileUnit" : "units/projectile/primary",
   "script": "scripts/weapon_primary"
 }

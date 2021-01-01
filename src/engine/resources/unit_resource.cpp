@@ -95,7 +95,7 @@ bool UnitResource::load(Json::Value& json)
 		spr->health = sprJson.get("health", 100.0f).asFloat();
 		spr->color.parse(sprJson.get("color", spr->color.toString()).asString());
 		spr->relativeToRoot = sprJson.get("relativeToRoot", spr->relativeToRoot).asBool();
-		auto colMode = json.get("colorMode", "Add").asString();
+		auto colMode = sprJson.get("colorMode", "Add").asString();
 
 		if (colMode == "Add") spr->colorMode = ColorMode::Add;
 		if (colMode == "Sub") spr->colorMode = ColorMode::Sub;

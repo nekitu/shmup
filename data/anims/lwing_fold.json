@@ -1,0 +1,24 @@
+{
+  "loopMode": "None",
+  "repeat": 0,
+  "tracks":
+  {
+      "PositionX":
+      {
+        "keys":
+        [
+          { "value": -50, "time": 0, "easeType":"inOutBack" },
+          { "value": -80, "time": 1, "easeType":"inOutBack" },
+          { "value": -20, "time": 2, "easeType":"inOutBack" }
+        ]
+      },
+      "PositionY":
+      {
+        "keys":
+        [
+          { "value": 0, "time": 0, "easeType":"inOutCubic" },
+          { "value": -30, "time": 2, "easeType":"inOutCubic" }
+        ]
+      }
+  }
+}

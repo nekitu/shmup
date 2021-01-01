@@ -28,7 +28,6 @@ void Sprite::copyFrom(Sprite* other)
 	color = other->color;
 	colorMode = other->colorMode;
 	relativeToRoot = other->relativeToRoot;
-
 	hitColor = other->hitColor;
 	hitOldColorMode = other->hitOldColorMode;
 	hitColorFlashSpeed = other->hitColorFlashSpeed;
@@ -36,7 +35,6 @@ void Sprite::copyFrom(Sprite* other)
 	hitFlashActive = other->hitFlashActive;
 	hitColorTimer = other->hitColorTimer;
 	currentHitFlashCount = other->currentHitFlashCount;
-
 	frameAnimation = other->frameAnimation;
 	animationFrame = other->animationFrame;
 	animationRepeatCount = other->animationRepeatCount;
@@ -186,7 +184,7 @@ void Sprite::hit(f32 hitDamage)
 {
 	health -= hitDamage;
 	clampValue(health, 0, maxHealth);
-	if (hitFlashActive) return;
+	if (hitFlashActive || health == 0) return;
 	hitFlashActive = true;
 	hitOldColorMode = colorMode;
 	colorMode = ColorMode::Add;
@@ -215,12 +213,16 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 		auto frmRc = spr->spriteResource->getSheetFramePixelRect(spr->animationFrame);
 		pixels.resize(localRc.width * localRc.height);
 		int i = 0;
+
 		f32 stepX = 1.0f / spr->scale.x;
 		f32 stepY = 1.0f / spr->scale.y;
 		f32 srcx = 0;
 		f32 srcy = 0;
 		f32 rcx = floorf(frmRc.width * (localRc.x / spr->rect.width));
 		f32 rcy = floorf(frmRc.height * (localRc.y / spr->rect.height));
+		int offsLocalRc = 0;
+		u32 newSrcY = 0;
+		u32 newSrcX = 0;
 
 		for (int y = 0; y < localRc.height; y++)
 		{
@@ -228,9 +230,48 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 
 			for (int x = 0; x < localRc.width; x++)
 			{
-				u32 offs = ((u32)frmRc.y + srcy + (u32)rcy) * spr->spriteResource->image->width + (u32)frmRc.x + (u32)srcx + (u32)rcx;
+				if (!spr->horizontalFlip && !spr->verticalFlip)
+				{
+					newSrcY = ((u32)frmRc.y + srcy + (u32)rcy);
+					newSrcX = (u32)frmRc.x + (u32)srcx + (u32)rcx;
+				}
+				else
+				{
+					newSrcY = ((u32)frmRc.y + srcy + (u32)rcy);
+					newSrcX = (u32)frmRc.x + (u32)srcx + (u32)rcx;
+
+					if (spr->horizontalFlip)
+					{
+						newSrcX = (u32)frmRc.x + ((spr->rect.width - 1) - ((u32)srcx + (u32)rcx));
+					}
+
+					if (spr->verticalFlip)
+					{
+						newSrcY = (u32)frmRc.y + ((spr->rect.width - 1) - (srcy + (u32)rcy));
+					}
+				}
+
+				u32 offs = newSrcY * spr->spriteResource->image->width + newSrcX;
 				u8* px = (u8*)&spr->spriteResource->image->imageData[offs];
-				pixels[i++] = px[3];
+
+				if (!spr->horizontalFlip && !spr->verticalFlip)
+				{
+					pixels[i++] = px[3];
+				}
+				else
+				{
+					int newX = x, newY = y;
+
+					if (spr->horizontalFlip)
+						newX = localRc.width - 1 - x;
+
+					if (spr->verticalFlip)
+						newY = localRc.height - 1 - y;
+
+					offsLocalRc = newY * localRc.width + newX;
+					pixels[offsLocalRc] = px[3];
+				}
+
 				srcx += stepX;
 			}
 

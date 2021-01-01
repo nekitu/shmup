@@ -8,9 +8,10 @@ bool AnimationResource::load(Json::Value& json)
 {
 	speed = json.get("speed", speed).asFloat();
 	auto tracksJson = json.get("tracks", Json::Value(Json::ValueType::arrayValue));
-	auto modeStr = json.get("loopMode", "Normal");
+	auto modeStr = json.get("loopMode", "None");
 	repeat = json.get("repeat", repeat).asInt();
 
+	if (modeStr == "None") loopMode = AnimationLoopMode::None;
 	if (modeStr == "Normal") loopMode = AnimationLoopMode::Normal;
 	if (modeStr == "Reversed") loopMode = AnimationLoopMode::Reversed;
 	if (modeStr == "PingPong") loopMode = AnimationLoopMode::PingPong;
@@ -18,7 +19,6 @@ bool AnimationResource::load(Json::Value& json)
 	for (u32 i = 0, iCount = tracksJson.getMemberNames().size(); i < iCount; i++)
 	{
 		auto track = new AnimationTrack();
-
 		auto keyType = tracksJson.getMemberNames()[i];
 		auto& trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
 		auto trackType = AnimationTrackType::Unknown;
@@ -44,8 +44,8 @@ bool AnimationResource::load(Json::Value& json)
 		if (keyType == "ColorA") trackType = AnimationTrackType::ColorA;
 		if (keyType == "ColorMode") trackType = AnimationTrackType::ColorMode;
 
-		modeStr = trackJson.get("loopMode", "Normal");
-
+		modeStr = trackJson.get("loopMode", "None");
+		if (modeStr == "None") track->loopMode = AnimationLoopMode::None;
 		if (modeStr == "Normal") track->loopMode = AnimationLoopMode::Normal;
 		if (modeStr == "Reversed") track->loopMode = AnimationLoopMode::Reversed;
 		if (modeStr == "PingPong") track->loopMode = AnimationLoopMode::PingPong;
@@ -60,6 +60,7 @@ bool AnimationResource::load(Json::Value& json)
 
 			key.time = keyJson.get("time", 0.0f).asFloat();
 			key.value = keyJson.get("value", 0.0f).asFloat();
+			key.easeType = Easing::getTypeFromString(keyJson.get("easeType", "inOutLinear").asString());
 			key.triggerEvent = keyJson.get("triggerEvent", false).asBool();
 			key.eventName = keyJson.get("eventName", "").asString();
 			track->keys.push_back(key);
