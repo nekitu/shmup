@@ -1,3 +1,4 @@
+require("util")
 local C = {}
 
 function C:init(unit)
@@ -26,6 +27,14 @@ local brleg
 
 local sprleg = game:loadSprite("sprites/leg")
 
+function C:onSerialize(data)
+  data.test1 = 123
+end
+
+function C:onDeserialize(data)
+  dump(data)
+  print("Deserialized boss: ", data.test1)
+end
 
 function C:onStageChange(old, new)
   print("CHANGE STAGE '" .. old .. "' to '" .. new .. "'")
@@ -142,12 +151,12 @@ function C:onUpdate()
       brfrom.x = brleg.position.x
       brfrom.y = brleg.position.y
     end
-    if tbody > 1 then tbody = 0 tindex = tindex + 1 from = Vec2(movebody.position.x, movebody.position.y) end
+    if tbody > 1 then
+      tbody = 0
+      tindex = tindex + 1
+      if tindex > #targets then tindex = #targets end
+      from = Vec2(movebody.position.x, movebody.position.y) end
   end
-  
-  --self.unit.root.position.x = self.unit.root.position.x + math.sin(s) * 20 * game.deltaTime
-  --self.unit.root.position.y = self.unit.root.position.y + math.sin(s) * 70 * game.deltaTime
-  --s = s + game.deltaTime
 end
 
 function C:onBeforeRender()

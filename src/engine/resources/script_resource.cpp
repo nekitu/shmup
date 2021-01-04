@@ -51,18 +51,57 @@ bool ScriptResource::load(Json::Value& json)
 		ci->createInstance();
 	}
 
+	if (classInstances.size())
+		deserialize();
+
 	return res == 0;
 }
 
 void ScriptResource::unload()
 {
 	code = "";
-	LOG_INFO("Unloading script {0} with {1} instances", path, classInstances.size());
+	serialize();
+}
+
+void ScriptResource::serialize()
+{
+	LOG_INFO("Serializing script {0} with {1} instances", path, classInstances.size());
+
+	serializedInstancesTable = LuaIntf::LuaRef::createTable(getLuaState());
+	int i = 1;
+	for (auto ci : classInstances)
+	{
+		LuaIntf::LuaRef tbl = LuaIntf::LuaRef::createTable(getLuaState());
+		CALL_LUA_FUNC2(ci, "onSerialize", tbl);
+		serializedInstancesTable[i] = tbl;
+		i++;
+	}
+
+	LuaIntf::LuaRef luaSerialize = LuaIntf::LuaRef(getLuaState(), "pickle");
+
+	serializedInstancesString = luaSerialize.call<std::string>(serializedInstancesTable);
+
+	serializedInstancesTable = LuaIntf::LuaRef();
 
 	for (auto& ci : classInstances)
 	{
-		CALL_LUA_FUNC2(ci, "onUnload");
 		ci->classInstance = LuaIntf::LuaRef();
+	}
+}
+
+void ScriptResource::deserialize()
+{
+	LOG_INFO("Deserializing script {0} with {1} instances", path, classInstances.size());
+
+	LuaIntf::LuaRef luaDeserialize = LuaIntf::LuaRef(getLuaState(), "unpickle");
+
+	serializedInstancesTable = luaDeserialize.call<LuaIntf::LuaRef>(serializedInstancesString);
+
+	int i = 1;
+	for (auto ci : classInstances)
+	{
+		CALL_LUA_FUNC2(ci, "onDeserialize", serializedInstancesTable.get(i));
+		i++;
 	}
 }
 
@@ -95,6 +134,8 @@ bool initializeLua()
 	auto LUA = LuaIntf::LuaBinding(L);
 
 	LuaIntf::LuaContext l(L);
+
+	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 
 	LUA.beginModule("log")
 		.addFunction("info", [](const std::string& str) { LOG_INFO("LUA: {0}", str); })
@@ -410,9 +451,15 @@ bool initializeLua()
 
 	l.setGlobal("game", Game::instance);
 	l.setGlobal("gfx", Game::instance->graphics);
-	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 
 	// constants and enums
+	l.setGlobal("UnitType_Enemy", UnitType::Enemy);
+	l.setGlobal("UnitType_EnemyProjectile", UnitType::EnemyProjectile);
+	l.setGlobal("UnitType_Item", UnitType::Item);
+	l.setGlobal("UnitType_Player", UnitType::Player);
+	l.setGlobal("UnitType_PlayerProjectile", UnitType::PlayerProjectile);
+	l.setGlobal("UnitType_None", UnitType::None);
+
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
@@ -446,6 +493,11 @@ bool initializeLua()
 	l.setGlobal("AnimationTrackType_ColorB", AnimationTrackType::ColorB);
 	l.setGlobal("AnimationTrackType_ColorA", AnimationTrackType::ColorA);
 	l.setGlobal("AnimationTrackType_ColorMode", AnimationTrackType::ColorMode);
+
+	auto path = Game::makeFullDataPath("scripts/util.lua");
+	auto code = readTextFile(path);
+	auto res = luaL_loadstring(getLuaState(), code.c_str());
+	auto result = lua_pcall(getLuaState(), 0, LUA_MULTRET, 0);
 
 	return true;
 }

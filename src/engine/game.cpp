@@ -503,7 +503,7 @@ void Game::checkCollisions()
 			if (!unit2->unitResource) continue;
 
 			if (unit1 == unit2
-				|| unit1->unitResource->type == unit2->unitResource->type) continue;
+				|| unit1->unitResource->unitType == unit2->unitResource->unitType) continue;
 
 			if ((unit1->unitResource->unitType == UnitType::Enemy &&
 				unit2->unitResource->unitType == UnitType::EnemyProjectile)

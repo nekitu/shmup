@@ -25,6 +25,7 @@
   [
     {
       "name": "body",
+      "health": 1000,
       "sprite": "sprites/player",
       "position": "0 0",
       "scale": "1 1",

@@ -55,7 +55,7 @@ bool UnitResource::load(Json::Value& json)
 
 		ctrl.json = controllersJson[i];
 		ctrl.script = Game::instance->resourceLoader->loadScript(ctrl.json.get("script", "").asString());
-		controllers[ctrl.json.get("name", "noname").asString()] = ctrl;
+		controllers[ctrl.json.get("name", "unnamed").asString()] = ctrl;
 	}
 
 	// load stages

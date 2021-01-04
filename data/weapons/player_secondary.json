@@ -1,5 +1,5 @@
 {
-  "fireRate" : 10,
+  "fireRate" : 100,
   "fireRays" : 1,
   "type": "Projectile",
   "beamWidth": 40,
@@ -7,7 +7,7 @@
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,
-  "initialProjectileSpeed": 550,
+  "initialProjectileSpeed": 1550,
   "minProjectileSpeed": 150,
   "maxProjectileSpeed": 1500,
   "projectileAcceleration": 0,
