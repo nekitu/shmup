@@ -100,17 +100,6 @@ void Animation::update(f32 deltaTime)
 		if (currentTime > animationResource->totalTime)
 		{
 			currentTime = 0;
-			for (auto trackIter : animationResource->tracks)
-			{
-				auto track = trackIter.second;
-				auto& state = trackState[track];
-
-				state.active = true;
-				state.playDirection = 1;
-				state.previousKeyIndex = 0;
-				state.repeatCount = 0;
-				state.triggeredKeyEvents.clear();
-			}
 			updateRepeatCount();
 		}
 		break;
@@ -152,12 +141,11 @@ void Animation::update(f32 deltaTime)
 		case AnimationLoopMode::None:
 			state.currentTime = currentTime;
 
-			if (state.currentTime > track->endTime)
+			if (state.currentTime >= track->endTime)
 			{
 				state.timeWasHigherThanTotalTime = true;
 				state.currentTime = track->endTime;
 				state.triggeredKeyEvents.clear();
-				state.active = false;
 			}
 
 			break;
@@ -364,13 +352,8 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 	{
 		// key1->time ----- atTime ----------------key2->time
 		f32 t = (atTime - key1->time) / (key2->time - key1->time);
-
-		// update first interpolation key
 		tstate.previousKeyIndex = key1Index;
-
 		return Easing::easeValue(key1->easeType, t, key1->value, key2->value - key1->value, 1.0f);
-
-		//return key1->value + fabs(t) * (key2->value - key1->value);
 	}
 
 	return 0.0f;

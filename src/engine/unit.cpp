@@ -73,6 +73,11 @@ void Unit::onAnimationEvent(struct Sprite* sprite, const std::string& eventName)
 	if (sprite)
 	{
 		CALL_LUA_FUNC("onAnimationEvent", sprite, eventName);
+
+		for (auto& ctrl : controllers)
+		{
+			CALL_LUA_FUNC2(ctrl.second, "onAnimationEvent", sprite, eventName);
+		}
 	}
 }
 
@@ -299,10 +304,9 @@ void Unit::update(Game* game)
 			auto& spr = iter.first;
 			auto& sprAnim = iter.second;
 
-			sprAnim->update(game->deltaTime);
-
 			if (sprAnim->active)
 			{
+				sprAnim->update(game->deltaTime);
 				sprAnim->animateSprite(spr);
 			}
 		}

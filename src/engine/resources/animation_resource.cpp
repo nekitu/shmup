@@ -63,6 +63,10 @@ bool AnimationResource::load(Json::Value& json)
 			key.easeType = Easing::getTypeFromString(keyJson.get("easeType", "inOutLinear").asString());
 			key.triggerEvent = keyJson.get("triggerEvent", false).asBool();
 			key.eventName = keyJson.get("eventName", "").asString();
+
+			// if we dont specify trigger event bool, then we know we want to trigger it by default
+			if (!key.eventName.empty() && !keyJson.isMember("triggerEvent"))
+				key.triggerEvent = true;
 			track->keys.push_back(key);
 		}
 

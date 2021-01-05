@@ -466,7 +466,7 @@
                 {
                  "height":0,
                  "id":45,
-                 "name":"",
+                 "name":"boss",
                  "point":true,
                  "properties":[
                         {
@@ -538,7 +538,7 @@
                 {
                  "height":0,
                  "id":48,
-                 "name":"",
+                 "name":"shield2",
                  "point":true,
                  "properties":[
                         {
@@ -556,7 +556,7 @@
                 {
                  "height":0,
                  "id":49,
-                 "name":"",
+                 "name":"shield1",
                  "point":true,
                  "properties":[
                         {

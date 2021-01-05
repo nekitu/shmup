@@ -1,0 +1,22 @@
+{
+  "loopMode": "None",
+  "tracks":
+  {
+      "PositionX":
+      {
+        "keys":
+        [
+          { "value": 120, "time": 0, "easeType":"inOutLinear" },
+          { "value": 120, "time": 2, "easeType":"inOutLinear", "eventName": "endPlayerIntro" }
+        ]
+      },
+      "PositionY":
+      {
+        "keys":
+        [
+          { "value": 320, "time": 0, "easeType":"inOutLinear" },
+          { "value": 150, "time": 2, "easeType":"inOutLinear" }
+        ]
+      }
+  }
+}
