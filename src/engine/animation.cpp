@@ -244,7 +244,12 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	// wrap if time is greater
 	auto oldTime = atTime;
-	atTime = fmod(atTime, keys[keys.size() - 1].time); // keys always sorted by time
+
+	if (track->loopMode != AnimationLoopMode::None
+		&& atTime > keys[keys.size() - 1].time)
+	{
+		atTime = fmod(atTime, keys[keys.size() - 1].time); // keys always sorted by time
+	}
 
 	if (oldTime != atTime)
 	{
