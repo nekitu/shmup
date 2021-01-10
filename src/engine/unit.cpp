@@ -272,6 +272,7 @@ void Unit::update(Game* game)
 	if (!visible)
 		return;
 
+	deleteQueuedSprites();
 	computeHealth();
 
 	if (unitResource && appeared)
@@ -723,11 +724,27 @@ void Unit::deleteSprite(const std::string& sname)
 	}
 }
 
+void Unit::queueDeleteSprite(Sprite* what)
+{
+	deleteSpritesQueue.insert(what);
+}
+
+void Unit::deleteQueuedSprites()
+{
+	for (auto& spr : deleteSpritesQueue)
+	{
+		deleteSprite(spr);
+	}
+
+	deleteSpritesQueue.clear();
+}
+
 void Unit::replaceSprite(const std::string& what, const std::string& with)
 {
 	auto sprWith = findSprite(with);
+	auto sprWhat = findSprite(what);
 	
-	deleteSprite(what);
+	queueDeleteSprite(sprWhat);
 	if (sprWith) sprWith->visible = true;
 }
 

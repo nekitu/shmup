@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include <unordered_map>
+#include <set>
 #include "resources/unit_resource.h"
 #include "lua_scripting.h"
 
@@ -60,14 +61,18 @@ struct Unit
 	struct Sprite* findSprite(const std::string& sname);
 	void deleteSprite(struct Sprite* spr);
 	void deleteSprite(const std::string& sname);
+	void queueDeleteSprite(struct Sprite* what);
+	void deleteQueuedSprites();
 	void replaceSprite(const std::string& sname, const std::string& path);
 	bool checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>& collisions);
 	static void updateShadowToggle();
 	void onAnimationEvent(struct Sprite* sprite, const std::string& eventName);
 	void hideAllSprites();
 	void disableAllWeapons();
+
 private:
 	static bool shadowToggle;
+	std::set<Sprite*> deleteSpritesQueue;
 
 	void removeSpriteAnimations(struct Sprite* spr);
 };

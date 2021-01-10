@@ -200,11 +200,11 @@ end
 
 function C:onCollide(other, cols)
   local pos = Vec2(0, 0)
-  print(self.unit.health)
+  --print(self.unit.health)
   for _,col in ipairs(cols) do
     col.sprite1:hit(15)
     col.sprite2:hit(15)
-    print(col.sprite1.name, col.sprite1.health, col.sprite2.name, col.sprite2.health)
+    --print(col.sprite1.name, col.sprite1.health, col.sprite2.name, col.sprite2.health)
     if (col.sprite1.name == "lwing" and col.sprite1.health == 0) or (col.sprite2.name == "lwing" and col.sprite2.health == 0) then
       self.unit:replaceSprite("lwing", "lwing_damaged")
     end

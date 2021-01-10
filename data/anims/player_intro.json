@@ -7,15 +7,15 @@
         "keys":
         [
           { "value": 120, "time": 0, "easeType":"inOutLinear" },
-          { "value": 120, "time": 2, "easeType":"inOutLinear", "eventName": "endPlayerIntro" }
+          { "value": 120, "time": 2, "easeType":"outExpo", "eventName": "endPlayerIntro" }
         ]
       },
       "PositionY":
       {
         "keys":
         [
-          { "value": 320, "time": 0, "easeType":"inOutLinear" },
-          { "value": 150, "time": 2, "easeType":"inOutLinear" }
+          { "value": 320, "time": 0, "easeType":"inOutCubic" },
+          { "value": 150, "time": 2, "easeType":"outElastic" }
         ]
       }
   }

@@ -87,6 +87,7 @@ void Animation::update(f32 deltaTime)
 		return;
 
 	currentTime += deltaTime * timeScale * animationResource->speed;
+
 	switch (animationResource->loopMode)
 	{
 	case AnimationLoopMode::None:
