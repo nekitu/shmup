@@ -158,6 +158,7 @@ bool initializeLua()
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeMap", &Game::changeMap)
+		.addFunction("changeMainScript", &Game::changeMainScript)
 		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{

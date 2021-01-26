@@ -93,6 +93,7 @@ struct Game
 	bool vSync = false;
 	std::string configPath = "game.json";
 	std::string dataRoot = "../data/";
+	std::string startupScript = "scripts/title_screen";
 	bool exitGame = false;
 	bool editing = false;
 	bool pauseOnAppDeactivate = true;
@@ -165,6 +166,7 @@ struct Game
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);
+	void changeMainScript(const std::string& script);
 	static std::string makeFullDataPath(const std::string relativeDataPath);
 	struct Unit* createUnit(struct UnitResource* unitRes);
 	struct Weapon* createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite);

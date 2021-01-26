@@ -55,6 +55,7 @@ void Game::loadConfig()
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
 	windowTitle = json.get("windowTitle", windowTitle).asString();
+	startupScript = json.get("startupScript", startupScript).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
@@ -184,10 +185,9 @@ bool Game::initialize()
 	//music->play();
 	//Mix_VolumeMusic(128);
 
-	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
-	scriptClass = currentMainScript->createClassInstance(this);
 	preloadSprites();
 	lastTime = SDL_GetTicks();
+	changeMainScript(startupScript);
 }
 
 void Game::shutdown()
@@ -1162,6 +1162,23 @@ bool Game::changeMap(i32 index)
 	}
 
 	return true;
+}
+
+void Game::changeMainScript(const std::string& script)
+{
+	currentMainScript = resourceLoader->loadScript(script);
+
+	if (scriptClass)
+	{
+		CALL_LUA_FUNC2(scriptClass, "onScreenLeave");
+	}
+
+	scriptClass = currentMainScript->createClassInstance(this);
+
+	if (scriptClass)
+	{
+		CALL_LUA_FUNC2(scriptClass, "onScreenEnter");
+	}
 }
 
 Unit* Game::createUnit(UnitResource* unitResource)
