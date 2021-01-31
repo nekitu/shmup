@@ -138,7 +138,21 @@ void GpuProgram::setSamplerValue(GLuint tex, const std::string& constName, u32 s
 	OGL_CHECK_ERROR;
 }
 
-void GpuProgram::setIntValue(GLuint value, const std::string& constName)
+void GpuProgram::setUIntValue(GLuint value, const std::string& constName)
+{
+	GLint loc = glGetUniformLocation(program, constName.c_str());
+	OGL_CHECK_ERROR;
+
+	if (loc == -1)
+	{
+		return;
+	}
+
+	glUniform1ui(loc, value);
+	OGL_CHECK_ERROR;
+}
+
+void GpuProgram::setIntValue(GLint value, const std::string& constName)
 {
 	GLint loc = glGetUniformLocation(program, constName.c_str());
 	OGL_CHECK_ERROR;
@@ -151,5 +165,62 @@ void GpuProgram::setIntValue(GLuint value, const std::string& constName)
 	glUniform1i(loc, value);
 	OGL_CHECK_ERROR;
 }
+
+void GpuProgram::setFloatValue(GLfloat value, const std::string& constName)
+{
+	GLint loc = glGetUniformLocation(program, constName.c_str());
+	OGL_CHECK_ERROR;
+
+	if (loc == -1)
+	{
+		return;
+	}
+
+	glUniform1f(loc, value);
+	OGL_CHECK_ERROR;
+}
+
+void GpuProgram::setUIntArrayValue(u32 count, GLuint* values, const std::string& constName)
+{
+	GLint loc = glGetUniformLocation(program, constName.c_str());
+	OGL_CHECK_ERROR;
+
+	if (loc == -1)
+	{
+		return;
+	}
+
+	glUniform1uiv(loc, count, values);
+	OGL_CHECK_ERROR;
+}
+
+void GpuProgram::setIntArrayValue(u32 count, GLint* values, const std::string& constName)
+{
+	GLint loc = glGetUniformLocation(program, constName.c_str());
+	OGL_CHECK_ERROR;
+
+	if (loc == -1)
+	{
+		return;
+	}
+
+	glUniform1iv(loc, count, values);
+	OGL_CHECK_ERROR;
+}
+
+void GpuProgram::setFloatArrayValue(u32 count, GLfloat* values, const std::string& constName)
+{
+	GLint loc = glGetUniformLocation(program, constName.c_str());
+	OGL_CHECK_ERROR;
+
+	if (loc == -1)
+	{
+		return;
+	}
+
+	glUniform1fv(loc, count, values);
+	OGL_CHECK_ERROR;
+}
+
 
 }

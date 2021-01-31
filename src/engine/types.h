@@ -90,5 +90,4 @@ enum class AlphaMode
 	Blend
 };
 
-
 }

@@ -55,7 +55,7 @@ void Game::loadConfig()
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
 	windowTitle = json.get("windowTitle", windowTitle).asString();
-	startupScript = json.get("startupScript", startupScript).asString();
+	startupScreenScript = json.get("startupScreenScript", startupScreenScript).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
@@ -155,9 +155,6 @@ bool Game::initialize()
 	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
 
 	initializeLua();
-	createPlayers();
-	changeMap(0);
-
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
 	mapSdlToControl[SDLK_PAUSE] = InputControl::Pause;
 	mapSdlToControl[SDLK_1] = InputControl::Coin;
@@ -185,9 +182,10 @@ bool Game::initialize()
 	//music->play();
 	//Mix_VolumeMusic(128);
 
+	projectilePool.resize(maxProjectileCount);
 	preloadSprites();
 	lastTime = SDL_GetTicks();
-	changeMainScript(startupScript);
+	changeScreenScript(startupScreenScript);
 }
 
 void Game::shutdown()
@@ -204,7 +202,7 @@ void Game::createPlayers()
 		players[i].unit->name = "Player" + std::to_string(i + 1);
 		players[i].unit->root->position.x = graphics->videoWidth / 2;
 		players[i].unit->root->position.y = graphics->videoHeight / 2;
-		players[i].unit->layerIndex = ~0 - 1;
+		players[i].unit->layerIndex = (u32)~0 - 1;
 		newUnits.push_back(players[i].unit);
 	}
 }
@@ -391,7 +389,7 @@ void Game::mainLoop()
 			deltaTime = 0;
 		}
 
-		CALL_LUA_FUNC("onUpdate", deltaTime);
+		CALL_LUA_FUNC2(screenScriptClass, "onUpdate", deltaTime);
 
 		updateScreenFx();
 		updateCamera();
@@ -457,13 +455,19 @@ void Game::mainLoop()
 			if (currentLayer != unit->layerIndex)
 			{
 				currentLayer = unit->layerIndex;
-				CALL_LUA_FUNC("onRender", currentLayer);
+				CALL_LUA_FUNC2(screenScriptClass, "onRender", currentLayer);
 			}
+		}
+
+		if (units.empty())
+		{
+			CALL_LUA_FUNC2(screenScriptClass, "onRender", 0);
 		}
 
 		for (auto& unit : projectiles)
 		{
-			unit->render(graphics);
+			if (unit)
+				unit->render(graphics);
 		}
 
 		if (screenFx.doingFade)
@@ -827,7 +831,7 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 	newPos.x = roundf(newPos.x);
 	newPos.y = roundf(newPos.y);
 
-	if (layerIndex >= Game::instance->map->layers.size())
+	if (!Game::instance->map || layerIndex >= Game::instance->map->layers.size())
 	{
 		return newPos;
 	}
@@ -1004,7 +1008,7 @@ void Game::updateScreenFx()
 
 	if (screenFx.doingFade)
 	{
-		screenFx.fadeTimer += deltaTime * screenFx.fadeTimerDir * 1.0 / screenFx.fadeDuration;
+		screenFx.fadeTimer += deltaTime * screenFx.fadeTimerDir * 1.0f / screenFx.fadeDuration;
 
 		if (screenFx.fadeTimer >= 1 && screenFx.fadeTimerDir > 0)
 		{
@@ -1164,20 +1168,20 @@ bool Game::changeMap(i32 index)
 	return true;
 }
 
-void Game::changeMainScript(const std::string& script)
+void Game::changeScreenScript(const std::string& script)
 {
-	currentMainScript = resourceLoader->loadScript(script);
+	currentScreenScript = resourceLoader->loadScript(script);
 
-	if (scriptClass)
+	if (screenScriptClass)
 	{
-		CALL_LUA_FUNC2(scriptClass, "onScreenLeave");
+		CALL_LUA_FUNC2(screenScriptClass, "onScreenLeave");
 	}
 
-	scriptClass = currentMainScript->createClassInstance(this);
+	screenScriptClass = currentScreenScript->createClassInstance(this);
 
-	if (scriptClass)
+	if (screenScriptClass)
 	{
-		CALL_LUA_FUNC2(scriptClass, "onScreenEnter");
+		CALL_LUA_FUNC2(screenScriptClass, "onScreenEnter");
 	}
 }
 

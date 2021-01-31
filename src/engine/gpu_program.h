@@ -17,6 +17,11 @@ struct GpuProgram
 	void destroy();
 	void use();
 	void setSamplerValue(GLuint tex, const std::string& constName, u32 stage);
-	void setIntValue(GLuint value, const std::string& constName);
+	void setUIntValue(GLuint value, const std::string& constName);
+	void setIntValue(GLint value, const std::string& constName);
+	void setFloatValue(GLfloat value, const std::string& constName);
+	void setUIntArrayValue(u32 count, GLuint* values, const std::string& constName);
+	void setIntArrayValue(u32 count, GLint* values, const std::string& constName);
+	void setFloatArrayValue(u32 count, GLfloat* values, const std::string& constName);
 };
 }
