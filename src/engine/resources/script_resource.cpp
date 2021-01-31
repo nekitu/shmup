@@ -11,6 +11,7 @@
 #include "game.h"
 #include "graphics.h"
 #include "projectile.h"
+#include "image_atlas.h"
 
 namespace LuaIntf
 {
@@ -50,18 +51,57 @@ bool ScriptResource::load(Json::Value& json)
 		ci->createInstance();
 	}
 
+	if (classInstances.size())
+		deserialize();
+
 	return res == 0;
 }
 
 void ScriptResource::unload()
 {
 	code = "";
-	LOG_INFO("Unloading script {0} with {1} instances", path, classInstances.size());
+	serialize();
+}
+
+void ScriptResource::serialize()
+{
+	LOG_INFO("Serializing script {0} with {1} instances", path, classInstances.size());
+
+	serializedInstancesTable = LuaIntf::LuaRef::createTable(getLuaState());
+	int i = 1;
+	for (auto ci : classInstances)
+	{
+		LuaIntf::LuaRef tbl = LuaIntf::LuaRef::createTable(getLuaState());
+		CALL_LUA_FUNC2(ci, "onSerialize", tbl);
+		serializedInstancesTable[i] = tbl;
+		i++;
+	}
+
+	LuaIntf::LuaRef luaSerialize = LuaIntf::LuaRef(getLuaState(), "pickle");
+
+	serializedInstancesString = luaSerialize.call<std::string>(serializedInstancesTable);
+
+	serializedInstancesTable = LuaIntf::LuaRef();
 
 	for (auto& ci : classInstances)
 	{
-		CALL_LUA_FUNC2(ci, "onUnload");
 		ci->classInstance = LuaIntf::LuaRef();
+	}
+}
+
+void ScriptResource::deserialize()
+{
+	LOG_INFO("Deserializing script {0} with {1} instances", path, classInstances.size());
+
+	LuaIntf::LuaRef luaDeserialize = LuaIntf::LuaRef(getLuaState(), "unpickle");
+
+	serializedInstancesTable = luaDeserialize.call<LuaIntf::LuaRef>(serializedInstancesString);
+
+	int i = 1;
+	for (auto ci : classInstances)
+	{
+		CALL_LUA_FUNC2(ci, "onDeserialize", serializedInstancesTable.get(i));
+		i++;
 	}
 }
 
@@ -95,6 +135,8 @@ bool initializeLua()
 
 	LuaIntf::LuaContext l(L);
 
+	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
+
 	LUA.beginModule("log")
 		.addFunction("info", [](const std::string& str) { LOG_INFO("LUA: {0}", str); })
 		.addFunction("error", [](const std::string& str) { LOG_ERROR("LUA: {0}", str); })
@@ -106,6 +148,7 @@ bool initializeLua()
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
 		.addVariable("cameraSpeed", &Game::cameraSpeed)
+		.addFunction("createPlayers", &Game::createPlayers)
 		.addFunction("getProjectileCount", [](Game* game) { return Game::instance->projectiles.size(); })
 		.addVariable("hiscore", &Game::hiscore)
 		.addFunction("player1", [](Game* g) { return g->players[0].unit; })
@@ -116,6 +159,7 @@ bool initializeLua()
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeMap", &Game::changeMap)
+		.addFunction("changeScreenScript", &Game::changeScreenScript)
 		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{
@@ -142,6 +186,10 @@ bool initializeLua()
 		.addFunction("isPlayerFire1", &Game::isPlayerFire1)
 		.addFunction("isPlayerFire2", &Game::isPlayerFire2)
 		.addFunction("isPlayerFire3", &Game::isPlayerFire3)
+		.addFunction("worldToScreen", [](Game* game, const Vec2& v, int layerIndex)
+			{
+				return game->worldToScreen(v, layerIndex);
+			})
 		.endClass();
 
 	LUA.beginModule("util")
@@ -159,6 +207,21 @@ bool initializeLua()
 		.addVariable("colorMode", &Graphics::colorMode)
 		.addVariable("alphaMode", &Graphics::alphaMode)
 		.addFunction("drawText", &Graphics::drawText)
+		.addFunction("drawSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, int frame, f32 angle)
+			{
+				gfx->atlasTextureIndex = spr->image->atlasTexture->textureIndex;
+				gfx->colorMode = (int)ColorMode::Add;
+				gfx->color = 0;
+
+				if (spr->image->rotated)
+				{
+					gfx->drawRotatedQuadWithTexCoordRotated90(rc, spr->getFrameUvRect(frame), angle);
+				}
+				else
+				{
+					gfx->drawRotatedQuad(rc, spr->getFrameUvRect(frame), angle);
+				}
+			})
 		.endClass();
 
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
@@ -208,6 +271,7 @@ bool initializeLua()
 		.addVariable("id", &Unit::id, false)
 		.addVariable("name", &Unit::name, true)
 		.addVariable("layerIndex", &Unit::layerIndex)
+		.addVariable("stageIndex", &Unit::stageIndex)
 		.addVariable("appeared", &Unit::appeared)
 		.addVariable("unitResource", &Unit::unitResource, false)
 		.addVariable("age", &Unit::age, false)
@@ -216,7 +280,17 @@ bool initializeLua()
 		.addVariable("stage", &Unit::currentStage)
 		.addVariable("deleteMeNow", &Unit::deleteMeNow)
 		.addVariable("root", &Unit::root)
+		.addFunction("replaceSprite", &Unit::replaceSprite)
 		.addFunction("findSprite", &Unit::findSprite)
+		.addFunction("hideAllSprites", &Unit::hideAllSprites)
+		.addFunction("disableAllWeapons", &Unit::disableAllWeapons)
+		.addFunction("localToScreen", [](Unit* unit, const Vec2& v)
+			{
+				Vec2 sv = v;
+				sv += unit->root->position;
+				return Game::instance->worldToScreen(sv, unit->layerIndex);
+			}
+		)
 		.addFunction("findWeapon",
 			[](Unit* unit, const std::string& weaponName)
 			{
@@ -308,6 +382,7 @@ bool initializeLua()
 		.addConstructor(LUA_ARGS(LuaIntf::_opt<f32>, LuaIntf::_opt<f32>))
 		.addVariable("x", &Vec2::x)
 		.addVariable("y", &Vec2::y)
+		.addFunction("set", &Vec2::set)
 		.addFunction("getCopy", [](Vec2* v) {return Vec2(v->x, v->y); })
 		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
 		.addFunction("normalize", &Vec2::normalize)
@@ -332,6 +407,10 @@ bool initializeLua()
 		.addFunction("subScalarReturn", [](Vec2* v1, f32 val) { return *v1 - val; })
 		.addFunction("mulScalarReturn", [](Vec2* v1, f32 val) { return *v1 * val; })
 		.addFunction("divScalarReturn", [](Vec2* v1, f32 val) { return *v1 / val; })
+		.addFunction("lerp", [](Vec2* v1, Vec2* v2, f32 t) { return *v1 + (*v2 - *v1) * t; })
+		.addFunction("dir2deg", [](Vec2* v) {
+				return dir2deg(*v);
+			})
 		.endClass();
 
 	LUA.beginClass<Rect>("Rect")
@@ -347,13 +426,18 @@ bool initializeLua()
 		.addVariableRef("position", &Sprite::position)
 		.addVariable("name", &Sprite::name)
 		.addVariable("rotation", &Sprite::rotation)
-		.addVariable("scale", &Sprite::scale)
+		.addVariableRef("scale", &Sprite::scale)
 		.addVariable("verticalFlip", &Sprite::verticalFlip)
 		.addVariable("horizontalFlip", &Sprite::horizontalFlip)
+		.addVariable("health", &Sprite::health)
+		.addVariable("visible", &Sprite::visible)
 		.addVariableRef("spriteResource", &Sprite::spriteResource)
 		.addVariable("frame", &Sprite::animationFrame)
-		.addVariable("rect", &Sprite::rect)
+		.addVariableRef("rect", &Sprite::rect)
+		.addVariableRef("localRect", &Sprite::localRect)
+		.addVariable("animationIsActive", &Sprite::animationIsActive)
 		.addVariable("relativeToRoot", &Sprite::relativeToRoot)
+		.addFunction("getFrameAnimationName", [](Sprite* spr) { return spr->frameAnimation->name; })
 		.addFunction("setFrameAnimation", &Sprite::setFrameAnimation)
 		.addFunction("setFrameAnimationFromAngle", &Sprite::setFrameAnimationFromAngle)
 		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)
@@ -369,9 +453,15 @@ bool initializeLua()
 
 	l.setGlobal("game", Game::instance);
 	l.setGlobal("gfx", Game::instance->graphics);
-	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 
 	// constants and enums
+	l.setGlobal("UnitType_Enemy", UnitType::Enemy);
+	l.setGlobal("UnitType_EnemyProjectile", UnitType::EnemyProjectile);
+	l.setGlobal("UnitType_Item", UnitType::Item);
+	l.setGlobal("UnitType_Player", UnitType::Player);
+	l.setGlobal("UnitType_PlayerProjectile", UnitType::PlayerProjectile);
+	l.setGlobal("UnitType_None", UnitType::None);
+
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
@@ -405,6 +495,11 @@ bool initializeLua()
 	l.setGlobal("AnimationTrackType_ColorB", AnimationTrackType::ColorB);
 	l.setGlobal("AnimationTrackType_ColorA", AnimationTrackType::ColorA);
 	l.setGlobal("AnimationTrackType_ColorMode", AnimationTrackType::ColorMode);
+
+	auto path = Game::makeFullDataPath("scripts/util.lua");
+	auto code = readTextFile(path);
+	auto res = luaL_loadstring(getLuaState(), code.c_str());
+	auto result = lua_pcall(getLuaState(), 0, LUA_MULTRET, 0);
 
 	return true;
 }

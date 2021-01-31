@@ -73,6 +73,11 @@ void Unit::onAnimationEvent(struct Sprite* sprite, const std::string& eventName)
 	if (sprite)
 	{
 		CALL_LUA_FUNC("onAnimationEvent", sprite, eventName);
+
+		for (auto& ctrl : controllers)
+		{
+			CALL_LUA_FUNC2(ctrl.second, "onAnimationEvent", sprite, eventName);
+		}
 	}
 }
 
@@ -235,6 +240,7 @@ void Unit::initializeFrom(UnitResource* res)
 		weapon->parentUnit = this;
 		weapon->attachTo = spriteMap[weaponRes.second->attachTo];
 		weapon->active = weaponRes.second->active;
+		weapon->params.ammo = weaponRes.second->ammo;
 		weapon->params.position = weaponRes.second->localPosition;
 		weapons[weaponRes.first] = weapon;
 	}
@@ -266,10 +272,12 @@ void Unit::update(Game* game)
 	if (!visible)
 		return;
 
+	deleteQueuedSprites();
 	computeHealth();
 
 	if (unitResource && appeared)
 	{
+		int index = 0;
 		for (auto& stage : unitResource->stages)
 		{
 			if (health <= stage->triggerOnHealth && stage != currentStage)
@@ -282,8 +290,11 @@ void Unit::update(Game* game)
 				triggeredStages.push_back(stage);
 				CALL_LUA_FUNC("onStageChange", currentStage ? currentStage->name : "", stage->name);
 				currentStage = stage;
+				stageIndex = index;
 				break;
 			}
+
+			++index;
 		}
 	}
 
@@ -294,8 +305,11 @@ void Unit::update(Game* game)
 			auto& spr = iter.first;
 			auto& sprAnim = iter.second;
 
-			sprAnim->update(game->deltaTime);
-			sprAnim->animateSprite(spr);
+			if (sprAnim->active)
+			{
+				sprAnim->update(game->deltaTime);
+				sprAnim->animateSprite(spr);
+			}
 		}
 	}
 
@@ -438,6 +452,7 @@ void Unit::computeBoundingBox()
 			boundingBox.setSize(root->scale);
 		}
 
+		root->localRect = boundingBox;
 		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
 		root->rect = boundingBox;
 		root->rect.x = roundf(root->rect.x);
@@ -459,18 +474,15 @@ void Unit::computeBoundingBox()
 			pos = root->position;
 		}
 
-		f32 mirrorV = spr->verticalFlip ? -1 : 1;
-		f32 mirrorH = spr->horizontalFlip ? -1 : 1;
-
-		pos.x += spr->position.x * mirrorH;
-		pos.y += spr->position.y * mirrorV;
+		pos.x += spr->position.x;
+		pos.y += spr->position.y;
 
 		f32 renderW = spr->spriteResource->frameWidth * spr->scale.x * root->scale.x;
 		f32 renderH = spr->spriteResource->frameHeight * spr->scale.y * root->scale.y;
 
 		pos.x -= renderW / 2.0f;
 		pos.y -= renderH / 2.0f;
-
+		spr->localRect = Rect(roundf(pos.x), roundf(pos.y), roundf(renderW), roundf(renderH));
 		pos = Game::instance->worldToScreen(pos, layerIndex);
 
 		Rect spriteRc =
@@ -611,6 +623,8 @@ void Unit::render(Graphics* gfx)
 		}
 	}
 
+	CALL_LUA_FUNC("onBeforeRender");
+
 	// draw color sprites
 	for (auto spr : sprites)
 	{
@@ -647,6 +661,8 @@ void Unit::render(Graphics* gfx)
 	{
 		weapon.second->render();
 	}
+
+	CALL_LUA_FUNC("onAfterRender");
 }
 
 Sprite* Unit::findSprite(const std::string& sname)
@@ -669,7 +685,7 @@ bool Unit::checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>&
 	{
 		for (auto sprInst2 : other->sprites)
 		{
-			if (sprInst1->checkPixelCollision(sprInst2, collisionCenter))
+			if (sprInst1->health > 0 && sprInst2->health > 0 && sprInst1->checkPixelCollision(sprInst2, collisionCenter))
 			{
 				collisions.push_back({sprInst1, sprInst2, collisionCenter});
 				collided = true;
@@ -678,6 +694,90 @@ bool Unit::checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>&
 	}
 
 	return collided;
+}
+
+void Unit::deleteSprite(struct Sprite* spr)
+{
+	if (spr == root)
+	{
+		LOG_DEBUG("Cannot delete root sprite of unit {0}", name);
+		return;
+	}
+
+	auto iter = std::find(sprites.begin(), sprites.end(), spr);
+
+	if (iter != sprites.end())
+	{
+		removeSpriteAnimations(spr);
+		delete spr;
+		sprites.erase(iter);
+	}
+}
+
+void Unit::deleteSprite(const std::string& sname)
+{
+	auto spr = findSprite(sname);
+
+	if (spr)
+	{
+		deleteSprite(spr);
+	}
+}
+
+void Unit::queueDeleteSprite(Sprite* what)
+{
+	deleteSpritesQueue.insert(what);
+}
+
+void Unit::deleteQueuedSprites()
+{
+	for (auto& spr : deleteSpritesQueue)
+	{
+		deleteSprite(spr);
+	}
+
+	deleteSpritesQueue.clear();
+}
+
+void Unit::replaceSprite(const std::string& what, const std::string& with)
+{
+	auto sprWith = findSprite(with);
+	auto sprWhat = findSprite(what);
+	
+	queueDeleteSprite(sprWhat);
+	if (sprWith) sprWith->visible = true;
+}
+
+void Unit::removeSpriteAnimations(struct Sprite* spr)
+{
+	for (auto& sprAnimMapPair : spriteAnimations)
+	{
+		for (auto& sprAnimPair : sprAnimMapPair.second)
+		{
+			if (sprAnimPair.first == spr)
+			{
+				delete sprAnimPair.second;
+				sprAnimMapPair.second.erase(spr);
+				break;
+			}
+		}
+	}
+}
+
+void Unit::hideAllSprites()
+{
+	for (auto& spr : sprites)
+	{
+		spr->visible = false;
+	}
+}
+
+void Unit::disableAllWeapons()
+{
+	for (auto& wpn : weapons)
+	{
+		wpn.second->active = false;
+	}
 }
 
 }

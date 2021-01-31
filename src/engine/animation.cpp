@@ -27,9 +27,9 @@ void Animation::rewind()
 	active = true;
 	trackState.clear();
 
-	for (auto trackIter : animationResource->tracks)
+	for (auto& trackIter : animationResource->tracks)
 	{
-		auto track = trackIter.second;
+		auto& track = trackIter.second;
 		TrackState ts;
 
 		ts.playDirection = track->loopMode == AnimationLoopMode::Reversed ? -1 : 1;
@@ -92,23 +92,15 @@ void Animation::update(f32 deltaTime)
 	{
 	case AnimationLoopMode::None:
 		if (currentTime > animationResource->totalTime)
+		{
 			active = false;
+			currentTime = animationResource->totalTime;
+		}
 		break;
 	case AnimationLoopMode::Normal:
 		if (currentTime > animationResource->totalTime)
 		{
 			currentTime = 0;
-			for (auto trackIter : animationResource->tracks)
-			{
-				auto track = trackIter.second;
-				auto& state = trackState[track];
-
-				state.active = true;
-				state.playDirection = 1;
-				state.previousKeyIndex = 0;
-				state.repeatCount = 0;
-				state.triggeredKeyEvents.clear();
-			}
 			updateRepeatCount();
 		}
 		break;
@@ -134,9 +126,9 @@ void Animation::update(f32 deltaTime)
 		break;
 	}
 
-	for (auto trackIter : animationResource->tracks)
+	for (auto& trackIter : animationResource->tracks)
 	{
-		auto track = trackIter.second;
+		auto& track = trackIter.second;
 		auto& state = trackState[track];
 
 		if (!state.active)
@@ -150,12 +142,11 @@ void Animation::update(f32 deltaTime)
 		case AnimationLoopMode::None:
 			state.currentTime = currentTime;
 
-			if (state.currentTime > track->endTime)
+			if (state.currentTime >= track->endTime)
 			{
 				state.timeWasHigherThanTotalTime = true;
 				state.currentTime = track->endTime;
 				state.triggeredKeyEvents.clear();
-				state.active = false;
 			}
 
 			break;
@@ -254,7 +245,12 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	// wrap if time is greater
 	auto oldTime = atTime;
-	atTime = fmod(atTime, keys[keys.size() - 1].time); // keys always sorted by time
+
+	if (track->loopMode != AnimationLoopMode::None
+		&& atTime > keys[keys.size() - 1].time)
+	{
+		atTime = fmod(atTime, keys[keys.size() - 1].time); // keys always sorted by time
+	}
 
 	if (oldTime != atTime)
 	{
@@ -276,7 +272,7 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	auto isTimeOverLastKeyAndHasTrigger = tstate.timeWasHigherThanTotalTime && keys[keys.size() - 1].triggerEvent;
 	auto isTimeBelowFirstKeyAndHasTrigger = tstate.timeWasLowerThanZero && keys[0].triggerEvent;
-	auto isForwardDir = ((tstate.playDirection == 1 && track->loopMode == AnimationLoopMode::PingPong) || track->loopMode == AnimationLoopMode::Normal);
+	auto isForwardDir = ((tstate.playDirection == 1 && track->loopMode == AnimationLoopMode::PingPong) || track->loopMode == AnimationLoopMode::Normal || track->loopMode == AnimationLoopMode::None);
 
 	if (isTimeBelowFirstKeyAndHasTrigger)
 	{
@@ -362,11 +358,8 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 	{
 		// key1->time ----- atTime ----------------key2->time
 		f32 t = (atTime - key1->time) / (key2->time - key1->time);
-
-		// update first interpolation key
 		tstate.previousKeyIndex = key1Index;
-
-		return key1->value + fabs(t) * (key2->value - key1->value);
+		return Easing::easeValue(key1->easeType, t, key1->value, key2->value - key1->value, 1.0f);
 	}
 
 	return 0.0f;

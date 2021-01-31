@@ -7,6 +7,7 @@
 #include "color.h"
 #include "rect.h"
 #include "resource.h"
+#include "easing.h"
 
 namespace engine
 {
@@ -45,12 +46,22 @@ enum class AnimationTrackType
 	Count
 };
 
+enum class AnimationCoordSys
+{
+	World,
+	Local,
+	Screen,
+
+	Count
+};
+
 struct AnimationKey
 {
 	f32 value = 0;
 	f32 time; /// time is seconds
 	bool triggerEvent = false;
 	std::string eventName;
+	Easing::Type easeType = Easing::Type::inOutLinear;
 };
 
 struct AnimationTrack
@@ -86,6 +97,7 @@ struct AnimationResource : Resource
 	f32 totalTime = 0;
 	u32 repeat = 0;
 	AnimationLoopMode loopMode = AnimationLoopMode::Normal;
+	AnimationCoordSys coordSys = AnimationCoordSys::World;
 
 	virtual bool load(Json::Value& json) override;
 	void unload() override;

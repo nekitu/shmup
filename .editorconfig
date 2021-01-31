@@ -1,5 +1,5 @@
 root = true
-[*.{lua,h,cpp,inl,hpp,cxx}]
+[*.{h,cpp,inl,hpp,cxx}]
 indent_style = tab
 tab_width = 4
 trim_trailing_whitespace = true

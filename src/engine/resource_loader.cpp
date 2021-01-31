@@ -24,6 +24,7 @@ namespace engine
 	if (path.size() == 0)\
 	{\
 		LOG_ERROR("{0}: Empty path", where);\
+		_CrtDbgBreak();\
 	}\
 }
 
@@ -103,7 +104,35 @@ void ResourceLoader::reloadWeapons()
 	{
 		for (auto wpn : unitResource->weapons)
 		{
+			auto active = wpn.second->active;
+			auto pos = wpn.second->params.position;
+			auto ammo = wpn.second->params.ammo;
+
 			wpn.second->initializeFrom(wpn.second->weaponResource);
+			wpn.second->active = active;
+			wpn.second->params.ammo = ammo;
+			wpn.second->params.position = pos;
+		}
+	}
+}
+
+void ResourceLoader::reloadAnimations()
+{
+	LOG_INFO("Reloading animations...");
+	Json::Value json;
+
+	for (auto& res : resources)
+	{
+		if (res.second->type == ResourceType::Animation)
+		{
+			auto absPath = Game::instance->dataRoot + res.first;
+
+			if (!loadJson(absPath + ".json", json))
+			{
+				continue;
+			}
+
+			res.second->load(json);
 		}
 	}
 }
@@ -267,7 +296,7 @@ MusicResource* ResourceLoader::loadMusic(const std::string& path)
 
 	res->type = ResourceType::Music;
 	res->loader = this;
-	res->path = path;
+	res->path = Game::makeFullDataPath(path);
 	res->load(json);
 	resources[path] = res;
 
@@ -340,7 +369,7 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& path)
 
 ScriptResource* ResourceLoader::loadScript(const std::string& path)
 {
-	checkForEmptyPath("loadScript", path);
+	//checkForEmptyPath("loadScript", path);
 
 	if (path.empty()) return nullptr;
 

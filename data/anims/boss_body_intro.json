@@ -1,22 +1,25 @@
 {
+  "loopMode": "Normal",
   "tracks":
   {
       "PositionX":
       {
         "keys":
         [
-          { "value": 0, "time": 0 },
-          { "value": 10, "time": 1 },
-          { "value": 40, "time": 3 }
+          { "value": 120, "time": 0, "easeType":"inOutBack" },
+          { "value": 30, "time": 1, "easeType":"inOutBack" },
+          { "value": 260, "time": 3, "easeType":"inOutBack" },
+          { "value": 120, "time": 4, "easeType":"inOutBack" }
         ]
       },
       "PositionY":
       {
         "keys":
         [
-          { "value": 0, "time": 0 },
-          { "value": 10, "time": 1 },
-          { "value": 110, "time": 3 }
+          { "value": -150, "time": 0, "easeType":"inOutCubic" },
+          { "value": -100, "time": 1, "easeType":"inOutCubic" },
+          { "value": 10, "time": 3, "easeType":"inOutCubic" },
+          { "value": -150, "time": 4, "easeType":"inOutCubic" }
         ]
       }
   }

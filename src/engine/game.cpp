@@ -55,6 +55,7 @@ void Game::loadConfig()
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
 	windowTitle = json.get("windowTitle", windowTitle).asString();
+	startupScreenScript = json.get("startupScreenScript", startupScreenScript).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
@@ -154,9 +155,6 @@ bool Game::initialize()
 	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
 
 	initializeLua();
-	createPlayers();
-	changeMap(0);
-
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
 	mapSdlToControl[SDLK_PAUSE] = InputControl::Pause;
 	mapSdlToControl[SDLK_1] = InputControl::Coin;
@@ -176,17 +174,18 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
 	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
 	mapSdlToControl[SDLK_F6] = InputControl::ReloadSprites;
+	mapSdlToControl[SDLK_F7] = InputControl::ReloadAnimations;
 
 	//TODO: remove
 	music = new Music();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	//music->play();
-	//Mix_VolumeMusic(1);
+	//Mix_VolumeMusic(128);
 
-	currentMainScript = resourceLoader->loadScript("scripts/ingame_screen");
-	scriptClass = currentMainScript->createClassInstance(this);
+	projectilePool.resize(maxProjectileCount);
 	preloadSprites();
 	lastTime = SDL_GetTicks();
+	changeScreenScript(startupScreenScript);
 }
 
 void Game::shutdown()
@@ -203,7 +202,7 @@ void Game::createPlayers()
 		players[i].unit->name = "Player" + std::to_string(i + 1);
 		players[i].unit->root->position.x = graphics->videoWidth / 2;
 		players[i].unit->root->position.y = graphics->videoHeight / 2;
-		players[i].unit->layerIndex = ~0 - 1;
+		players[i].unit->layerIndex = (u32)~0 - 1;
 		newUnits.push_back(players[i].unit);
 	}
 }
@@ -335,10 +334,12 @@ void Game::mainLoop()
 
 		static bool reloadScriptsKeyDown = false;
 		static bool reloadSpritesKeyDown = false;
+		static bool reloadAnimationsKeyDown = false;
 		static bool pauseKeyDown = false;
 
 		bool reloadScripts = isControlDown(InputControl::ReloadScripts);
 		bool reloadSprites = isControlDown(InputControl::ReloadSprites);
+		bool reloadAnimations = isControlDown(InputControl::ReloadAnimations);
 		bool pause = isControlDown(InputControl::Pause);
 
 		if (!reloadScriptsKeyDown && reloadScripts)
@@ -350,6 +351,8 @@ void Game::mainLoop()
 		if (!reloadScripts)
 			reloadScriptsKeyDown = false;
 
+		//--
+
 		if (!reloadSpritesKeyDown && reloadSprites)
 		{
 			reloadSpritesKeyDown = true;
@@ -358,6 +361,19 @@ void Game::mainLoop()
 
 		if (!reloadSprites)
 			reloadSpritesKeyDown = false;
+
+		//--
+
+		if (!reloadAnimationsKeyDown && reloadAnimations)
+		{
+			reloadAnimationsKeyDown = true;
+			resourceLoader->reloadAnimations();
+		}
+
+		if (!reloadAnimations)
+			reloadAnimationsKeyDown = false;
+
+		//--
 
 		if (!pauseKeyDown && pause)
 		{
@@ -373,7 +389,7 @@ void Game::mainLoop()
 			deltaTime = 0;
 		}
 
-		CALL_LUA_FUNC("onUpdate", deltaTime);
+		CALL_LUA_FUNC2(screenScriptClass, "onUpdate", deltaTime);
 
 		updateScreenFx();
 		updateCamera();
@@ -439,13 +455,19 @@ void Game::mainLoop()
 			if (currentLayer != unit->layerIndex)
 			{
 				currentLayer = unit->layerIndex;
-				CALL_LUA_FUNC("onRender", currentLayer);
+				CALL_LUA_FUNC2(screenScriptClass, "onRender", currentLayer);
 			}
+		}
+
+		if (units.empty())
+		{
+			CALL_LUA_FUNC2(screenScriptClass, "onRender", 0);
 		}
 
 		for (auto& unit : projectiles)
 		{
-			unit->render(graphics);
+			if (unit)
+				unit->render(graphics);
 		}
 
 		if (screenFx.doingFade)
@@ -469,7 +491,9 @@ void Game::mainLoop()
 
 void Game::checkCollisions()
 {
-	std::unordered_map<Unit*, Unit*> collisionPairs;
+	static std::unordered_map<Unit*, Unit*> collisionPairs;
+
+	collisionPairs.clear();
 
 	// check normal units
 	for (auto unit1 : units)
@@ -483,7 +507,7 @@ void Game::checkCollisions()
 			if (!unit2->unitResource) continue;
 
 			if (unit1 == unit2
-				|| unit1->unitResource->type == unit2->unitResource->type) continue;
+				|| unit1->unitResource->unitType == unit2->unitResource->unitType) continue;
 
 			if ((unit1->unitResource->unitType == UnitType::Enemy &&
 				unit2->unitResource->unitType == UnitType::EnemyProjectile)
@@ -582,6 +606,7 @@ void Game::checkCollisions()
 	for (auto& cp : collisionPairs)
 	{
 		pixelCols.clear();
+
 		if (!cp.first->unitResource) continue;
 		if (!cp.second->unitResource) continue;
 
@@ -803,7 +828,10 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 {
 	Vec2 newPos = pos;
 
-	if (layerIndex >= Game::instance->map->layers.size())
+	newPos.x = roundf(newPos.x);
+	newPos.y = roundf(newPos.y);
+
+	if (!Game::instance->map || layerIndex >= Game::instance->map->layers.size())
 	{
 		return newPos;
 	}
@@ -980,7 +1008,7 @@ void Game::updateScreenFx()
 
 	if (screenFx.doingFade)
 	{
-		screenFx.fadeTimer += deltaTime * screenFx.fadeTimerDir * 1.0 / screenFx.fadeDuration;
+		screenFx.fadeTimer += deltaTime * screenFx.fadeTimerDir * 1.0f / screenFx.fadeDuration;
 
 		if (screenFx.fadeTimer >= 1 && screenFx.fadeTimerDir > 0)
 		{
@@ -1138,6 +1166,23 @@ bool Game::changeMap(i32 index)
 	}
 
 	return true;
+}
+
+void Game::changeScreenScript(const std::string& script)
+{
+	currentScreenScript = resourceLoader->loadScript(script);
+
+	if (screenScriptClass)
+	{
+		CALL_LUA_FUNC2(screenScriptClass, "onScreenLeave");
+	}
+
+	screenScriptClass = currentScreenScript->createClassInstance(this);
+
+	if (screenScriptClass)
+	{
+		CALL_LUA_FUNC2(screenScriptClass, "onScreenEnter");
+	}
 }
 
 Unit* Game::createUnit(UnitResource* unitResource)

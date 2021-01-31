@@ -10,6 +10,22 @@
             "type": "Normal",
             "fps": 55,
             "repeat": 0
+        },
+        "left":
+        {
+            "start": 3,
+            "frames": 3,
+            "type": "Normal",
+            "fps": 6,
+            "repeat": 1
+        },
+        "right":
+        {
+            "start": 6,
+            "frames": 3,
+            "type": "Normal",
+            "fps": 6,
+            "repeat": 1
         }
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include <string>
+#include <unordered_map>
 
 namespace engine
 {
@@ -78,6 +79,17 @@ struct Color
 	static const Color sky;
 
 	f32 r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f;
+};
+
+struct ColorPalette
+{
+	bool active = false;
+	std::vector<std::pair<Color, Color>> colors;
+
+	u32 indexOf(const Color& color);
+	const Color& get(u32 index);
+	void set(u32 index, const Color& color);
+	void add(u32 index, const Color& color);
 };
 
 }

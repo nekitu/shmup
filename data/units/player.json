@@ -9,13 +9,15 @@
   "autoDeleteType": "None",
   "controllers":
   [
-    { "name": "main", "script": "scripts/controllers/player" },
-    { "name": "gunL_follow", "script": "scripts/controllers/follow", "follower":"gunL", "follow": "body", "speed":60, "constantSpeed": true},
-    { "name": "gunR_follow", "script": "scripts/controllers/follow", "follower":"gunR", "follow": "body", "speed":10, "constantSpeed": false}
+    { "name": "main", "script": "scripts/controllers/player" }
   ],
   "root": "body",
   "animations":
   {
+	  "player_intro":
+	  {
+		"body": "anims/player_intro"
+	  },
     "stage0_intro":
     {
     },
@@ -27,6 +29,7 @@
   [
     {
       "name": "body",
+      "health": 1000,
       "sprite": "sprites/player",
       "position": "0 0",
       "scale": "1 1",
@@ -34,45 +37,32 @@
       "horizontalFlip": false,
       "verticalFlip": false,
       "color": "0 0 0 1",
-      "hitColor": "1 1 0.4 1"
-    },
-    {
-      "name": "gunL",
-      "sprite": "sprites/enemy",
-      "position": "-40 0",
-      "scale": "0.2 0.2",
-      "rotation": 0,
-      "horizontalFlip": false,
-      "verticalFlip": false,
-      "color": "0 0 0 1",
       "hitColor": "1 1 0.4 1",
       "weapons":
       {
-        "gunL":
+        "lprimary":
+        {
+          "position": "-12 0",
+          "weapon": "weapons/player_primary",
+          "active": true
+        },
+        "rprimary":
+        {
+          "position": "12 0",
+          "weapon": "weapons/player_primary",
+          "active": true
+        },
+        "lsecondary":
         {
           "position": "0 0",
           "weapon": "weapons/player_secondary",
-          "active": true
-        }
-      }
-    },
-    {
-      "name": "gunR",
-      "sprite": "sprites/enemy",
-      "position": "40 0",
-      "scale": "0.1 0.1",
-      "rotation": 0,
-      "horizontalFlip": false,
-      "verticalFlip": false,
-      "color": "0 0 0 1",
-      "hitColor": "1 1 0.4 1",
-      "weapons":
-      {
-        "gunR":
+          "active": false
+        },
+        "rsecondary":
         {
           "position": "0 0",
           "weapon": "weapons/player_secondary",
-          "active": true
+          "active": false
         }
       }
     }

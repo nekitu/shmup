@@ -35,6 +35,7 @@ struct ScriptClassInstanceBase
 {
 	struct ScriptResource* script = nullptr;
 	LuaIntf::LuaRef classInstance;
+	std::string serializedData;
 
 	virtual bool createInstance() = 0;
 	LuaIntf::LuaRef getFunction(const std::string& funcName);
@@ -107,9 +108,14 @@ struct ScriptResource : Resource
 {
 	std::string code;
 	std::vector<ScriptClassInstanceBase*> classInstances;
+	LuaIntf::LuaRef serializedInstancesTable;
+	std::string serializedInstancesString;
 
 	bool load(Json::Value& json) override;
 	void unload() override;
+
+	void serialize();
+	void deserialize();
 
 	template<typename T>
 	ScriptClassInstanceBase* createClassInstance(T* obj)

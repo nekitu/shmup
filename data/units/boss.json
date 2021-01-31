@@ -27,7 +27,10 @@
   {
     "stage0_intro":
     {
-      "body": "anims/boss_body_intro"
+      "lwing": "anims/lwing_fold",
+      "rwing": "anims/rwing_fold",
+      "lwing_damaged": "anims/lwing_fold",
+      "rwing_damaged": "anims/rwing_fold"
     },
     "stage0_outro":
     {
@@ -44,8 +47,22 @@
       "name": "body",
       "sprite": "sprites/gun",
       "position": "0 0",
-      "scale": 1.0,
+      "scale": "1 1",
+	  "health": 0,
       "rotation": 0,
+	  "visible": false,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "movebody",
+      "sprite": "sprites/gun",
+      "position": "0 0",
+      "scale": 1,
+      "rotation": 0,
+      "visible": true,
       "horizontalFlip": false,
       "verticalFlip": false,
       "color": "0 0 0 1",
@@ -66,26 +83,117 @@
         }
       }
     },
-    {
-      "name": "turret",
-      "sprite": "sprites/fire2",
-      "position": "0 60",
-      "scale": 0.4,
+	{
+      "name": "tl_leg",
+      "sprite": "sprites/circle",
+      "position": "-20 -20",
+      "scale": "0.5 0.5",
       "rotation": 0,
       "visible": true,
       "horizontalFlip": false,
       "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "tr_leg",
+      "sprite": "sprites/circle",
+      "position": "20 -20",
+      "scale": "0.5 0.5",
+      "rotation": 0,
+      "visible": true,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "bl_leg",
+      "sprite": "sprites/circle",
+      "position": "-20 20",
+      "scale": "0.5 0.5",
+      "rotation": 0,
+      "visible": true,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "br_leg",
+      "sprite": "sprites/circle",
+      "position": "20 20",
+      "scale": "0.5 0.5",
+      "rotation": 0,
+      "visible": true,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "crater",
+      "sprite": "sprites/crater",
+      "position": "0 0",
+      "scale": "2 2",
+      "rotation": 0,
+      "visible": false,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "lwing",
+      "sprite": "sprites/wing",
+      "position": "-50 0",
+      "scale": 1,
+      "rotation": 0,
+      "visible": true,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "lwing_damaged",
+      "sprite": "sprites/wing_damaged",
+      "position": "-50 0",
+      "scale": 1,
+	  "health": 0,
+      "rotation": 0,
+      "visible": false,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+	  "colorMode": "Add",
       "color": "1 0 0 1",
-      "hitColor": "1 0.4 0.4 1",
-      "weapons":
-      {
-        "gun2":
-        {
-          "position": "0 0",
-          "weapon": "weapons/boss",
-          "active": false
-        }
-      }
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "rwing",
+      "sprite": "sprites/wing",
+      "position": "50 0",
+      "scale": 1,
+      "rotation": 0,
+      "visible": true,
+      "horizontalFlip": true,
+      "verticalFlip": false,
+      "color": "0 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
+    },
+    {
+      "name": "rwing_damaged",
+      "sprite": "sprites/wing_damaged",
+      "position": "50 0",
+      "scale": 1,
+	  "health": 0,
+      "rotation": 0,
+      "visible": false,
+      "horizontalFlip": true,
+      "verticalFlip": false,
+	  "colorMode": "Add",
+      "color": "1 0 0 1",
+      "hitColor": "1 0.4 0.4 1"
     }
-  ]
+	]
 }

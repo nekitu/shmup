@@ -39,6 +39,7 @@ enum class InputControl
 	Player2_Fire3,
 	ReloadScripts,
 	ReloadSprites,
+	ReloadAnimations,
 	Count
 };
 
@@ -67,12 +68,12 @@ struct PlayerStats
 struct ScreenFx
 {
 	Vec2 shakeForce;
-	f32 shakeDuration, shakeTimer = 0;
+	f32 shakeDuration = 1, shakeTimer = 0;
 	u32 shakeCounter = 0;
 	u32 shakeCount = 0;
 	bool doingShake = false;
 
-	f32 fadeDuration, fadeTimer = 0;
+	f32 fadeDuration = 1, fadeTimer = 0;
 	u32 fadeLayer = 0;
 	Color fadeColorFrom, fadeColorTo;
 	Color currentFadeColor;
@@ -92,6 +93,7 @@ struct Game
 	bool vSync = false;
 	std::string configPath = "game.json";
 	std::string dataRoot = "../data/";
+	std::string startupScreenScript = "scripts/screens/title";
 	bool exitGame = false;
 	bool editing = false;
 	bool pauseOnAppDeactivate = true;
@@ -115,8 +117,8 @@ struct Game
 	std::vector<std::pair<std::string /*map name*/, std::string /*map path*/>> maps;
 	u32 currentMapIndex = 0;
 	TilemapResource* map = nullptr;
-	struct ScriptResource* currentMainScript = nullptr;
-	struct ScriptClassInstanceBase* scriptClass;
+	struct ScriptResource* currentScreenScript = nullptr;
+	struct ScriptClassInstanceBase* screenScriptClass = nullptr;
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset; // used by camera fx, shake etc
@@ -140,7 +142,7 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
-	BeamCollisionInfo checkBeamIntersection(Unit* unit, Sprite* sprite, const Vec2& pos, f32 beamWidth);
+	BeamCollisionInfo checkBeamIntersection(struct Unit* unit, struct Sprite* sprite, const Vec2& pos, f32 beamWidth);
 	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
 	Vec2 screenToWorld(const Vec2& pos, u32 layerIndex);
 	Rect worldToScreen(const Rect& rc, u32 layerIndex);
@@ -164,6 +166,7 @@ struct Game
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);
+	void changeScreenScript(const std::string& script);
 	static std::string makeFullDataPath(const std::string relativeDataPath);
 	struct Unit* createUnit(struct UnitResource* unitRes);
 	struct Weapon* createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite);

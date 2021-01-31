@@ -93,7 +93,9 @@ void Weapon::spawnProjectiles(Game* game)
 		if (attachTo != parentUnit->root && attachTo->relativeToRoot)
 			pos += parentUnit->root->position;
 
-		newProj->root->position = pos + params.position + params.offset + offRadius;
+		pos += params.position + params.offset + offRadius;
+
+		newProj->root->position = newProj->spawnPosition = pos;
 		newProj->velocity.x = sinrads;
 		newProj->velocity.y = cosrads;
 		newProj->velocity.normalize();
