@@ -601,25 +601,11 @@ void Unit::render(Graphics* gfx)
 
 		if (spr->rotation > 0)
 		{
-			if (spr->spriteResource->image->rotated)
-			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(spr->shadowRect, spr->uvRect, spr->rotation);
-			}
-			else
-			{
-				gfx->drawRotatedQuad(spr->shadowRect, spr->uvRect, spr->rotation);
-			}
+			gfx->drawRotatedQuad(spr->shadowRect, spr->uvRect, spr->spriteResource->image->rotated, spr->rotation);
 		}
 		else
 		{
-			if (spr->spriteResource->image->rotated)
-			{
-				gfx->drawQuadWithTexCoordRotated90(spr->shadowRect, spr->uvRect);
-			}
-			else
-			{
-				gfx->drawQuad(spr->shadowRect, spr->uvRect);
-			}
+			gfx->drawQuad(spr->shadowRect, spr->uvRect, spr->spriteResource->image->rotated);
 		}
 	}
 
@@ -642,25 +628,11 @@ void Unit::render(Graphics* gfx)
 
 		if (spr->rotation > 0)
 		{
-			if (spr->spriteResource->image->rotated)
-			{
-				gfx->drawRotatedQuadWithTexCoordRotated90(spr->rect, spr->uvRect, spr->rotation);
-			}
-			else
-			{
-				gfx->drawRotatedQuad(spr->rect, spr->uvRect, spr->rotation);
-			}
+			gfx->drawRotatedQuad(spr->rect, spr->uvRect, spr->spriteResource->image->rotated, spr->rotation);
 		}
 		else
 		{
-			if (spr->spriteResource->image->rotated)
-			{
-				gfx->drawQuadWithTexCoordRotated90(spr->rect, spr->uvRect);
-			}
-			else
-			{
-				gfx->drawQuad(spr->rect, spr->uvRect);
-			}
+			gfx->drawQuad(spr->rect, spr->uvRect, spr->spriteResource->image->rotated);
 		}
 
 		//TODO: should we remove this?
@@ -756,7 +728,7 @@ void Unit::replaceSprite(const std::string& what, const std::string& with)
 {
 	auto sprWith = findSprite(with);
 	auto sprWhat = findSprite(what);
-	
+
 	queueDeleteSprite(sprWhat);
 	if (sprWith) sprWith->visible = true;
 }

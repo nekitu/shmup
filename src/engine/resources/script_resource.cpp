@@ -209,6 +209,14 @@ bool initializeLua()
 		.addFunction("drawText", &Graphics::drawText)
 		.addFunction("createUserPalette", &Graphics::createUserPalette)
 		.addFunction("freeUserPalette", &Graphics::freeUserPalette)
+		.addFunction("drawSpriteCustomQuad", [](Graphics* gfx, struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle)
+		{
+			gfx->drawSpriteCustomQuad(spr, topLeft, topRight, btmRight, btmLeft, frame, angle);
+		})
+		.addFunction("drawPalettedSpriteCustomQuad", [](Graphics* gfx, struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle, ColorPalette* palette)
+		{
+			gfx->drawSpriteCustomQuad(spr, topLeft, topRight, btmRight, btmLeft, frame, angle, palette);
+		})
 		.addFunction("drawSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, u32 frame, f32 angle)
 			{
 				gfx->drawSprite(spr, rc, frame, angle);

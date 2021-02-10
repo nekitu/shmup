@@ -15,6 +15,7 @@ struct Vertex
 	u32 alphaMode;
 	u32 textureIndex = 0; /// what atlas texture index this vertex is using
 	u32 paletteIndex = 0; /// if 0, no palette used, if > 0, index = paletteIndex - 1
+	u32 transparentColorIndex = 0;
 };
 
 struct VertexBuffer

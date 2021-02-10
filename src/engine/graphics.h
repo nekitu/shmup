@@ -62,6 +62,7 @@ struct Graphics
 	u32 alphaMode = 0;
 	u32 atlasTextureIndex = 0;
 	u32 paletteIndex = 0;
+	u32 transparentColorIndex = 0;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;
@@ -78,12 +79,12 @@ struct Graphics
 	void blitRenderTarget();
 	void setupBlitRenderTargetRendering();
 	void setupRenderTargetRendering();
-	void drawQuad(const Rect& rect, const Rect& uvRect);
-	void drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
-	void drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect);
-	void drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
+	void drawQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90 = false);
+	void drawCustomQuad(const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, const Rect& uvRect, bool rotateUv90);
+	void drawRotatedQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90, f32 rotationAngle);
 	void drawText(struct FontResource* font, const Vec2& pos, const std::string& text);
 	void drawSprite(struct SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
+	void drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
 	void beginFrame();
 	void setupProjection(f32 width, f32 height);
 	void endFrame();

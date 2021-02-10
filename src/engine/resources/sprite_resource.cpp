@@ -161,6 +161,27 @@ bool SpriteResource::load(Json::Value& json)
 	if (isPalettedTga)
 	{
 		paletteInfo.paletteSlot = Game::instance->graphics->allocPaletteSlot();
+		paletteInfo.transparentColorIndex = json.get("transparentColorIndex", ~0).asInt();
+
+		if (paletteInfo.transparentColorIndex == ~0)
+		{
+			auto transparentColor = json.get("transparentColor", "1 0 1 1").asString();
+			Color color;
+			u32 i = 0;
+			color.parse(transparentColor);
+			u32 color32 = color.getRgba();
+
+			for (auto& c : paletteInfo.colors)
+			{
+				if (color32 == c)
+				{
+					paletteInfo.transparentColorIndex = i;
+					break;
+				}
+
+				i++;
+			}
+		}
 	}
 
 	return true;

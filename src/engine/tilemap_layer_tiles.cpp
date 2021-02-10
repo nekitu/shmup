@@ -83,10 +83,7 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx)
 			rc.x = round(rc.x);
 			rc.y = round(rc.y);
 
-			if (tilesetInfo.tileset->image->rotated)
-				gfx->drawQuadWithTexCoordRotated90(rc, uv);
-			else
-				gfx->drawQuad(rc, uv);
+			gfx->drawQuad(rc, uv, tilesetInfo.tileset->image->rotated);
 
 			++tileIndex;
 		}
@@ -101,11 +98,7 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 
 		rc.width = tilemapLayer->image->width * imageScale.x;
 		rc.height = tilemapLayer->image->height * imageScale.y;
-
-		if (tilemapLayer->image->rotated)
-			gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
-		else
-			gfx->drawQuad(rc, tilemapLayer->image->uvRect);
+		gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
 
 		return;
 	}
@@ -145,11 +138,7 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 			rc.y = pos.y;
 			rc.width = tilemapLayer->image->width * imageScale.x;
 			rc.height = tilemapLayer->image->height * imageScale.y;
-
-			if (tilemapLayer->image->rotated)
-				gfx->drawQuadWithTexCoordRotated90(rc, tilemapLayer->image->uvRect);
-			else
-				gfx->drawQuad(rc, tilemapLayer->image->uvRect);
+			gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
 		}
 	}
 }
