@@ -5,6 +5,9 @@
 
 namespace engine
 {
+#define packRGB(r,g,b) (u32)((u8)b<<16|(u8)g<<8|(u8)r)
+#define packRGBA(r,g,b,a) (u32)((u8)a<<24|(u8)b<<16|(u8)g<<8|(u8)r)
+
 struct Color
 {
 	Color() {}
@@ -79,17 +82,6 @@ struct Color
 	static const Color sky;
 
 	f32 r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f;
-};
-
-struct ColorPalette
-{
-	bool active = false;
-	std::vector<std::pair<Color, Color>> colors;
-
-	u32 indexOf(const Color& color);
-	const Color& get(u32 index);
-	void set(u32 index, const Color& color);
-	void add(u32 index, const Color& color);
 };
 
 }

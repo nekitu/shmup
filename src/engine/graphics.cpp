@@ -10,6 +10,11 @@
 
 namespace engine
 {
+void ColorPalette::copyFromSprite(struct SpriteResource* spr)
+{
+	colors = spr->paletteInfo.colors;
+}
+
 void checkErrorGL(const char* where)
 {
 	GLuint err = glGetError();
@@ -56,6 +61,7 @@ in uint inCOLOR;\
 in uint inColorMode;\
 in uint inAlphaMode;\
 in uint inTEXINDEX;\
+in uint inPALETTE;\
 \
 uniform mat4 mvp;\
 out vec2 outTEXCOORD;\
@@ -63,6 +69,7 @@ out vec4 outCOLOR;\
 flat out uint outColorMode;\
 flat out uint outAlphaMode;\
 flat out uint outTEXINDEX;\
+flat out uint outPALETTE;\
 \
 void main()\
 {\
@@ -74,6 +81,7 @@ void main()\
     outColorMode = inColorMode;\
     outAlphaMode = inAlphaMode;\
     outTEXINDEX = inTEXINDEX;\
+    outPALETTE = inPALETTE;\
     return;\
 }\
 ";
@@ -83,17 +91,26 @@ static const char* pixelShaderSource =
 #version 130\r\n\
 #extension GL_EXT_texture_array : enable\r\n\
 uniform sampler2DArray diffuseSampler;\
-\
+uniform sampler2DArray paletteSampler;\
 in vec2 outTEXCOORD;\
 in vec4 outCOLOR;\
 flat in uint outColorMode;\
 flat in uint outAlphaMode;\
 flat in uint outTEXINDEX;\
+flat in uint outPALETTE;\
 out vec4 finalCOLOR;\
 \
 void main()\
 {\
-	vec4 texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
+	vec4 texelColor;\
+	texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
+	if (outPALETTE != uint(0))\
+	{\
+		float idx = texelColor.r;\
+		texelColor = texture2DArray(paletteSampler, vec3(idx, 0, float(outPALETTE - uint(1))));\
+		texelColor.a = 1;\
+	}\
+	texelColor.a = 1;\
 	if (outAlphaMode == 0U && texelColor.a < 1) discard;\
 	if (outColorMode == 0U)\
 		finalCOLOR = texelColor + outCOLOR;\
@@ -130,6 +147,8 @@ Graphics::Graphics(Game* game)
 	vertexBuffer = new VertexBuffer();
 	vertexBuffer->resize(maxVertexCount);
 	vertices.resize(maxVertexCount);
+
+	palettesTexture = new TextureArray(maxPaletteCount, maxPaletteColorCount, 1);
 }
 
 void Graphics::createScreenRenderTarget()
@@ -268,8 +287,20 @@ void Graphics::setupRenderTargetRendering()
 	currentGpuProgram->use();
 	bindRenderTarget();
 	setupProjection(videoWidth, videoHeight);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->textureArray->handle);
+
 	gpuProgram.setSamplerValue(atlas->textureArray->handle, "diffuseSampler", 0);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, atlas->textureArray->handle);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	OGL_CHECK_ERROR;
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	OGL_CHECK_ERROR;
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	OGL_CHECK_ERROR;
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	OGL_CHECK_ERROR;
+
+	gpuProgram.setSamplerValue(palettesTexture->handle, "paletteSampler", 1);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, palettesTexture->handle);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	OGL_CHECK_ERROR;
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -385,6 +416,21 @@ void Graphics::endFrame()
 		offsetSum += sizeof(u32);
 	}
 
+	attrLoc = glGetAttribLocation(currentGpuProgram->program, "inPALETTE");
+
+	if (attrLoc != ~0)
+	{
+		OGL_CHECK_ERROR;
+		glEnableVertexAttribArray(attrLoc);
+		OGL_CHECK_ERROR;
+		glVertexAttribIPointer(attrLoc, 1, GL_UNSIGNED_INT, stride, OGL_VBUFFER_OFFSET(offsetSum));
+		OGL_CHECK_ERROR;
+
+		if (glVertexAttribDivisor) glVertexAttribDivisor(attrLoc, 0);
+		OGL_CHECK_ERROR;
+		offsetSum += sizeof(u32);
+	}
+
 	int primType = GL_TRIANGLES;
 
 	glDrawArrays(primType, 0, drawVertexCount);
@@ -421,6 +467,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.topRight();
@@ -429,6 +476,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
@@ -437,6 +485,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	// 2nd triangle
@@ -447,6 +496,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomRight();
@@ -455,6 +505,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
@@ -463,6 +514,7 @@ void Graphics::drawQuad(const engine::Rect& rect, const engine::Rect& uvRect)
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	drawVertexCount = i;
@@ -489,6 +541,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.topRight();
@@ -497,6 +550,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
@@ -505,6 +559,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	// 2nd triangle
@@ -515,6 +570,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomRight();
@@ -523,6 +579,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = rect.bottomLeft();
@@ -531,6 +588,7 @@ void Graphics::drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRec
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	drawVertexCount = i;
@@ -576,6 +634,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v1;
@@ -584,6 +643,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v3;
@@ -592,6 +652,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	// 2nd triangle
@@ -602,6 +663,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v2;
@@ -610,6 +672,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v3;
@@ -618,6 +681,7 @@ void Graphics::drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	drawVertexCount = i;
@@ -688,6 +752,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v1;
@@ -696,6 +761,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v3;
@@ -704,6 +770,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	// 2nd triangle
@@ -714,6 +781,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v2;
@@ -722,6 +790,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	vertices[i].position = v3;
@@ -730,6 +799,7 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, f32 rotatio
 	vertices[i].colorMode = colorMode;
 	vertices[i].alphaMode = alphaMode;
 	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
 	i++;
 
 	drawVertexCount = i;
@@ -814,6 +884,89 @@ void Graphics::popAlphaMode()
 {
 	alphaMode = (u32)alphaModeStack.back();
 	alphaModeStack.pop_back();
+}
+
+u32 Graphics::allocPaletteSlot()
+{
+	for (int i = 0; i < maxPaletteCount; i++)
+	{
+		if (!paletteSlots[i])
+		{
+			paletteSlots[i] = true;
+			return i;
+		}
+	}
+
+	return 0xffffffff;
+}
+
+void Graphics::freePaletteSlot(u32 slot)
+{
+	paletteSlots[slot] = false;
+}
+
+void Graphics::uploadPalette(u32 slot, u32* paletteColors)
+{
+	palettesTexture->updateLayerData(slot, paletteColors);
+}
+
+ColorPalette* Graphics::createUserPalette()
+{
+	ColorPalette* pal = new ColorPalette();
+
+	pal->paletteSlot = allocPaletteSlot();
+
+	if (pal->paletteSlot == ~0)
+	{
+		return pal;
+	}
+
+	pal->colors.resize(maxPaletteColorCount);
+
+	return pal;
+}
+
+void Graphics::freeUserPalette(ColorPalette* pal)
+{
+	freePaletteSlot(pal->paletteSlot);
+	delete pal;
+}
+
+void Graphics::drawSprite(SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, ColorPalette* userPalette)
+{
+	colorMode = (int)ColorMode::Add;
+	color = 0;
+
+	atlasTextureIndex = spr->image->atlasTexture->textureIndex;
+	auto usePalette = spr->paletteInfo.isPaletted;
+	// palette index is inc by 1, 0 means no palette in shader
+	paletteIndex = userPalette ? userPalette->paletteSlot + 1 : spr->paletteInfo.paletteSlot + 1;
+
+	if (usePalette)
+	{
+		if (userPalette)
+		{
+			uploadPalette(userPalette->paletteSlot, userPalette->colors.data());
+		}
+		else
+		{
+			uploadPalette(spr->paletteInfo.paletteSlot, spr->paletteInfo.colors.data());
+		}
+	}
+
+	if (spr->image->rotated)
+	{
+		drawRotatedQuadWithTexCoordRotated90(rc, spr->getFrameUvRect(frame), angle);
+	}
+	else
+	{
+		drawRotatedQuad(rc, spr->getFrameUvRect(frame), angle);
+	}
+
+	if (usePalette)
+	{
+		paletteIndex = 0;
+	}
 }
 
 }

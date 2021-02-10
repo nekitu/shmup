@@ -1,6 +1,7 @@
 {
     "frameWidth": 150,
     "frameHeight": 150,
+	"isPaletted": true,
     "animations":
     {
         "default":

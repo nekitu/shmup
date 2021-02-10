@@ -632,6 +632,13 @@ void Unit::render(Graphics* gfx)
 
 		gfx->color = spr->color.getRgba();
 		gfx->colorMode = (u32)spr->colorMode;
+		auto usePalette = spr->spriteResource->paletteInfo.isPaletted;
+		gfx->currentGpuProgram->setUIntValue((u32)usePalette, "usePalette");
+
+		if (usePalette)
+		{
+			gfx->currentGpuProgram->setUIntArrayValue(spr->palette.size(), spr->palette.data(), "palette");
+		}
 
 		if (spr->rotation > 0)
 		{
@@ -654,6 +661,12 @@ void Unit::render(Graphics* gfx)
 			{
 				gfx->drawQuad(spr->rect, spr->uvRect);
 			}
+		}
+
+		//TODO: should we remove this?
+		if (usePalette)
+		{
+			//gfx->currentGpuProgram->setUIntValue(0, "usePalette");
 		}
 	}
 

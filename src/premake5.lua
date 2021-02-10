@@ -1,7 +1,7 @@
 project "seagle"
     kind "ConsoleApp"
     defines {"_CONSOLE"}
-    includedirs {scriptRoot, scriptRoot.."/src/engine"}
+    includedirs {scriptRoot, scriptRoot.."/src/engine", scriptRoot.."/libs/tga"}
     add_sources_from("./")
     link_binpack()
     link_win32()

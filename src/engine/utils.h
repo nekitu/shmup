@@ -2,6 +2,7 @@
 #include "types.h"
 #include "json/value.h"
 #include "vec2.h"
+#include <vector>
 
 namespace engine
 {

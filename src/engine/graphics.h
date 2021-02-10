@@ -17,10 +17,34 @@ namespace engine
 
 extern void checkErrorGL(const char* where);
 
+struct ColorPalette
+{
+	std::vector<u32> colors;
+	u32 paletteSlot = 0;
+
+	void setColor(u32 index, const Color& color)
+	{
+		if (index < colors.size())
+			colors[index] = color.getRgba();
+	}
+
+	Color getColor(u32 index)
+	{
+		if (index < colors.size())
+			return Color(colors[index]);
+
+		return Color();
+	}
+
+	void copyFromSprite(struct SpriteResource* spr);
+};
+
 struct Graphics
 {
 	static const u32 maxVertexCount = 6 * 3000;
 	static const u32 textureAtlasWidth = 4096;
+	static const u32 maxPaletteCount = 256;
+	static const u32 maxPaletteColorCount = 256;
 
 	struct Game* game = nullptr;
 	f32 videoWidth = 240;
@@ -29,6 +53,7 @@ struct Graphics
 	GLuint renderTargetTextureId = 0;
 	struct ImageAtlas* atlas = nullptr;
 	struct VertexBuffer* vertexBuffer = nullptr;
+	struct TextureArray* palettesTexture;
 	std::vector<Vertex> vertices;
 	u32 drawVertexCount = 0;
 	f32 vertexCountGrowFactor = 1.5f;
@@ -36,12 +61,14 @@ struct Graphics
 	u32 colorMode = 0;
 	u32 alphaMode = 0;
 	u32 atlasTextureIndex = 0;
+	u32 paletteIndex = 0;
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;
 	std::vector<Color> colorStack;
 	std::vector<ColorMode> colorModeStack;
 	std::vector<AlphaMode> alphaModeStack;
+	bool paletteSlots[maxPaletteCount] = { false };
 
 	Graphics(struct Game* game);
 	void createScreenRenderTarget();
@@ -56,6 +83,7 @@ struct Graphics
 	void drawQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect);
 	void drawRotatedQuadWithTexCoordRotated90(const Rect& rect, const Rect& uvRect, f32 rotationAngle);
 	void drawText(struct FontResource* font, const Vec2& pos, const std::string& text);
+	void drawSprite(struct SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
 	void beginFrame();
 	void setupProjection(f32 width, f32 height);
 	void endFrame();
@@ -66,6 +94,11 @@ struct Graphics
 	void popColor();
 	void popColorMode();
 	void popAlphaMode();
+	u32 allocPaletteSlot();
+	void freePaletteSlot(u32 slot);
+	void uploadPalette(u32 slot, u32* paletteColors);
+	ColorPalette* createUserPalette();
+	void freeUserPalette(ColorPalette* pal);
 	bool viewportImageFitSize(
 		f32 imageWidth, f32 imageHeight,
 		f32 viewWidth, f32 viewHeight,

@@ -2,22 +2,13 @@
 #include <stb_image.h>
 #include "image_atlas.h"
 #include "game.h"
+#include "graphics.h"
 
 namespace engine
 {
 AtlasImage* SpriteResource::loadImage(const std::string& path)
 {
-	int width = 0;
-	int height = 0;
-	int comp = 0;
-
-	stbi_uc* data = stbi_load(path.c_str(), &width, &height, &comp, 4);
-	LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
-
-	if (!data)
-		return nullptr;
-
-	auto img = atlas->addImage((Rgba32*)data, width, height);
+	auto img = atlas->loadImageToAtlas(path, &paletteInfo);
 
 	return img;
 }
@@ -89,7 +80,13 @@ Rect SpriteResource::getSheetFramePixelRect(u32 frame)
 
 bool SpriteResource::load(Json::Value& json)
 {
-	auto imagePath = path + ".png";
+	auto isPalettedTga = json.get("isPaletted", false).asBool();
+	std::string imagePath;
+
+	if (!isPalettedTga)
+		imagePath = path + ".png";
+	else
+		imagePath = path + ".tga";
 
 	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
@@ -159,6 +156,11 @@ bool SpriteResource::load(Json::Value& json)
 	{
 		if (!frameWidth) frameWidth = image->width;
 		if (!frameHeight) frameHeight = image->height;
+	}
+
+	if (isPalettedTga)
+	{
+		paletteInfo.paletteSlot = Game::instance->graphics->allocPaletteSlot();
 	}
 
 	return true;

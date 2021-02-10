@@ -4,6 +4,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "libs/stb_image/stb_image_write.c"
 #include "texture_array.h"
+#include <stb_image.h>
+#include <tga.hpp>
 
 namespace engine
 {
@@ -479,5 +481,91 @@ void ImageAtlas::clearImages()
 	images.clear();
 	pendingPackImages.clear();
 }
+
+
+AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* paletteInfo)
+{
+	int width = 0;
+	int height = 0;
+	int comp = 0;
+	u8* data = 0;
+
+	if (strstr(path.c_str(), ".tga") || strstr(path.c_str(), ".TGA"))
+	{
+		tga::TGA tgaFile;
+
+		if (tgaFile.Load(path))
+		{
+			width = tgaFile.GetWidth();
+			height = tgaFile.GetHeight();
+			data = tgaFile.GetData();
+			auto format = tgaFile.GetFormat();
+			auto imgSize = width * height;
+
+			if (paletteInfo)
+			{
+				paletteInfo->isPaletted = tgaFile.GetIndexedData() != nullptr;
+				paletteInfo->bitsPerPixel = tgaFile.GetBpp();
+				paletteInfo->colors.resize(tgaFile.GetColorPaletteLength());
+
+				auto pal = tgaFile.GetColorPalette();
+				u8* color;
+
+				// copy palette
+				for (int i = 0; i < paletteInfo->colors.size(); i++)
+				{
+					color = &pal[i * 3];
+
+					if (tgaFile.GetFormat() == tga::ImageFormat::RGB)
+					{
+						paletteInfo->colors[i] =
+							packRGBA(color[2], color[1], color[0], 0xff);
+					}
+					else if (tgaFile.GetFormat() == tga::ImageFormat::RGBA)
+					{
+						paletteInfo->colors[i] = packRGBA(color[3], color[2], color[1], color[0]);
+					}
+				}
+
+				// we only support 256 color palettes
+				if (paletteInfo->isPaletted && paletteInfo->bitsPerPixel == 8)
+				{
+					u32* rgbaData = new u32[imgSize];
+					u8 index = 0;
+
+					for (int y = 0; y < height; y++)
+					{
+						for (int x = 0; x < width; x++)
+						{
+							auto offs = y * width + x;
+							index = *(u8*)(tgaFile.GetIndexedData() + offs);
+							u32 c = packRGBA(index, 0, 0, 255);
+							auto offsFlipped = (height - 1 - y) * width + x;
+							rgbaData[offsFlipped] = c;
+						}
+					}
+
+					data = (u8*)rgbaData;
+				}
+			}
+		}
+	}
+	else
+	{
+		data = (u8*)stbi_load(path.c_str(), &width, &height, &comp, 4);
+	}
+
+	LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
+
+	if (!data)
+		return nullptr;
+
+	auto img = addImage((Rgba32*)data, width, height);
+
+	delete[] data;
+
+	return img;
+}
+
 
 }
