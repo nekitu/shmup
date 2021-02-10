@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "color.h"
 #include <unordered_map>
+#include "image_atlas.h"
 
 namespace engine
 {
@@ -41,6 +42,7 @@ struct SpriteResource : Resource
 	std::unordered_map<std::string, SpriteFrameAnimation*> frameAnimations;
 	std::string rotationAnimPrefix = "r";
 	u32 rotationAnimCount = 0;
+	PaletteInfo paletteInfo;
 
 	struct AtlasImage* loadImage(const std::string& path);
 	Rect getFrameUvRect(u32 frame);

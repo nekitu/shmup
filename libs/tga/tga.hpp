@@ -111,11 +111,15 @@ namespace tga
 			uint8_t  ImageDescriptor;
 		};
 	private:
-		uint8_t* Data;
+		uint8_t* ColorPalette = nullptr;
+		uint8_t* IndexedData = nullptr;
+		uint8_t* Data = nullptr;
 		uint64_t Size;
 		uint32_t Width;
 		uint32_t Height;
 		ImageFormat Format;
+		int Bpp;
+		int ColorMapLength;
 	private:
 		template <typename Type>
 		void RGBPaletted(Type* InBuffer, uint8_t* ColorMap, uint8_t* OutBuffer, size_t Size);
@@ -129,6 +133,10 @@ namespace tga
 	public:
 		TGA() : Data(nullptr), Size(0), Width(0), Height(0), Format(ImageFormat::Undefined) {}
 
+		int GetBpp() const { return Bpp; }
+		int GetColorPaletteLength() const { return ColorMapLength; }
+		uint8_t* GetColorPalette() const { return ColorPalette; }
+		uint8_t* GetIndexedData() const { return IndexedData; }
 		uint8_t* GetData() const { return Data; }
 		uint64_t GetSize() const { return Size; }
 		uint32_t GetWidth() const { return Width; }
@@ -137,7 +145,12 @@ namespace tga
 
 		void Clear()
 		{
+			delete[] ColorPalette;
+			delete[] IndexedData;
 			delete[] Data;
+			ColorPalette = nullptr;
+			IndexedData = nullptr;
+			Data = nullptr;
 			Size = 0;
 			Width = 0;
 			Height = 0;
@@ -327,8 +340,8 @@ namespace tga
 		File.read((char*)&Head.Bits,              sizeof(Head.Bits));
 		File.read((char*)&Head.ImageDescriptor,   sizeof(Head.ImageDescriptor));
 
-		uint8_t* Descriptor = new uint8_t[Head.ImageDescriptor];
-		File.read((char*)Descriptor, Head.ImageDescriptor);
+		uint8_t* Descriptor = new uint8_t[Head.IDLength];
+		File.read((char*)Descriptor, Head.IDLength);
 
 		size_t ColorMapElementSize = Head.ColorMapEntrySize / 8;
 		size_t ColorMapSize = Head.ColorMapLength * ColorMapElementSize;
@@ -337,6 +350,8 @@ namespace tga
 		if (Head.ColorMapType == 1)
 		{
 			File.read((char*)ColorMap, ColorMapSize);
+			ColorPalette = new uint8_t[ColorMapSize];
+			memcpy(ColorPalette, ColorMap, ColorMapSize);
 		}
 
 		size_t PixelSize = Head.ColorMapLength == 0 ? (Head.Bits / 8) : ColorMapElementSize;
@@ -348,6 +363,8 @@ namespace tga
 
 		Data = new uint8_t[ImageSize];
 		memset(Data, 0, ImageSize);
+		Bpp = Head.Bits;
+		ColorMapLength = Head.ColorMapLength;
 
 		switch (Head.ImageType)
 		{
@@ -358,7 +375,8 @@ namespace tga
 			{
 				switch (PixelSize)
 				{
-				case 3: RGBPaletted ((uint8_t*)Buffer, ColorMap, Data, Head.Width * Head.Height); break;
+				case 3: RGBPaletted ((uint8_t*)Buffer, ColorMap, Data, Head.Width * Head.Height);
+					break;
 				case 4: RGBAPaletted((uint8_t*)Buffer, ColorMap, Data, Head.Width * Head.Height); break;
 				}
 			}
@@ -366,11 +384,13 @@ namespace tga
 			{
 				switch (PixelSize)
 				{
-				case 3: RGBPaletted ((uint16_t*)Buffer, ColorMap, Data, Head.Width * Head.Height); break;
+				case 3: RGBPaletted((uint16_t*)Buffer, ColorMap, Data, Head.Width * Head.Height); break;
 				case 4: RGBAPaletted((uint16_t*)Buffer, ColorMap, Data, Head.Width * Head.Height); break;
 				}
 			}
 
+			IndexedData = new uint8_t[ImageSize];
+			memcpy(IndexedData, Buffer, DataSize);
 			break;
 		}
 		case 2: // Uncompressed TrueColor

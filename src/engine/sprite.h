@@ -31,6 +31,8 @@ struct Sprite
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	bool relativeToRoot = true;
+	std::vector<u32> palette;
+	u32 paletteSlot = 0;
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;
@@ -55,6 +57,8 @@ struct Sprite
 	f32 getFrameFromAngle(f32 angle);
 	void setFrameAnimationFromAngle(f32 angle);
 	bool checkPixelCollision(Sprite* other, Vec2& outCollisionCenter);
+	void copyPaletteFromResource();
+	void setPaletteEntry(u32 index, const Color& newColor);
 };
 
 }

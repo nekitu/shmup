@@ -16,6 +16,14 @@ namespace engine
 class ImageAtlas;
 typedef u32 AtlasImageId;
 
+struct PaletteInfo
+{
+	bool isPaletted = false;
+	int bitsPerPixel = 0;
+	u32 paletteSlot = 0;
+	std::vector<u32> colors;
+};
+
 enum class AtlasPackPolicy
 {
 	Guillotine,
@@ -69,6 +77,7 @@ struct ImageAtlas
 	void repackImages();
 	void packWithLastUsedParams() { pack(lastUsedSpacing, lastUsedBgColor, lastUsedPolicy); }
 	void clearImages();
+	struct AtlasImage* loadImageToAtlas(const std::string& path, PaletteInfo* paletteInfo);
 
 	AtlasImage* whiteImage = nullptr;
 	TextureArray* textureArray = nullptr;

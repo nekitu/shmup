@@ -222,5 +222,4 @@ void GpuProgram::setFloatArrayValue(u32 count, GLfloat* values, const std::strin
 	OGL_CHECK_ERROR;
 }
 
-
 }

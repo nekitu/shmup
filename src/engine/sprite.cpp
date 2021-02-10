@@ -3,6 +3,7 @@
 #include "resources/sprite_resource.h"
 #include "resources/unit_resource.h"
 #include "sprite.h"
+#include "graphics.h"
 #include <assert.h>
 #include "image_atlas.h"
 #include <cmath>
@@ -40,7 +41,8 @@ void Sprite::copyFrom(Sprite* other)
 	animationRepeatCount = other->animationRepeatCount;
 	animationDirection = other->animationDirection;
 	animationIsActive = other->animationIsActive;
-
+	if (other->spriteResource->paletteInfo.isPaletted)
+		paletteSlot = Game::instance->graphics->allocPaletteSlot();
 	play();
 }
 
@@ -65,6 +67,8 @@ void Sprite::initializeFrom(SpriteInstanceResource* res)
 	animationRepeatCount = 0;
 	animationDirection = 1;
 	animationIsActive = true;
+	if (res->spriteResource->paletteInfo.isPaletted)
+		paletteSlot = Game::instance->graphics->allocPaletteSlot();
 	std::string animName = res->animationName;
 
 	if (animName.empty() && res->animations.size())
@@ -305,6 +309,16 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 	}
 
 	return false;
+}
+
+void Sprite::copyPaletteFromResource()
+{
+	palette = spriteResource->paletteInfo.colors;
+}
+
+void Sprite::setPaletteEntry(u32 index, const Color& newColor)
+{
+	palette[index] = newColor.getRgba();
 }
 
 f32 Sprite::getFrameFromAngle(f32 angle)

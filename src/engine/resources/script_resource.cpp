@@ -207,21 +207,22 @@ bool initializeLua()
 		.addVariable("colorMode", &Graphics::colorMode)
 		.addVariable("alphaMode", &Graphics::alphaMode)
 		.addFunction("drawText", &Graphics::drawText)
-		.addFunction("drawSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, int frame, f32 angle)
+		.addFunction("createUserPalette", &Graphics::createUserPalette)
+		.addFunction("freeUserPalette", &Graphics::freeUserPalette)
+		.addFunction("drawSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, u32 frame, f32 angle)
 			{
-				gfx->atlasTextureIndex = spr->image->atlasTexture->textureIndex;
-				gfx->colorMode = (int)ColorMode::Add;
-				gfx->color = 0;
-
-				if (spr->image->rotated)
-				{
-					gfx->drawRotatedQuadWithTexCoordRotated90(rc, spr->getFrameUvRect(frame), angle);
-				}
-				else
-				{
-					gfx->drawRotatedQuad(rc, spr->getFrameUvRect(frame), angle);
-				}
+				gfx->drawSprite(spr, rc, frame, angle);
 			})
+		.addFunction("drawPalettedSprite", [](Graphics* gfx, SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, ColorPalette* userPalette)
+			{
+				gfx->drawSprite(spr, rc, frame, angle, userPalette);
+			})
+		.endClass();
+
+	LUA.beginClass<ColorPalette>("ColorPalette")
+		.addFunction("setColor", &ColorPalette::setColor)
+		.addFunction("getColor", &ColorPalette::getColor)
+		.addFunction("copyFromSprite", &ColorPalette::copyFromSprite)
 		.endClass();
 
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
@@ -443,6 +444,8 @@ bool initializeLua()
 		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)
 		.addFunction("hit", &Sprite::hit)
 		.addFunction("getFrameFromAngle", &Sprite::getFrameFromAngle)
+		.addFunction("copyPaletteFromResource", &Sprite::copyPaletteFromResource)
+		.addFunction("setPaletteEntry", &Sprite::setPaletteEntry)
 		.endClass();
 
 	LUA.beginClass<SpriteCollision>("SpriteCollision")
