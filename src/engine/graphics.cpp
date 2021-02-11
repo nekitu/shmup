@@ -950,12 +950,13 @@ void Graphics::drawSprite(SpriteResource* spr, const Rect& rc, u32 frame, f32 an
 
 	atlasTextureIndex = spr->image->atlasTexture->textureIndex;
 	auto usePalette = spr->paletteInfo.isPaletted;
-	// palette index is inc by 1, 0 means no palette in shader
-	paletteIndex = userPalette ? userPalette->paletteSlot + 1 : spr->paletteInfo.paletteSlot + 1;
-	transparentColorIndex = spr->paletteInfo.transparentColorIndex;
 
 	if (usePalette)
 	{
+		// palette index is inc by 1, 0 means no palette in shader
+		paletteIndex = userPalette ? userPalette->paletteSlot + 1 : spr->paletteInfo.paletteSlot + 1;
+		transparentColorIndex = spr->paletteInfo.transparentColorIndex;
+
 		if (userPalette)
 		{
 			uploadPalette(userPalette->paletteSlot, userPalette->colors.data());
@@ -964,6 +965,10 @@ void Graphics::drawSprite(SpriteResource* spr, const Rect& rc, u32 frame, f32 an
 		{
 			uploadPalette(spr->paletteInfo.paletteSlot, spr->paletteInfo.colors.data());
 		}
+	}
+	else
+	{
+		paletteIndex = 0;
 	}
 
 	drawRotatedQuad(rc, spr->getFrameUvRect(frame), spr->image->rotated, angle);
@@ -981,12 +986,12 @@ void Graphics::drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topL
 
 	atlasTextureIndex = spr->image->atlasTexture->textureIndex;
 	auto usePalette = spr->paletteInfo.isPaletted;
-	// palette index is inc by 1, 0 means no palette in shader
-	paletteIndex = userPalette ? userPalette->paletteSlot + 1 : spr->paletteInfo.paletteSlot + 1;
-	transparentColorIndex = spr->paletteInfo.transparentColorIndex;
-
+	
 	if (usePalette)
 	{
+		// palette index is inc by 1, 0 means no palette in shader
+		paletteIndex = userPalette ? userPalette->paletteSlot + 1 : spr->paletteInfo.paletteSlot + 1;
+		transparentColorIndex = spr->paletteInfo.transparentColorIndex;
 		if (userPalette)
 		{
 			uploadPalette(userPalette->paletteSlot, userPalette->colors.data());
@@ -995,6 +1000,10 @@ void Graphics::drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topL
 		{
 			uploadPalette(spr->paletteInfo.paletteSlot, spr->paletteInfo.colors.data());
 		}
+	}
+	else
+	{
+		paletteIndex = 0;
 	}
 
 	drawCustomQuad(topLeft, topRight, btmRight, btmLeft, spr->getFrameUvRect(frame), spr->image->rotated);
