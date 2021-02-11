@@ -43,7 +43,7 @@ function C:onRender()
     local pr1 = project(p1.x, p1.y, p1.z, center)
     local pr2 = project(p2.x, p2.y, p2.z, center)
     local pr3 = project(p3.x, p3.y, p3.z, center)
-    
+
     gfx:drawSpriteCustomQuad(self.rocksSpr, pr0, pr1, pr2, pr3, 0, 0)
   end
 

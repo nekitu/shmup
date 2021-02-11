@@ -107,8 +107,6 @@ out vec4 finalCOLOR;\
 void main()\
 {\
 	vec4 texelColor;\
-	vec2 uv = outTEXCOORD;\
-	uv.y = uv.y + (sin(uv.x * 0.2) * 0.4);\
 	texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
 	if (outPALETTE != uint(0))\
 	{\
@@ -986,7 +984,7 @@ void Graphics::drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topL
 
 	atlasTextureIndex = spr->image->atlasTexture->textureIndex;
 	auto usePalette = spr->paletteInfo.isPaletted;
-	
+
 	if (usePalette)
 	{
 		// palette index is inc by 1, 0 means no palette in shader
