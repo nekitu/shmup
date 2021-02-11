@@ -107,6 +107,8 @@ out vec4 finalCOLOR;\
 void main()\
 {\
 	vec4 texelColor;\
+	vec2 uv = outTEXCOORD;\
+	uv.y = uv.y + (sin(uv.x * 0.2) * 0.4);\
 	texelColor = texture2DArray(diffuseSampler, vec3(outTEXCOORD, float(outTEXINDEX)));\
 	if (outPALETTE != uint(0))\
 	{\
