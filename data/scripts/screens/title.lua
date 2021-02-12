@@ -29,7 +29,7 @@ local y = 20
 function C:onRender()
   self.palette:setColor(253, Color(self.c, self.c, self.c, self.c))
   self.c = self.c + game.deltaTime/3
-  pan.x = pan.x + math.sin(self.c)/25
+  pan.x = pan.x + math.sin(self.c*5)/2
   --gfx:drawPalettedSprite(self.titleSpr, Rect(gfx.videoWidth / 2 - 150/2, 0, 150, 150), 0, 0, self.palette)
   --gfx:drawPalettedSpriteCustomQuad(self.titleSpr, Vec2(10, 10),Vec2(100, 30),Vec2(100+self.c*10, 130+self.c*10),Vec2(10,130), 0, 0, self.palette)
   for i = 0, 20 do
