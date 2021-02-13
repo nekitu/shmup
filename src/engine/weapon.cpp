@@ -31,6 +31,7 @@ void Weapon::copyFrom(Weapon* other)
 	weaponResource = other->weaponResource;
 	parentUnit = other->parentUnit;
 	attachTo = other->attachTo;
+	fireSound.soundResource = other->fireSound.soundResource;
 }
 
 void Weapon::initializeFrom(struct WeaponResource* res)
@@ -43,6 +44,8 @@ void Weapon::initializeFrom(struct WeaponResource* res)
 	{
 		scriptClass = res->script->createClassInstance(this);
 	}
+
+	fireSound.soundResource = res->fireSound;
 }
 
 void Weapon::fire()
@@ -164,6 +167,7 @@ void Weapon::update(struct Game* game)
     {
         fireTimer = 0;
 		spawnProjectiles(game);
+		fireSound.play();
     }
 
 	CALL_LUA_FUNC("onUpdate");

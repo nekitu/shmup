@@ -57,6 +57,7 @@ struct WeaponResource : Resource
 	struct SpriteResource* beamBeginSprite = nullptr;
 	struct UnitResource* projectileUnit = nullptr;
 	struct ScriptResource* script = nullptr;
+	struct SoundResource* fireSound = nullptr;
 	LuaIntf::LuaRef scriptClassInstance;
 
 	bool load(Json::Value& json) override;

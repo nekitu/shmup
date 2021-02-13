@@ -29,7 +29,7 @@ function C:onUpdate()
   end
 
   if not self.unit.root then return end
-  
+
   local moveDir = Vec2()
 
   if self.playerControl then
@@ -77,7 +77,7 @@ function C:onUpdate()
   if self.unit.root:getFrameAnimationName() == "right" and not self.unit.root.animationIsActive then
     self.unit.root:setFrameAnimation("default")
   end
-  
+
   moveDir:normalize()
   self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
   self.unit.root.position.x = util.clampValue(self.unit.root.position.x, 0, gfx.videoWidth)
@@ -87,10 +87,4 @@ function C:onUpdate()
   collectgarbage("count")
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)
