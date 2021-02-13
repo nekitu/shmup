@@ -116,7 +116,7 @@ function C:onRender()
   offs = offs + game.deltaTime * 55
 end
 
-function C:onScreenEnter()
+function C:onActivate()
   print("enter title screen")
   self.titleSpr = game:loadSprite("sprites/title")
   self.rocksSpr = game:loadSprite("sprites/rocks")
@@ -126,14 +126,8 @@ function C:onScreenEnter()
   self.palette:copyFromSprite(self.titleSpr)
 end
 
-function C:onScreenLeave()
+function C:onDeactivate()
   print("leave title screen")
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

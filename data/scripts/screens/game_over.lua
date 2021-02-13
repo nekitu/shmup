@@ -9,16 +9,10 @@ end
 function C:onRender()
 end
 
-function C:onScreenEnter()
+function C:onActivate()
 end
 
-function C:onScreenLeave()
+function C:onDeactivate()
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

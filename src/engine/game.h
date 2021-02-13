@@ -82,6 +82,15 @@ struct ScreenFx
 	bool doingFade = false;
 };
 
+struct GameScreen
+{
+	std::string name; // script file name part only
+	std::string path;
+	struct ScriptResource* script = nullptr;
+	struct ScriptClassInstanceBase* scriptClass = nullptr;
+	bool active = false;
+};
+
 struct Game
 {
 	static const int maxPlayerCount = 1;
@@ -93,7 +102,6 @@ struct Game
 	bool vSync = false;
 	std::string configPath = "game.json";
 	std::string dataRoot = "../data/";
-	std::string startupScreenScript = "scripts/screens/title";
 	bool exitGame = false;
 	bool editing = false;
 	bool pauseOnAppDeactivate = true;
@@ -117,8 +125,7 @@ struct Game
 	std::vector<std::pair<std::string /*map name*/, std::string /*map path*/>> maps;
 	u32 currentMapIndex = 0;
 	TilemapResource* map = nullptr;
-	struct ScriptResource* currentScreenScript = nullptr;
-	struct ScriptClassInstanceBase* screenScriptClass = nullptr;
+	std::vector<GameScreen*> gameScreens;
 	static Game* instance;
 	Vec2 cameraPosition;
 	Vec2 cameraPositionOffset; // used by camera fx, shake etc
@@ -166,7 +173,7 @@ struct Game
 	bool isPlayerFire3(u32 playerIndex);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);
-	void changeScreenScript(const std::string& script);
+	void setScreenActive(const std::string& name, bool activate = true);
 	static std::string makeFullDataPath(const std::string relativeDataPath);
 	struct Unit* createUnit(struct UnitResource* unitRes);
 	struct Weapon* createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite);

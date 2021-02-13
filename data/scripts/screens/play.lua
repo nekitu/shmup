@@ -12,7 +12,6 @@ function C:onUpdate()
 end
 
 function C:onRender(layerIndex)
-  --print("Rendering "..tostring(layerIndex))
   if layerIndex == game:getLastLayerIndex() then
     gfx.colorMode = ColorMode_Mul
     gfx.color = Color.red:getRgba()
@@ -50,16 +49,10 @@ function C:onRender(layerIndex)
   end
 end
 
-function C:onScreenEnter()
+function C:onActivate()
 end
 
-function C:onScreenLeave()
+function C:onDeactivate()
 end
 
-return function()
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init()
-  return o
-end
+return newInstance(C)

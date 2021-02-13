@@ -145,6 +145,11 @@ bool initializeLua()
 		.addFunction("critical", [](const std::string& str) { LOG_CRITICAL("LUA: {0}", str); })
 		.endModule();
 
+	LUA.beginClass<GameScreen>("GameScreen")
+		.addVariable("name", &GameScreen::name)
+		.addVariable("path", &GameScreen::path)
+		.endClass();
+
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
 		.addVariable("cameraSpeed", &Game::cameraSpeed)
@@ -154,12 +159,12 @@ bool initializeLua()
 		.addFunction("player1", [](Game* g) { return g->players[0].unit; })
 		.addFunction("player2", [](Game* g) { return g->players[1].unit; })
 		.addVariable("credit", &Game::credit)
-		.addFunction("getLastLayerIndex", [](Game* g) { return g->map->layers.size() - 1; })
+		.addFunction("getLastLayerIndex", [](Game* g) { if (!g->map) return (size_t)0; return g->map->layers.size() - 1; })
 		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeMap", &Game::changeMap)
-		.addFunction("changeScreenScript", &Game::changeScreenScript)
+		.addFunction("setScreenActive", &Game::setScreenActive)
 		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{
@@ -507,6 +512,7 @@ bool initializeLua()
 	l.setGlobal("AnimationTrackType_ColorA", AnimationTrackType::ColorA);
 	l.setGlobal("AnimationTrackType_ColorMode", AnimationTrackType::ColorMode);
 
+	// load util by default
 	auto path = Game::makeFullDataPath("scripts/util.lua");
 	auto code = readTextFile(path);
 	auto res = luaL_loadstring(getLuaState(), code.c_str());

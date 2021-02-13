@@ -500,10 +500,10 @@ void Graphics::drawCustomQuad(const Vec2& topLeft, const Vec2& topRight, const V
 		//  |     /  |
 		//  |  /     |
 		// t2-------t1
-		t3 = uvRect.topLeft();
-		t0 = uvRect.topRight();
-		t1 = uvRect.bottomRight();
-		t2 = uvRect.bottomLeft();
+		t0 = uvRect.bottomLeft();
+		t1 = uvRect.topLeft();
+		t2 = uvRect.topRight();
+		t3 = Vec2(uvRect.right(), uvRect.bottom());
 	}
 
 	vertices[i].position = topLeft;
@@ -598,10 +598,10 @@ void Graphics::drawQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90)
 		//  |     /  |
 		//  |  /     |
 		// t2-------t1
-		t3 = uvRect.topLeft();
-		t0 = uvRect.topRight();
-		t1 = uvRect.bottomRight();
-		t2 = uvRect.bottomLeft();
+		t0 = uvRect.bottomLeft();
+		t1 = uvRect.topLeft();
+		t2 = uvRect.topRight();
+		t3 = Vec2(uvRect.right(), uvRect.bottom());
 	}
 
 	vertices[i].position = rect.topLeft();
@@ -697,10 +697,10 @@ void Graphics::drawRotatedQuad(const Rect& rect, const Rect& uvRect, bool rotate
 		//  |     /  |
 		//  |  /     |
 		// t2-------t1
-		t3 = uvRect.topLeft();
-		t0 = uvRect.topRight();
-		t1 = uvRect.bottomRight();
-		t2 = uvRect.bottomLeft();
+		t0 = uvRect.bottomLeft();
+		t1 = uvRect.topLeft();
+		t2 = uvRect.topRight();
+		t3 = Vec2(uvRect.right(), uvRect.bottom());
 	}
 
 	// v0------v1

@@ -42,6 +42,9 @@ void VertexBuffer::resize(u32 count)
 
 void VertexBuffer::updateData(Vertex* vertices, u32 startVertexIndex, u32 count)
 {
+	if (!count || !vertices)
+		return;
+
 	glBindBuffer(GL_ARRAY_BUFFER, vbHandle);
 	OGL_CHECK_ERROR;
 

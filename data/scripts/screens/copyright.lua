@@ -1,24 +1,29 @@
 local C = {}
 
-function C:init()
+local delay = 0
+
+function C:init(gs)
+  self.gameScreen = gs
+  self.sprCopyright = game:loadSprite("sprites/copyright")
 end
 
-function C:onUpdate()
+function C:onUpdate(deltaTime)
+  delay = delay + deltaTime
+  if delay > 3 then
+    game:setScreenActive(self.gameScreen.name, false)
+    game:setScreenActive("play", true)
+    game:changeMap(0)
+  end
 end
 
 function C:onRender()
+  gfx:drawSprite(self.sprCopyright, Rect(0, 0, 240, 320), 0, 0)
 end
 
-function C:onScreenEnter()
+function C:onActivate()
 end
 
-function C:onScreenLeave()
+function C:onDeactivate()
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

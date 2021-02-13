@@ -55,11 +55,26 @@ void Game::loadConfig()
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
 	windowTitle = json.get("windowTitle", windowTitle).asString();
-	startupScreenScript = json.get("startupScreenScript", startupScreenScript).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
 	cameraSpeed = json.get("cameraSpeed", cameraSpeed).asFloat();
+
+	auto screensJson = json.get("screens", Json::ValueType::arrayValue);
+
+	for (u32 i = 0; i < screensJson.size(); i++)
+	{
+		Json::Value& screenInfoJson = screensJson[i];
+		GameScreen* gs = new GameScreen();
+
+		auto path = screenInfoJson["path"].asString();
+		gs->name = path.substr(path.find_last_of("/") + 1);
+		gs->path = path;
+		gs->active = screenInfoJson["active"].asBool();
+		gameScreens.push_back(gs);
+
+		LOG_INFO("Adding game screen: {0} path: {1}", gs->name, screenInfoJson["path"].asString());
+	}
 
 	auto mapsJson = json.get("tilemaps", Json::ValueType::arrayValue);
 
@@ -185,7 +200,17 @@ bool Game::initialize()
 	projectilePool.resize(maxProjectileCount);
 	preloadSprites();
 	lastTime = SDL_GetTicks();
-	changeScreenScript(startupScreenScript);
+
+	for (auto& gs : gameScreens)
+	{
+		gs->script = resourceLoader->loadScript(gs->path);
+		gs->scriptClass = gs->script->createClassInstance(gs);
+
+		if (gs->active)
+		{
+			CALL_LUA_FUNC2(gs->scriptClass, "onActivate");
+		}
+	}
 }
 
 void Game::shutdown()
@@ -389,7 +414,13 @@ void Game::mainLoop()
 			deltaTime = 0;
 		}
 
-		CALL_LUA_FUNC2(screenScriptClass, "onUpdate", deltaTime);
+		for (auto& scr : gameScreens)
+		{
+			if (scr->active)
+			{
+				CALL_LUA_FUNC2(scr->scriptClass, "onUpdate", deltaTime);
+			}
+		}
 
 		updateScreenFx();
 		updateCamera();
@@ -455,13 +486,25 @@ void Game::mainLoop()
 			if (currentLayer != unit->layerIndex)
 			{
 				currentLayer = unit->layerIndex;
-				CALL_LUA_FUNC2(screenScriptClass, "onRender", currentLayer);
+				for (auto& gs : gameScreens)
+				{
+					if (gs->active)
+					{
+						CALL_LUA_FUNC2(gs->scriptClass, "onRender", currentLayer);
+					}
+				}
 			}
 		}
 
 		if (units.empty())
 		{
-			CALL_LUA_FUNC2(screenScriptClass, "onRender", 0);
+			for (auto& gs : gameScreens)
+			{
+				if (gs->active)
+				{
+					CALL_LUA_FUNC2(gs->scriptClass, "onRender", 0);
+				}
+			}
 		}
 
 		for (auto& unit : projectiles)
@@ -1165,23 +1208,37 @@ bool Game::changeMap(i32 index)
 		++layerIndex;
 	}
 
+	LOG_INFO("Packing atlas images...");
+	graphics->atlas->pack();
+
+	LOG_INFO("Computing sprite params after packing...");
+
+	for (auto spriteResource : resourceLoader->sprites)
+	{
+		spriteResource->computeParamsAfterAtlasGeneration();
+	}
+
 	return true;
 }
 
-void Game::changeScreenScript(const std::string& script)
+void Game::setScreenActive(const std::string& name, bool activate)
 {
-	currentScreenScript = resourceLoader->loadScript(script);
-
-	if (screenScriptClass)
+	for (auto& scr : gameScreens)
 	{
-		CALL_LUA_FUNC2(screenScriptClass, "onScreenLeave");
-	}
+		if (scr->name == name)
+		{
+			scr->active = activate;
+			if (activate)
+			{
+				CALL_LUA_FUNC2(scr->scriptClass, "onActivate");
+			}
+			else
+			{
+				CALL_LUA_FUNC2(scr->scriptClass, "onDeactivate");
+			}
 
-	screenScriptClass = currentScreenScript->createClassInstance(this);
-
-	if (screenScriptClass)
-	{
-		CALL_LUA_FUNC2(screenScriptClass, "onScreenEnter");
+			break;
+		}
 	}
 }
 

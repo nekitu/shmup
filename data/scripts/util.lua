@@ -18,11 +18,11 @@ function dump(o)
 end
 
 function newInstance(C)
-  return function(unit)
+  return function(obj)
     local o = {}
     setmetatable(o, C)
     C.__index = C
-    o:init(unit)
+    o:init(obj)
     return o
   end
 end
