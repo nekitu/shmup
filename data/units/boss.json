@@ -8,6 +8,14 @@
   ],
   "script": "scripts/boss",
   "root": "body",
+  "sounds":
+  {
+    "explosion":
+    {
+      "channel":"EnemyExplosion",
+      "path": "sounds/explosion.ogg"
+    }
+  },
   "stages":
   [
     {
@@ -73,13 +81,15 @@
         {
           "position": "0 0",
           "weapon": "weapons/boss",
-          "active": false
+          "active": false,
+          "autoFire": true
         },
         "gun2":
         {
           "position": "0 0",
           "weapon": "weapons/boss2",
-          "active": false
+          "active": false,
+          "autoFire": true
         }
       }
     },
@@ -160,12 +170,12 @@
       "sprite": "sprites/wing_damaged",
       "position": "-50 0",
       "scale": 1,
-	  "health": 0,
+	    "health": 0,
       "rotation": 0,
       "visible": false,
       "horizontalFlip": false,
       "verticalFlip": false,
-	  "colorMode": "Add",
+	    "colorMode": "Add",
       "color": "1 0 0 1",
       "hitColor": "1 0.4 0.4 1"
     },

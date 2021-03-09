@@ -4,6 +4,7 @@
 #include <set>
 #include "resources/unit_resource.h"
 #include "lua_scripting.h"
+#include "sound.h"
 
 namespace engine
 {
@@ -46,6 +47,7 @@ struct Unit
 	std::vector<UnitLifeStage*> triggeredStages;
 	bool deleteMeNow = false;
 	std::map<std::string, ScriptClassInstanceBase*> controllers;
+	std::map<SoundChannel, Sound*> sounds;
 
 	Unit();
 	virtual ~Unit();
@@ -69,6 +71,8 @@ struct Unit
 	void onAnimationEvent(struct Sprite* sprite, const std::string& eventName);
 	void hideAllSprites();
 	void disableAllWeapons();
+	void playSound(const std::string& sndName);
+	bool isSoundPlaying(const std::string& sndName);
 
 private:
 	static bool shadowToggle;

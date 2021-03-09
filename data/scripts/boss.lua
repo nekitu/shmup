@@ -102,6 +102,7 @@ function C:onUpdate()
     self.unit:disableAllWeapons()
     self.unit:findSprite("crater").visible = true
     self.unit:findSprite("crater").position:set(movebody.position.x, movebody.position.y)
+    self.unit:playSound("explosion")
   end
   if self.unit.stageIndex == 1 then
     local movebody = self.unit:findSprite("movebody")

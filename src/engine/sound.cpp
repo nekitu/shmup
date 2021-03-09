@@ -9,10 +9,15 @@ bool Sound::play()
 	if (!soundResource)
 		return false;
 
-	if (Mix_PlayChannel(1, soundResource->wave, 0) == -1)
+	if (Mix_PlayChannel((int)channel, soundResource->wave, 0) == -1)
 		return false;
 
 	return true;
+}
+
+bool Sound::isPlaying()
+{
+	return Mix_Playing((int)channel);
 }
 
 }

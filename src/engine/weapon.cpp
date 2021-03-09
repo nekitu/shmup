@@ -28,6 +28,7 @@ void Weapon::copyFrom(Weapon* other)
 	reset();
 	params = other->params;
 	active = other->active;
+	autoFire = other->autoFire;
 	weaponResource = other->weaponResource;
 	parentUnit = other->parentUnit;
 	attachTo = other->attachTo;
@@ -55,7 +56,7 @@ void Weapon::fire()
 
 	// set timer to highest, hence triggering the spawn of projectiles
 	fireTimer = FLT_MAX;
-	CALL_LUA_FUNC("onFire");
+	firing = true;
 }
 
 void Weapon::spawnProjectiles(Game* game)
@@ -158,17 +159,21 @@ void Weapon::update(struct Game* game)
 		}
 	}
 
-	fireInterval = 1.0f / params.fireRate;
-    fireTimer += game->deltaTime;
+	if (firing || autoFire)
+	{
+		fireInterval = 1.0f / params.fireRate;
+		fireTimer += game->deltaTime;
+		fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
 
-	fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
-
-    if (fireTimer >= fireInterval)
-    {
-        fireTimer = 0;
-		spawnProjectiles(game);
-		fireSound.play();
-    }
+		if (fireTimer >= fireInterval)
+		{
+			fireTimer = 0;
+			spawnProjectiles(game);
+			fireSound.play();
+			firing = false;
+			CALL_LUA_FUNC("onFire");
+		}
+	}
 
 	CALL_LUA_FUNC("onUpdate");
 }

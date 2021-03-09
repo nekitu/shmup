@@ -17,6 +17,7 @@ struct FontResource : Resource
 	bool load(Json::Value& json) override;
 	void unload() override;
 	u32 getGlyphSpriteFrame(u32 code);
+	bool hasGlyph(u32 code);
 };
 
 }

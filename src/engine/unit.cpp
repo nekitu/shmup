@@ -11,6 +11,7 @@
 #include "resources/script_resource.h"
 #include "resource_loader.h"
 #include "resources/weapon_resource.h"
+#include "resources/sound_resource.h"
 
 namespace engine
 {
@@ -161,6 +162,22 @@ void Unit::copyFrom(Unit* other)
 		// attach to new sprite
 		wiNew->attachTo = spriteMap[wi.second->attachTo];
 		weapons[wi.first] = wiNew;
+		if (unitResource->unitType == UnitType::Player)
+			wiNew->fireSound.channel = SoundChannel::Player;
+		if (unitResource->unitType == UnitType::Enemy)
+			wiNew->fireSound.channel = SoundChannel::Enemy;
+		if (unitResource->unitType == UnitType::Item)
+			wiNew->fireSound.channel = SoundChannel::Item;
+	}
+
+	// copy sounds
+	for (auto& snd : other->sounds)
+	{
+		Sound* newSnd = new Sound();
+
+		newSnd->channel = snd.first;
+		newSnd->soundResource = snd.second->soundResource;
+		sounds[snd.first] = newSnd;
 	}
 
 	setAnimation(currentAnimationName);
@@ -241,8 +258,30 @@ void Unit::initializeFrom(UnitResource* res)
 		weapon->attachTo = spriteMap[weaponRes.second->attachTo];
 		weapon->active = weaponRes.second->active;
 		weapon->params.ammo = weaponRes.second->ammo;
+		weapon->autoFire = weaponRes.second->autoFire;
 		weapon->params.position = weaponRes.second->localPosition;
+		if (unitResource->unitType == UnitType::Player)
+			weapon->fireSound.channel = SoundChannel::Player;
+		if (unitResource->unitType == UnitType::Enemy)
+			weapon->fireSound.channel = SoundChannel::Enemy;
+		if (unitResource->unitType == UnitType::Item)
+			weapon->fireSound.channel = SoundChannel::Item;
 		weapons[weaponRes.first] = weapon;
+	}
+
+	for (auto& snd : res->sounds)
+	{
+		// search if the channel was created
+		// we only create a sound object for each channel
+		// then we can play sound on specific channels
+		auto iter = sounds.find(snd.second.channel);
+
+		if (iter == sounds.end())
+		{
+			Sound* newSnd = new Sound();
+			newSnd->channel = snd.second.channel;
+			sounds[snd.second.channel] = newSnd;
+		}
 	}
 
 	// controller script instances
@@ -763,6 +802,32 @@ void Unit::disableAllWeapons()
 	{
 		wpn.second->active = false;
 	}
+}
+
+void Unit::playSound(const std::string& sndName)
+{
+	// find in resource
+	auto iter = unitResource->sounds.find(sndName);
+
+	if (iter == unitResource->sounds.end())
+	{
+		LOG_WARN("Cannot find sound to play: {0}", sndName);
+		return;
+	}
+
+	sounds[iter->second.channel]->soundResource = iter->second.soundResource;
+	sounds[iter->second.channel]->play();
+	LOG_INFO("Playing {0} on {1}", sounds[iter->second.channel]->soundResource->path, iter->second.channel);
+}
+
+bool Unit::isSoundPlaying(const std::string& name)
+{
+	auto iter = unitResource->sounds.find(name);
+
+	if (iter == unitResource->sounds.end())
+		return false;
+
+	return sounds[iter->second.channel]->isPlaying();
 }
 
 }

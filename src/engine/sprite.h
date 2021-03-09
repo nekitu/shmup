@@ -36,8 +36,10 @@ struct Sprite
 
 	Color hitColor = Color::red;
 	ColorMode hitOldColorMode = ColorMode::Add;
+	//TODO: could be in SpriteInstanceResource, if you want hit flash customizable per instance and not global same parameters
 	f32 hitColorFlashSpeed = 20.0f;
 	f32 hitFlashCount = 5;
+
 	bool hitFlashActive = false;
 	f32 hitColorTimer = 0.0f;
 	f32 currentHitFlashCount = 0;

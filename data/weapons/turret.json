@@ -4,6 +4,7 @@
   "fireRaysAngle" : 30,
   "direction" : "0 1",
   "offsetRadius": 0,
+  "autoFire": true,
   "fireRaysRotationSpeed": 0,
   "initialProjectileSpeed": 150,
   "minProjectileSpeed": 150,

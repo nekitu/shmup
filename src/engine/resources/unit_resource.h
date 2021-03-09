@@ -8,6 +8,7 @@
 #include "rect.h"
 #include "resource.h"
 #include "resources/sprite_resource.h"
+#include "sound.h"
 
 namespace engine
 {
@@ -49,6 +50,7 @@ struct WeaponInstanceResource
 	Vec2 localPosition;
 	f32 ammo = 100;
 	bool active = true;
+	bool autoFire = false;
 };
 
 struct ControllerInstanceResource
@@ -75,6 +77,13 @@ enum class UnitType
 	Count
 };
 
+struct SoundInfoResource
+{
+	SoundChannel channel;
+	std::string soundPath;
+	struct SoundResource* soundResource = nullptr;
+};
+
 struct UnitResource : Resource
 {
 	std::string name;
@@ -93,6 +102,7 @@ struct UnitResource : Resource
 	std::vector<UnitLifeStage*> stages;
 	std::map<std::string /*weapon name*/, WeaponInstanceResource*> weapons;
 	std::map<std::string /*controller name*/, ControllerInstanceResource> controllers;
+	std::map<std::string /*sound name*/, SoundInfoResource> sounds;
 
 	bool load(Json::Value& json) override;
 	void unload() override;

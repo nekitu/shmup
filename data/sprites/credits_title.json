@@ -1,0 +1,15 @@
+{
+    "frameWidth": 16,
+    "frameHeight":  16,
+    "animations":
+    {
+        "default":
+        {
+            "start": 0,
+            "frames": 27,
+            "type": "Normal",
+            "fps": 1,
+            "repeat": 0
+        }
+    }
+}

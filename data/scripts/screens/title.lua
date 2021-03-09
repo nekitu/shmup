@@ -26,10 +26,11 @@ local offs = 0.1
 local loffs = 0
 local step = 80
 local y = 20
-function C:onRender()
+function C:onAfterRenderUnit(unit)
+  if unit.name ~= "bg" then return end
   self.palette:setColor(253, Color(self.c, self.c, self.c, self.c))
   self.c = self.c + game.deltaTime/3
-  pan.x = pan.x + math.sin(self.c*5)/2
+  --pan.x = pan.x + math.sin(self.c*5)/2
   --gfx:drawPalettedSprite(self.titleSpr, Rect(gfx.videoWidth / 2 - 150/2, 0, 150, 150), 0, 0, self.palette)
   --gfx:drawPalettedSpriteCustomQuad(self.titleSpr, Vec2(10, 10),Vec2(100, 30),Vec2(100+self.c*10, 130+self.c*10),Vec2(10,130), 0, 0, self.palette)
   for i = 0, 20 do
@@ -113,7 +114,9 @@ function C:onRender()
     gfx:drawSpriteCustomQuad(self.iceSpr, pf0, pf1, pf2, pf3, 0, 0)
   end
 
-  offs = offs + game.deltaTime * 55
+  pan.x = game.cameraPosition.x + game.cameraPositionOffset.x
+  pan.y = game.cameraPositionOffset.y
+  offs = offs + game.deltaTime * game.cameraSpeed
 end
 
 function C:onActivate()

@@ -117,6 +117,7 @@ bool UnitResource::load(Json::Value& json)
 			weaponInstRes->weaponResource = loader->loadWeapon(weaponJson.get("weapon", "").asString());
 			weaponInstRes->ammo = weaponJson.get("ammo", weaponInstRes->weaponResource->params.ammo).asFloat();
 			weaponInstRes->active = weaponJson.get("active", weaponInstRes->active).asBool();
+			weaponInstRes->autoFire = weaponJson.get("autoFire", weaponInstRes->autoFire).asBool();
 			weapons[weaponName] = weaponInstRes;
 		}
 
@@ -142,6 +143,35 @@ bool UnitResource::load(Json::Value& json)
 				sprites[sprName]->animations[animName] = loader->loadAnimation(path);
 			}
 		}
+	}
+
+	// load sounds
+	auto soundsJson = json.get("sounds", Json::Value());
+
+	for (int j = 0; j < soundsJson.getMemberNames().size(); j++)
+	{
+		auto sndName = soundsJson.getMemberNames()[j];
+		auto sndJson = soundsJson[sndName];
+
+		SoundInfoResource sres;
+		auto channelName = sndJson.get("channel", "Item").asString();
+
+		if (channelName == "Other")
+			sres.channel = SoundChannel::Other;
+		if (channelName == "Player")
+			sres.channel = SoundChannel::Player;
+		if (channelName == "Enemy")
+			sres.channel = SoundChannel::Enemy;
+		if (channelName == "PlayerExplosion")
+			sres.channel = SoundChannel::PlayerExplosion;
+		if (channelName == "EnemyExplosion")
+			sres.channel = SoundChannel::EnemyExplosion;
+		if (channelName == "Item")
+			sres.channel = SoundChannel::Item;
+
+		sres.soundPath = sndJson.get("path", "").asString();
+		sres.soundResource = loader->loadSound(sres.soundPath);
+		sounds[sndName] = sres;
 	}
 
 	return true;

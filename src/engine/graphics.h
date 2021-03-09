@@ -70,6 +70,7 @@ struct Graphics
 	std::vector<ColorMode> colorModeStack;
 	std::vector<AlphaMode> alphaModeStack;
 	bool paletteSlots[maxPaletteCount] = { false };
+	Rect blittedRect;
 
 	Graphics(struct Game* game);
 	void createScreenRenderTarget();
@@ -83,6 +84,7 @@ struct Graphics
 	void drawCustomQuad(const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, const Rect& uvRect, bool rotateUv90);
 	void drawRotatedQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90, f32 rotationAngle);
 	void drawText(struct FontResource* font, const Vec2& pos, const std::string& text);
+	Vec2 getTextSize(struct FontResource* font, const std::string& text);
 	void drawSprite(struct SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
 	void drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
 	void beginFrame();

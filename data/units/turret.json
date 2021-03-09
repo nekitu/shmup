@@ -58,7 +58,8 @@
         {
           "position": "0 0",
           "weapon": "weapons/turret",
-          "active": false
+          "active": false,
+          "autoFire": true
         }
       }
     }

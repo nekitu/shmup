@@ -195,6 +195,7 @@ bool Game::initialize()
 	music = new Music();
 	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
 	//music->play();
+	Mix_Volume(-1, 5);
 	//Mix_VolumeMusic(128);
 
 	projectilePool.resize(maxProjectileCount);
@@ -310,6 +311,23 @@ void Game::handleInputEvents()
 				break;
 			}
 
+			break;
+		}
+
+		case SDL_MOUSEBUTTONDOWN:
+			mouseButtonDown[ev.button.button] = true;
+			break;
+
+		case SDL_MOUSEBUTTONUP:
+			mouseButtonDown[ev.button.button] = false;
+			break;
+
+		case SDL_MOUSEMOTION:
+		{
+			windowMousePosition = { (f32)ev.motion.x, (f32)ev.motion.y };
+			f32 scale = graphics->videoWidth / graphics->blittedRect.width;
+			mousePosition.x = (windowMousePosition.x - graphics->blittedRect.x) * scale;
+			mousePosition.y = (windowMousePosition.y - graphics->blittedRect.y) * scale;
 			break;
 		}
 		default:
@@ -477,40 +495,13 @@ void Game::mainLoop()
 		// update and render the game graphics render target
 		graphics->setupRenderTargetRendering();
 		graphics->beginFrame();
-		u32 currentLayer = ~0;
 
-		for (auto& unit : units)
+		for (auto& gs : gameScreens)
 		{
-			unit->render(graphics);
-
-			if (currentLayer != unit->layerIndex)
+			if (gs->active)
 			{
-				currentLayer = unit->layerIndex;
-				for (auto& gs : gameScreens)
-				{
-					if (gs->active)
-					{
-						CALL_LUA_FUNC2(gs->scriptClass, "onRender", currentLayer);
-					}
-				}
+				CALL_LUA_FUNC2(gs->scriptClass, "onRender");
 			}
-		}
-
-		if (units.empty())
-		{
-			for (auto& gs : gameScreens)
-			{
-				if (gs->active)
-				{
-					CALL_LUA_FUNC2(gs->scriptClass, "onRender", 0);
-				}
-			}
-		}
-
-		for (auto& unit : projectiles)
-		{
-			if (unit)
-				unit->render(graphics);
 		}
 
 		if (screenFx.doingFade)
@@ -529,6 +520,44 @@ void Game::mainLoop()
 		// display the render target contents in the main backbuffer
 		graphics->blitRenderTarget();
 		SDL_GL_SwapWindow(window);
+	}
+}
+
+void Game::renderUnits()
+{
+	for (auto& unit : units)
+	{
+		for (auto& gs : gameScreens)
+		{
+			if (gs->active)
+			{
+				CALL_LUA_FUNC2(gs->scriptClass, "onBeforeRenderUnit", unit);
+			}
+		}
+
+		unit->render(graphics);
+
+		for (auto& gs : gameScreens)
+		{
+			if (gs->active)
+			{
+				CALL_LUA_FUNC2(gs->scriptClass, "onAfterRenderUnit", unit);
+			}
+		}
+	}
+
+	for (auto& unit : projectiles)
+	{
+		if (unit)
+			unit->render(graphics);
+	}
+
+	for (auto& gs : gameScreens)
+	{
+		if (gs->active)
+		{
+			CALL_LUA_FUNC2(gs->scriptClass, "onAfterRenderProjectiles");
+		}
 	}
 }
 
@@ -1128,6 +1157,16 @@ bool Game::isPlayerFire3(u32 playerIndex)
 	return controls[(u32)(playerIndex ? InputControl::Player2_Fire3 : InputControl::Player1_Fire3)];
 }
 
+bool Game::isMouseDown(int btn)
+{
+	return mouseButtonDown[btn];
+}
+
+void Game::showMousePointer(bool hide)
+{
+	SDL_ShowCursor(hide);
+}
+
 void Game::deleteNonPersistentUnits()
 {
 	auto iter = units.begin();
@@ -1172,6 +1211,7 @@ bool Game::changeMap(i32 index)
 	{
 		TilemapLayerTiles* layerTiles = new TilemapLayerTiles();
 
+		layerTiles->name = layer.name;
 		layerTiles->tilemapLayer = &layer;
 		layerTiles->layerIndex = layerIndex;
 		layerTiles->root = new Sprite();

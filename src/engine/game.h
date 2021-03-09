@@ -93,6 +93,7 @@ struct GameScreen
 
 struct Game
 {
+	static const int maxMouseButtons = 6;
 	static const int maxPlayerCount = 1;
 	static const int maxProjectileCount = 100000;
 	std::string windowTitle = "Game";
@@ -120,6 +121,7 @@ struct Game
 	std::vector<Projectile*> projectiles;
 	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
+	bool mouseButtonDown[maxMouseButtons];
 	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct Music* music = nullptr;
 	std::vector<std::pair<std::string /*map name*/, std::string /*map path*/>> maps;
@@ -139,6 +141,8 @@ struct Game
 	ScreenFx screenFx;
 	f32 offscreenBoundaryScale = 1.5f;
 	Rect offscreenBoundary;
+	Vec2 mousePosition;
+	Vec2 windowMousePosition;
 
 	Game();
 	~Game();
@@ -156,6 +160,7 @@ struct Game
 	Rect screenToWorld(const Rect& rc, u32 layerIndex);
 	void preloadSprites();
 	void mainLoop();
+	void renderUnits();
 	void computeDeltaTime();
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);
@@ -171,6 +176,8 @@ struct Game
 	bool isPlayerFire1(u32 playerIndex);
 	bool isPlayerFire2(u32 playerIndex);
 	bool isPlayerFire3(u32 playerIndex);
+	bool isMouseDown(int btn);
+	void showMousePointer(bool hide);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);
 	void setScreenActive(const std::string& name, bool activate = true);

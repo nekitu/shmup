@@ -43,4 +43,9 @@ u32 FontResource::getGlyphSpriteFrame(u32 code)
 	return glyphCodes[code];
 }
 
+bool FontResource::hasGlyph(u32 code)
+{
+	return glyphCodes.find(code) != glyphCodes.end();
+}
+
 }

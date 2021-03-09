@@ -2,7 +2,6 @@ local C = {}
 
 function C:init(unit)
   self.unit = unit
-  self.isFirePressed = false
   self.playerControl = true
 end
 
@@ -10,9 +9,6 @@ function C:setup(params)
   self.playerIndex = params:getInt("playerIndex", 0)
   self.active = params:getBool("active", true)
   log.info("Setup player " .. tostring(self.playerIndex))
-
-  self.playerControl = false
-  print(self.unit)
   self.unit:setAnimation("player_intro")
 end
 
@@ -33,24 +29,10 @@ function C:onUpdate()
   local moveDir = Vec2()
 
   if self.playerControl then
-    if game:isPlayerFire1(self.playerIndex) and not self.isFirePressed then
-      self.isFirePressed = true
+    -- fire if the button is pressed, the repeat fire logic is done in the engine
+    if game:isPlayerFire1(self.playerIndex) then
       for _, weapon in ipairs(self.unit:getWeapons()) do
         weapon:fire()
-      end
-    end
-
-    if not game:isPlayerFire1(self.playerIndex) then
-      self.isFirePressed = false
-    end
-
-    if self.isFirePressed then
-      for _, weapon in ipairs(self.unit:getWeapons()) do
-        weapon.active = true
-      end
-    else
-      for _, weapon in ipairs(self.unit:getWeapons()) do
-        weapon.active = false
       end
     end
 

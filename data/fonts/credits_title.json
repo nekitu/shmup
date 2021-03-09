@@ -1,0 +1,12 @@
+{
+	"sprite": "sprites/credits_title",
+	"startGlyphFrame": 0,
+	"glyphs":
+	[
+		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", " "
+	],
+	"kernings":
+	[
+		{ "leftGlyph": "A", "rightGlyph": "V", "value": -2 }
+	]
+}

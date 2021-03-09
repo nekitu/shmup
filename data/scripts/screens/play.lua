@@ -11,45 +11,50 @@ end
 function C:onUpdate()
 end
 
-function C:onRender(layerIndex)
-  if layerIndex == game:getLastLayerIndex() then
+function C:onRender()
+  game:renderUnits()
+
+  gfx.colorMode = ColorMode_Mul
+  gfx.color = Color.red:getRgba()
+  gfx:drawText(self.fnt, Vec2(90, 3), "HISCORE")
+  gfx.colorMode = ColorMode_Add
+  gfx.color = Color.green:getRgba()
+  gfx:drawText(self.fnt, Vec2(90, 12), "OOOOOOO")
+
+  local mp = game.mousePosition
+
+  gfx:drawText(self.fnt, mp, "AICI!")
+
+  if self.time > 0.2 and self.time < 1 then
     gfx.colorMode = ColorMode_Mul
     gfx.color = Color.red:getRgba()
-    gfx:drawText(self.fnt, Vec2(90, 3), "HISCORE")
-    gfx.colorMode = ColorMode_Add
-    gfx.color = Color.green:getRgba()
-    gfx:drawText(self.fnt, Vec2(90, 12), "OOOOOOO")
-
-    if self.time > 0.2 and self.time < 1 then
-      gfx.colorMode = ColorMode_Mul
-      gfx.color = Color.red:getRgba()
-      gfx:drawText(self.fnt, Vec2(8, 17), "   PLEASE")
-      gfx.colorMode = ColorMode_Add
-      gfx.color = Color.black:getRgba()
-      gfx:drawText(self.fnt, Vec2(10, 25), "INSERT COIN")
-
-      gfx.colorMode = ColorMode_Add
-      gfx.color = Color.sky:getRgba()
-      gfx:drawText(self.fnt, Vec2(135, 17), "   PLEASE")
-      gfx.colorMode = ColorMode_Add
-      gfx.color = Color.black:getRgba()
-      gfx:drawText(self.fnt, Vec2(140, 25), "INSERT COIN")
-    end
-
+    gfx:drawText(self.fnt, Vec2(8, 17), "   PLEASE")
     gfx.colorMode = ColorMode_Add
     gfx.color = Color.black:getRgba()
-    gfx:drawText(self.fnt, Vec2(20, 300), "FPS")
-    gfx:drawText(self.fntNum, Vec2(50, 300), tostring(self.fps))
-    gfx:drawText(self.fnt, Vec2(20, 290), "PCN")
-    gfx:drawText(self.fntNum, Vec2(50, 290), tostring(game:getProjectileCount()))
+    gfx:drawText(self.fnt, Vec2(10, 25), "INSERT COIN")
 
-    self.fpsCount = self.fpsCount + 1
-    self.time = self.time + game.deltaTime
-    if self.time > 1 then self.time = 0 self.fps = self.fpsCount self.fpsCount = 0 end
+    gfx.colorMode = ColorMode_Add
+    gfx.color = Color.sky:getRgba()
+    gfx:drawText(self.fnt, Vec2(135, 17), "   PLEASE")
+    gfx.colorMode = ColorMode_Add
+    gfx.color = Color.black:getRgba()
+    gfx:drawText(self.fnt, Vec2(140, 25), "INSERT COIN")
   end
+
+  gfx.colorMode = ColorMode_Add
+  gfx.color = Color.black:getRgba()
+  gfx:drawText(self.fnt, Vec2(20, 300), "FPS")
+  gfx:drawText(self.fntNum, Vec2(50, 300), tostring(self.fps))
+  gfx:drawText(self.fnt, Vec2(20, 290), "PCN")
+  gfx:drawText(self.fntNum, Vec2(50, 290), tostring(game:getProjectileCount()))
+
+  self.fpsCount = self.fpsCount + 1
+  self.time = self.time + game.deltaTime
+  if self.time > 1 then self.time = 0 self.fps = self.fpsCount self.fpsCount = 0 end
 end
 
 function C:onActivate()
+  game:showMousePointer(false)
 end
 
 function C:onDeactivate()

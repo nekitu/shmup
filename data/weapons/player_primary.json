@@ -9,6 +9,5 @@
   "minProjectileSpeed": 150,
   "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/primary",
-  "script": "scripts/weapon_primary",
-  "fireSound": "sounds/Laser01.wav"
+  "script": "scripts/weapon_primary"
 }

@@ -221,6 +221,7 @@ void Graphics::blitRenderTarget()
 		round(newWidth), round(newHeight) };
 	drawQuad(rc, { 0, 1, 1, -1 });
 	endFrame();
+	blittedRect = rc;
 	glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
 }
 
@@ -812,6 +813,33 @@ void Graphics::drawText(struct FontResource* font, const Vec2& pos, const std::s
 		crtPos.x += rc.width + kern;
 		i++;
 	}
+}
+
+Vec2 Graphics::getTextSize(struct FontResource* font, const std::string& text)
+{
+	UnicodeString ustr;
+
+	utf8ToUtf32(text.c_str(), ustr);
+	u32 i = 0;
+	Vec2 textSize;
+
+	for (auto chr : ustr)
+	{
+		auto frame = font->getGlyphSpriteFrame(chr);
+		auto framePixRect = font->charsSprite->getFramePixelRect(frame);
+		i32 kern = 0;
+
+		if (i < ustr.size() - 1)
+		{
+			auto kern = font->kernings[std::make_pair(chr, ustr[i + 1])];
+		}
+
+		textSize.x += framePixRect.width + kern;
+		textSize.y = std::max(textSize.y, framePixRect.height);
+		i++;
+	}
+
+	return textSize;
 }
 
 bool Graphics::viewportImageFitSize(

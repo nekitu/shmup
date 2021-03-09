@@ -25,7 +25,13 @@ bool WeaponResource::load(Json::Value& json)
 	params.activeTime = json.get("activeTime", 0.0f).asFloat();
 	params.pauseDelay = json.get("pauseDelay", 0.0f).asFloat();
 	params.autoAim = json.get("autoAim", params.autoAim).asBool();
-	fireSound = loader->loadSound(json.get("fireSound", "").asString());
+
+	auto fireSoundPath = json.get("fireSound", "").asString();
+
+	if (!fireSoundPath.empty())
+	{
+		fireSound = loader->loadSound(fireSoundPath);
+	}
 
 	auto typeStr = json.get("type", "Projectile").asString();
 	auto rotTypeStr = json.get("rotationType", "custom").asString();

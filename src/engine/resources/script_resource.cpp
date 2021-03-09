@@ -164,6 +164,7 @@ bool initializeLua()
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
 		.addFunction("changeMap", &Game::changeMap)
+		.addFunction("renderUnits", &Game::renderUnits)
 		.addFunction("setScreenActive", &Game::setScreenActive)
 		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
@@ -191,6 +192,10 @@ bool initializeLua()
 		.addFunction("isPlayerFire1", &Game::isPlayerFire1)
 		.addFunction("isPlayerFire2", &Game::isPlayerFire2)
 		.addFunction("isPlayerFire3", &Game::isPlayerFire3)
+		.addVariableRef("mousePosition", &Game::mousePosition)
+		.addVariableRef("windowMousePosition", &Game::windowMousePosition)
+		.addFunction("isMouseDown", &Game::isMouseDown)
+		.addFunction("showMousePointer", &Game::showMousePointer)
 		.addFunction("worldToScreen", [](Game* game, const Vec2& v, int layerIndex)
 			{
 				return game->worldToScreen(v, layerIndex);
@@ -212,6 +217,7 @@ bool initializeLua()
 		.addVariable("colorMode", &Graphics::colorMode)
 		.addVariable("alphaMode", &Graphics::alphaMode)
 		.addFunction("drawText", &Graphics::drawText)
+		.addFunction("getTextSize", &Graphics::getTextSize)
 		.addFunction("createUserPalette", &Graphics::createUserPalette)
 		.addFunction("freeUserPalette", &Graphics::freeUserPalette)
 		.addFunction("drawSpriteCustomQuad", [](Graphics* gfx, struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle)
@@ -354,6 +360,8 @@ bool initializeLua()
 				}
 			})
 		.addFunction("setAnimation", &Unit::setAnimation)
+		.addFunction("playSound", &Unit::playSound)
+		.addFunction("isSoundPlaying", &Unit::isSoundPlaying)
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")
@@ -436,6 +444,13 @@ bool initializeLua()
 		.addFunction("center", &Rect::center)
 		.endClass();
 
+	LUA.beginClass<Sound>("Sound")
+		.addVariable("channel", &Sound::channel)
+		.endClass();
+
+	LUA.beginClass<Music>("Music")
+		.endClass();
+
 	LUA.beginClass<Sprite>("Sprite")
 		.addVariableRef("position", &Sprite::position)
 		.addVariable("name", &Sprite::name)
@@ -511,6 +526,12 @@ bool initializeLua()
 	l.setGlobal("AnimationTrackType_ColorB", AnimationTrackType::ColorB);
 	l.setGlobal("AnimationTrackType_ColorA", AnimationTrackType::ColorA);
 	l.setGlobal("AnimationTrackType_ColorMode", AnimationTrackType::ColorMode);
+
+	l.setGlobal("SoundChannel_Other", SoundChannel::Other);
+	l.setGlobal("SoundChannel_Music", SoundChannel::Music);
+	l.setGlobal("SoundChannel_Player", SoundChannel::Player);
+	l.setGlobal("SoundChannel_Enemy", SoundChannel::Enemy);
+	l.setGlobal("SoundChannel_Item", SoundChannel::Item);
 
 	// load util by default
 	auto path = Game::makeFullDataPath("scripts/util.lua");

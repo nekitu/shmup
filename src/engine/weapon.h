@@ -23,6 +23,8 @@ struct Weapon
 	f32 fireAngleOffset = 0.0f;
 	f32 activeTimer = 0;
 	bool paused = false;
+	bool firing = false;
+	bool autoFire = false;
 
 	~Weapon();
 
