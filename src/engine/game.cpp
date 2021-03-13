@@ -191,13 +191,7 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_F6] = InputControl::ReloadSprites;
 	mapSdlToControl[SDLK_F7] = InputControl::ReloadAnimations;
 
-	//TODO: remove
 	music = new Music();
-	music->musicResource = resourceLoader->loadMusic("music/Retribution.ogg");
-	//music->play();
-	Mix_Volume(-1, 5);
-	//Mix_VolumeMusic(128);
-
 	projectilePool.resize(maxProjectileCount);
 	preloadSprites();
 	lastTime = SDL_GetTicks();
@@ -1340,6 +1334,17 @@ std::vector<Projectile*>::iterator Game::releaseProjectile(Projectile* proj)
 	}
 
 	return projectiles.end();
+}
+
+void Game::fadeOutMusic(int msec)
+{
+	Mix_FadeOutMusic(msec);
+}
+
+void Game::fadeInMusic(const std::string& path, int msec)
+{
+	auto res = resourceLoader->loadMusic(path);
+	if (res && res->music) Mix_FadeInMusic(res->music, 0, msec);
 }
 
 }

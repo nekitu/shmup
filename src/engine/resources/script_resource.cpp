@@ -9,9 +9,11 @@
 #include "unit.h"
 #include "sprite.h"
 #include "game.h"
+#include "music.h"
 #include "graphics.h"
 #include "projectile.h"
 #include "image_atlas.h"
+#include <SDL_mixer.h>
 
 namespace LuaIntf
 {
@@ -200,6 +202,16 @@ bool initializeLua()
 			{
 				return game->worldToScreen(v, layerIndex);
 			})
+		.addFunction("fadeInMusic", &Game::fadeInMusic)
+		.addFunction("fadeOutMusic", &Game::fadeOutMusic)
+		.addFunction("setChannelVolume", [](Game* game, i32 channel, f32 vol)
+		{
+			Mix_Volume(channel, vol * 128);
+		})
+		.addFunction("setMusicVolume", [](Game* game, f32 vol)
+		{
+			Mix_VolumeMusic(vol * 128);
+		})
 		.endClass();
 
 	LUA.beginModule("util")

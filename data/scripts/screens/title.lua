@@ -5,12 +5,18 @@ local zoom = 1
 local center = Vec2(120, 150)
 local pan = Vec2(0, 0)
 
-local function project(x, y, z, center)
+local function project(x, y, z, center, roundCoords)
   local screen = Vec2()
   if z > 0 then
       screen.x = (x + pan.x) / z * zoom + center.x
       screen.y = (y + pan.y) / z * zoom + center.y
   end
+
+  if roundCoords then
+    screen.x = math.ceil(screen.x)
+    screen.y = math.ceil(screen.y)
+  end
+
   return screen
 end
 
@@ -83,10 +89,10 @@ function C:onAfterRenderUnit(unit)
     p2.y = p2.y + offs + step * i
     p3.y = p3.y + offs + step * i
 
-    local pr0 = project(p0.x, p0.y, p0.z, center)
-    local pr1 = project(p1.x, p1.y, p1.z, center)
-    local pr2 = project(p2.x, p2.y, p2.z, center)
-    local pr3 = project(p3.x, p3.y, p3.z, center)
+    local pr0 = project(p0.x, p0.y, p0.z, center, true)
+    local pr1 = project(p1.x, p1.y, p1.z, center, true)
+    local pr2 = project(p2.x, p2.y, p2.z, center, true)
+    local pr3 = project(p3.x, p3.y, p3.z, center, true)
     local pf0 = Vec2(pr1.x-10, pr1.y)
     local pf1 = Vec2(pr1.x + 70, pr1.y)
     local pf2 = Vec2(pr2.x + 70, pr2.y)
@@ -103,10 +109,10 @@ function C:onAfterRenderUnit(unit)
     p1.y = p1.y + offs + step * i
     p2.y = p2.y + offs + step * i
     p3.y = p3.y + offs + step * i
-    local pr0 = project(p0.x, p0.y, p0.z, center)
-    local pr1 = project(p1.x, p1.y, p1.z, center)
-    local pr2 = project(p2.x, p2.y, p2.z, center)
-    local pr3 = project(p3.x, p3.y, p3.z, center)
+    local pr0 = project(p0.x, p0.y, p0.z, center, true)
+    local pr1 = project(p1.x, p1.y, p1.z, center, true)
+    local pr2 = project(p2.x, p2.y, p2.z, center, true)
+    local pr3 = project(p3.x, p3.y, p3.z, center, true)
     pf0 = Vec2(pr1.x+10, pr1.y)
     pf1 = Vec2(pr1.x - 70, pr1.y)
     pf2 = Vec2(pr1.x - 70, pr2.y)
@@ -127,6 +133,7 @@ function C:onActivate()
   self.iceSpr = game:loadSprite("sprites/ice")
   self.palette = gfx:createUserPalette()
   self.palette:copyFromSprite(self.titleSpr)
+  game:fadeInMusic("music/Retribution.ogg", 5000)
 end
 
 function C:onDeactivate()
