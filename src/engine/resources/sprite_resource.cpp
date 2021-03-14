@@ -8,6 +8,8 @@ namespace engine
 {
 AtlasImage* SpriteResource::loadImage(const std::string& path)
 {
+	if (!atlas) atlas = Game::instance->graphics->atlas;
+
 	auto img = atlas->loadImageToAtlas(path, &paletteInfo);
 
 	return img;

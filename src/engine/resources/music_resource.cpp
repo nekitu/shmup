@@ -1,4 +1,5 @@
 #include "resources/music_resource.h"
+#include "game.h"
 
 namespace engine
 {
@@ -8,7 +9,8 @@ MusicResource::~MusicResource()
 
 bool MusicResource::load(Json::Value& json)
 {
-	music = Mix_LoadMUS(path.c_str());
+	auto absPath = Game::instance->dataRoot + path;
+	music = Mix_LoadMUS(absPath.c_str());
 
 	if (music == NULL)
 		return false;

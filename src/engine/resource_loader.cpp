@@ -209,7 +209,6 @@ SpriteResource* ResourceLoader::loadSprite(const std::string& path)
 {
 	checkForEmptyPath("loadSprite", path);
 	auto res = loadResource<SpriteResource, ResourceType::Sprite>(path);
-	res->atlas = atlas;
 	sprites.push_back(res);
 	return res;
 }
@@ -244,7 +243,26 @@ WeaponResource* ResourceLoader::loadWeapon(const std::string& path)
 
 ScriptResource* ResourceLoader::loadScript(const std::string& path)
 {
-	auto res = loadResource<ScriptResource, ResourceType::Script>(path);
+	if (path.empty()) return nullptr;
+
+	auto absPath = Game::instance->dataRoot + path;
+	auto iter = resources.find(path);
+
+	if (iter != resources.end())
+	{
+		iter->second->usageCount++;
+		return dynamic_cast<ScriptResource*>(iter->second);
+	}
+
+	Json::Value json;
+
+	ScriptResource* res = new ScriptResource();
+
+	res->type = ResourceType::Script;
+	res->loader = this;
+	res->path = path;
+	res->load(json);
+	resources[path] = res;
 	scripts.push_back(res);
 	return res;
 }
