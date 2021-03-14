@@ -202,8 +202,12 @@ bool initializeLua()
 			{
 				return game->worldToScreen(v, layerIndex);
 			})
-		.addFunction("fadeInMusic", &Game::fadeInMusic)
-		.addFunction("fadeOutMusic", &Game::fadeOutMusic)
+		.addFunction("fadeOutMusic", [](Game* game, i32 msec) { game->music->fadeOutMusic(msec); })
+		.addFunction("changeMusic",
+			[](Game* game, const std::string& path, i32 fadeOutMsec, i32 fadeInMsec)
+			{
+				game->music->changeMusic(path, fadeInMsec, fadeOutMsec);
+			}, LUA_ARGS(const std::string& path, LuaIntf::_def<i32, 3000>, LuaIntf::_def<i32, 3000>))
 		.addFunction("setChannelVolume", [](Game* game, i32 channel, f32 vol)
 		{
 			Mix_Volume(channel, vol * 128);
@@ -212,6 +216,7 @@ bool initializeLua()
 		{
 			Mix_VolumeMusic(vol * 128);
 		})
+
 		.endClass();
 
 	LUA.beginModule("util")

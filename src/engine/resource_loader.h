@@ -2,6 +2,7 @@
 #include "types.h"
 #include <unordered_map>
 #include <string>
+#include "resource.h"
 
 namespace engine
 {
@@ -29,5 +30,38 @@ struct ResourceLoader
 	struct FontResource* loadFont(const std::string& path);
 	struct TilemapResource* loadTilemap(const std::string& path);
 	struct TilesetResource* loadTileset(const std::string& path);
+
+	template<typename ResType, ResourceType resTypeValue>
+	ResType* loadResource(const std::string& path)
+	{
+		if (path.empty()) return nullptr;
+
+		auto absPath = Game::instance->dataRoot + path;
+		auto iter = resources.find(path);
+
+		if (iter != resources.end())
+		{
+			iter->second->usageCount++;
+			return dynamic_cast<ResType*>(iter->second);
+		}
+
+		Json::Value json;
+
+		if (!loadJson(absPath + ".json", json))
+		{
+			return nullptr;
+		}
+
+		ResType* res = new ResType();
+
+		res->type = resTypeValue;
+		res->loader = this;
+		res->path = path;
+		res->load(json);
+		resources[path] = res;
+
+		return res;
+	}
+
 };
 }

@@ -1,6 +1,8 @@
 #include "music.h"
 #include <SDL_mixer.h>
 #include "resources/music_resource.h"
+#include "resource_loader.h"
+#include "game.h"
 
 namespace engine
 {
@@ -13,6 +15,28 @@ bool Music::play()
 		return false;
 
 	return true;
+}
+
+void Music::fadeOutMusic(i32 msec)
+{
+	Mix_FadeOutMusic(msec);
+}
+
+void Music::changeMusic(const std::string& path, i32 newFadeOutMsec, i32 newFadeInMsec)
+{
+	newMusicResource = Game::instance->resourceLoader->loadMusic(path);
+	fadeOutMsec = newFadeOutMsec;
+	fadeInMsec = newFadeInMsec;
+	fadeOutMusic(fadeOutMsec);
+}
+
+void Music::update()
+{
+	if (Mix_FadingMusic() != MIX_NO_FADING || !newMusicResource)
+		return;
+
+	Mix_FadeInMusic(newMusicResource->music, 0, fadeInMsec);
+	newMusicResource = nullptr;
 }
 
 }

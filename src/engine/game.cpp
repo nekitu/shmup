@@ -365,6 +365,7 @@ void Game::mainLoop()
 	{
 		computeDeltaTime();
 		handleInputEvents();
+		music->update();
 
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
@@ -1334,17 +1335,6 @@ std::vector<Projectile*>::iterator Game::releaseProjectile(Projectile* proj)
 	}
 
 	return projectiles.end();
-}
-
-void Game::fadeOutMusic(int msec)
-{
-	Mix_FadeOutMusic(msec);
-}
-
-void Game::fadeInMusic(const std::string& path, int msec)
-{
-	auto res = resourceLoader->loadMusic(path);
-	if (res && res->music) Mix_FadeInMusic(res->music, 0, msec);
 }
 
 }

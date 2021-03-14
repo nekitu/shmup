@@ -133,7 +133,7 @@ function C:onActivate()
   self.iceSpr = game:loadSprite("sprites/ice")
   self.palette = gfx:createUserPalette()
   self.palette:copyFromSprite(self.titleSpr)
-  game:fadeInMusic("music/Retribution.ogg", 5000)
+  game:changeMusic("music/Retribution.ogg")
 end
 
 function C:onDeactivate()

@@ -103,7 +103,7 @@ function C:onUpdate()
     self.unit:findSprite("crater").visible = true
     self.unit:findSprite("crater").position:set(movebody.position.x, movebody.position.y)
     self.unit:playSound("explosion")
-    game:fadeInMusic("music/gui.wav", 5000)
+    game:changeMusic("music/gui.wav")
   end
   if self.unit.stageIndex == 1 then
     local movebody = self.unit:findSprite("movebody")
