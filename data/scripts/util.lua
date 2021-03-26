@@ -26,3 +26,35 @@ function newInstance(C)
     return o
   end
 end
+
+local zoom = 1
+local center = Vec2(120, 150)
+local pan = Vec2(0, 0)
+
+function setProjectionZoom(newZoom)
+  zoom = newZoom
+end
+
+function setProjectionCenter(newCenter)
+  center = newCenter
+end
+
+function setProjectionPan(newPan)
+  pan = newPan
+end
+
+function projectPoint(x, y, z, roundCoords)
+  local screen = Vec2()
+
+  if z > 0 then
+      screen.x = (x + pan.x) / z * zoom + center.x
+      screen.y = (y + pan.y) / z * zoom + center.y
+  end
+
+  if roundCoords then
+    screen.x = math.ceil(screen.x)
+    screen.y = math.ceil(screen.y)
+  end
+
+  return screen
+end

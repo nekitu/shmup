@@ -9,10 +9,4 @@ function C:onUpdate()
   self.unit.root.position.y = self.unit.root.position.y + self.unit.speed * game.deltaTime
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

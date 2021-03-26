@@ -67,7 +67,7 @@ void Weapon::spawnProjectiles(Game* game)
 	{
 		Vec2 pos = attachTo->rect.center();
 
-		params.direction = game->players[0].unit->root->rect.center() - pos;
+		params.direction = game->playerState[0].unit->root->rect.center() - pos;
 		params.direction.normalize();
 	}
 

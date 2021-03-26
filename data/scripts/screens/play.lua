@@ -23,6 +23,8 @@ function C:onRender()
 
   local mp = game.mousePosition
 
+  mp.x = math.ceil(mp.x)
+  mp.y = math.ceil(mp.y)
   gfx:drawText(self.fnt, mp, "AICI!")
 
   if self.time > 0.2 and self.time < 1 then

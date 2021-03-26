@@ -1,5 +1,3 @@
-require("util")
-
 local C = {}
 
 function C:init(unit)

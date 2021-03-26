@@ -18,6 +18,8 @@ namespace engine
 {
 struct Unit;
 
+const u32 maxPlayerCount = 1;
+
 enum class InputControl
 {
 	Exit = 0,
@@ -58,7 +60,7 @@ struct BeamCollisionInfo
 	struct Sprite* sprite = nullptr;
 };
 
-struct PlayerStats
+struct PlayerState
 {
 	u32 score = 0;
 	bool active = false;
@@ -91,11 +93,35 @@ struct GameScreen
 	bool active = false;
 };
 
+struct GameState
+{
+	u32 hiscore = 0;
+	u32 credit = 0;
+	bool playerActive[maxPlayerCount] = { false };
+
+};
+
+struct CameraState
+{
+	Vec2 position;
+	Vec2 positionOffset; // used by camera fx, shake etc
+	f32 speed = 10;
+	f32 parallaxOffset = 0;
+	f32 parallaxScale = 0.2f;
+	f32 speedAnimateSpeed = 1.0f;
+	bool animatingSpeed = false;
+	f32 speedAnimateTime = 0;
+	f32 oldSpeed = 0, newSpeed = 0;
+	f32 offscreenBoundaryScale = 1.5f;
+	Rect offscreenBoundary;
+};
+
 struct Game
 {
-	static const int maxMouseButtons = 6;
-	static const int maxPlayerCount = 1;
-	static const int maxProjectileCount = 100000;
+	static const u32 maxMouseButtons = 6;
+	static const u32 maxProjectileCount = 100000;
+	static Game* instance;
+
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
 	ScreenMode screenMode = ScreenMode::Vertical;
@@ -112,14 +138,11 @@ struct Game
 	struct ResourceLoader* resourceLoader = nullptr;
 	f32 deltaTime = 0;
 	f32 lastTime = 0;
-	u32 hiscore = 0;
-	u32 credit = 0;
 	bool pauseGame = false;
 	std::vector<Unit*> units; // all units from all layers
 	std::vector<Unit*> newUnits;
 	std::vector<Projectile> projectilePool;
 	std::vector<Projectile*> projectiles;
-	PlayerStats players[maxPlayerCount];
 	bool controls[(u32)InputControl::Count] = { false };
 	bool mouseButtonDown[maxMouseButtons];
 	std::unordered_map<u32, InputControl> mapSdlToControl;
@@ -128,21 +151,12 @@ struct Game
 	u32 currentMapIndex = 0;
 	TilemapResource* map = nullptr;
 	std::vector<GameScreen*> gameScreens;
-	static Game* instance;
-	Vec2 cameraPosition;
-	Vec2 cameraPositionOffset; // used by camera fx, shake etc
-	f32 cameraSpeed = 10;
-	f32 cameraParallaxOffset = 0;
-	f32 cameraParallaxScale = 0.2f;
-	f32 cameraSpeedAnimateSpeed = 1.0f;
-	bool animatingCameraSpeed = false;
-	f32 cameraSpeedAnimateTime = 0;
-	f32 oldCameraSpeed = 0, newCameraSpeed = 0;
-	ScreenFx screenFx;
-	f32 offscreenBoundaryScale = 1.5f;
-	Rect offscreenBoundary;
 	Vec2 mousePosition;
 	Vec2 windowMousePosition;
+	GameState gameState;
+	CameraState cameraState;
+	ScreenFx screenFx;
+	PlayerState playerState[maxPlayerCount];
 
 	Game();
 	~Game();

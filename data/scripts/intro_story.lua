@@ -15,10 +15,4 @@ function C:onAnimationEvent(sprite, eventName)
   print("Animation event: " .. eventName)
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

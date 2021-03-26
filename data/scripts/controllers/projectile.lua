@@ -11,10 +11,4 @@ function C:onUpdate()
   util.clampValue(self.unit.speed, self.unit.minSpeed, self.unit.maxSpeed)
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

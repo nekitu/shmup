@@ -24,10 +24,4 @@ function C:onCollide(other, collisions)
   end
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
-end
+return newInstance(C)

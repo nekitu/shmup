@@ -64,7 +64,7 @@ function C:onUpdate()
   self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
   self.unit.root.position.x = util.clampValue(self.unit.root.position.x, 0, gfx.videoWidth)
   self.unit.root.position.y = util.clampValue(self.unit.root.position.y, 0, gfx.videoHeight)
-  game.cameraParallaxOffset = (gfx.videoWidth / 2 - self.unit.root.position.x) * game.cameraParallaxScale
+  game.cameraState.parallaxOffset = (gfx.videoWidth / 2 - self.unit.root.position.x) * game.cameraState.parallaxScale
   collectgarbage()
   collectgarbage("count")
 end

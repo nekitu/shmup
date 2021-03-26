@@ -58,7 +58,7 @@ void Game::loadConfig()
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
-	cameraSpeed = json.get("cameraSpeed", cameraSpeed).asFloat();
+	cameraState.speed = json.get("cameraSpeed", cameraState.speed).asFloat();
 
 	auto screensJson = json.get("screens", Json::ValueType::arrayValue);
 
@@ -166,8 +166,8 @@ bool Game::initialize()
 	resourceLoader = new ResourceLoader();
 	resourceLoader->atlas = graphics->atlas;
 
-	offscreenBoundary = Rect(0, 0, graphics->videoWidth, graphics->videoHeight);
-	offscreenBoundary = offscreenBoundary.getCenterScaled(offscreenBoundaryScale);
+	cameraState.offscreenBoundary = Rect(0, 0, graphics->videoWidth, graphics->videoHeight);
+	cameraState.offscreenBoundary = cameraState.offscreenBoundary.getCenterScaled(cameraState.offscreenBoundaryScale);
 
 	initializeLua();
 	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
@@ -217,13 +217,13 @@ void Game::createPlayers()
 {
 	for (u32 i = 0; i < maxPlayerCount; i++)
 	{
-		players[i].unit = new Unit();
-		players[i].unit->initializeFrom(resourceLoader->loadUnit("units/player"));
-		players[i].unit->name = "Player" + std::to_string(i + 1);
-		players[i].unit->root->position.x = graphics->videoWidth / 2;
-		players[i].unit->root->position.y = graphics->videoHeight / 2;
-		players[i].unit->layerIndex = (u32)~0 - 1;
-		newUnits.push_back(players[i].unit);
+		playerState[i].unit = new Unit();
+		playerState[i].unit->initializeFrom(resourceLoader->loadUnit("units/player"));
+		playerState[i].unit->name = "Player" + std::to_string(i + 1);
+		playerState[i].unit->root->position.x = graphics->videoWidth / 2;
+		playerState[i].unit->root->position.y = graphics->videoHeight / 2;
+		playerState[i].unit->layerIndex = (u32)~0 - 1;
+		newUnits.push_back(playerState[i].unit);
 	}
 }
 
@@ -332,30 +332,30 @@ void Game::handleInputEvents()
 
 void Game::updateCamera()
 {
-	if (animatingCameraSpeed)
+	if (cameraState.animatingSpeed)
 	{
-		cameraSpeedAnimateTime += deltaTime * cameraSpeedAnimateSpeed;
+		cameraState.speedAnimateTime += deltaTime * cameraState.speedAnimateSpeed;
 
-		if (cameraSpeedAnimateTime >= 1.0f)
+		if (cameraState.speedAnimateTime >= 1.0f)
 		{
-			animatingCameraSpeed = false;
-			cameraSpeed = newCameraSpeed;
+			cameraState.animatingSpeed = false;
+			cameraState.speed = cameraState.newSpeed;
 		}
 		else
 		{
-			cameraSpeed = lerp(oldCameraSpeed, newCameraSpeed, cameraSpeedAnimateTime);
+			cameraState.speed = lerp(cameraState.oldSpeed, cameraState.newSpeed, cameraState.speedAnimateTime);
 		}
 	}
 
 	if (screenMode == ScreenMode::Vertical)
 	{
-		cameraPosition.y += cameraSpeed * deltaTime;
-		cameraPosition.x = cameraParallaxOffset;
+		cameraState.position.y += cameraState.speed * deltaTime;
+		cameraState.position.x = cameraState.parallaxOffset;
 	}
 	else
 	{
-		cameraPosition.x += cameraSpeed * deltaTime;
-		cameraPosition.x = cameraParallaxOffset;
+		cameraState.position.x += cameraState.speed * deltaTime;
+		cameraState.position.x = cameraState.parallaxOffset;
 	}
 }
 
@@ -912,14 +912,14 @@ Vec2 Game::worldToScreen(const Vec2& pos, u32 layerIndex)
 	if (!Game::instance->map->layers[layerIndex].cameraScroll
 		&& Game::instance->map->layers[layerIndex].cameraParallax)
 	{
-		newPos.x += cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
-		newPos.y += cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.x += cameraState.positionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.y += cameraState.positionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 		return newPos;
 	}
 
-	newPos.x += cameraPosition.x + cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
-	newPos.y += cameraPosition.y * Game::instance->map->layers[layerIndex].cameraParallaxScale + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.x += cameraState.position.x + cameraState.positionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.y += cameraState.position.y * Game::instance->map->layers[layerIndex].cameraParallaxScale + cameraState.positionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -942,14 +942,14 @@ Vec2 Game::screenToWorld(const Vec2& pos, u32 layerIndex)
 	if (!Game::instance->map->layers[layerIndex].cameraScroll
 		&& Game::instance->map->layers[layerIndex].cameraParallax)
 	{
-		newPos.x -= cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
-		newPos.y -= cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.x -= cameraState.positionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+		newPos.y -= cameraState.positionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 		return newPos;
 	}
 
-	newPos.x -= cameraPosition.x + cameraPositionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
-	newPos.y -= cameraPosition.y + cameraPositionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.x -= cameraState.position.x + cameraState.positionOffset.x * Game::instance->map->layers[layerIndex].cameraParallaxScale;
+	newPos.y -= cameraState.position.y + cameraState.positionOffset.y * Game::instance->map->layers[layerIndex].cameraParallaxScale;
 
 	return newPos;
 }
@@ -1021,11 +1021,11 @@ void Game::computeDeltaTime()
 
 void Game::animateCameraSpeed(f32 towardsSpeed, f32 animSpeed)
 {
-	cameraSpeedAnimateSpeed = animSpeed;
-	cameraSpeedAnimateTime = 0;
-	animatingCameraSpeed = true;
-	oldCameraSpeed = cameraSpeed;
-	newCameraSpeed = towardsSpeed;
+	cameraState.speedAnimateSpeed = animSpeed;
+	cameraState.speedAnimateTime = 0;
+	cameraState.animatingSpeed = true;
+	cameraState.oldSpeed = cameraState.speed;
+	cameraState.newSpeed = towardsSpeed;
 }
 
 void Game::shakeCamera(const Vec2& force, f32 duration, u32 count)
@@ -1059,7 +1059,7 @@ void Game::updateScreenFx()
 		if (screenFx.shakeTimer >= slice && !screenFx.shakeCounter)
 		{
 			screenFx.doingShake = false;
-			cameraPositionOffset.clear();
+			cameraState.positionOffset.clear();
 		}
 		else
 			if (screenFx.shakeTimer >= slice && screenFx.shakeCounter)
@@ -1067,8 +1067,8 @@ void Game::updateScreenFx()
 				screenFx.shakeTimer = 0;
 				f32 x = screenFx.shakeForce.x * (f32)screenFx.shakeCounter / (f32)screenFx.shakeCount;
 				f32 y = screenFx.shakeForce.y * (f32)screenFx.shakeCounter / (f32)screenFx.shakeCount;
-				cameraPositionOffset.x = randomFloat(-x, x);
-				cameraPositionOffset.y = randomFloat(-y, y);
+				cameraState.positionOffset.x = randomFloat(-x, x);
+				cameraState.positionOffset.y = randomFloat(-y, y);
 				screenFx.shakeCounter--;
 			}
 	}

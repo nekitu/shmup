@@ -1,4 +1,3 @@
-require("util")
 local C = {}
 
 function C:init(unit)
@@ -224,10 +223,13 @@ function C:onAppeared()
   end
 end
 
-return function(unit)
-  local o = {}
-  setmetatable(o, C)
-  C.__index = C
-  o:init(unit)
-  return o
+function C:onSerialize(data)
+  data.coco = 111
+  data.gogog = "AKAKALALA"
 end
+
+function C:onDeserialize(data)
+  dump(data)
+end
+
+return newInstance(C)

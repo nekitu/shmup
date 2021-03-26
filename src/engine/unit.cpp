@@ -396,7 +396,7 @@ void Unit::update(Game* game)
 		}
 		else if (unitResource->autoDeleteType == AutoDeleteType::OffscreenBoundary)
 		{
-			if (!game->offscreenBoundary.contains(boundingBox))
+			if (!game->cameraState.offscreenBoundary.contains(boundingBox))
 			{
 				deleteMeNow = true;
 			}
