@@ -9,19 +9,18 @@
   "cameraSpeed": 40,
   "screens":
   [
-	{ "path": "scripts/screens/play", "active": false },
-	{ "path": "scripts/screens/copyright", "active": true },
-	{ "path": "scripts/screens/title", "active": false },
-	{ "path": "scripts/screens/settings" },
-	{ "path": "scripts/screens/choose_ship" },
-	{ "path": "scripts/screens/begin_map" },
-	{ "path": "scripts/screens/end_map" },
-	{ "path": "scripts/screens/boss_warning" },
-	{ "path": "scripts/screens/game_over" },
-	{ "path": "scripts/screens/credits" },
-	{ "path": "scripts/screens/score_board" }
+    { "path": "scripts/screens/play", "active": false },
+    { "path": "scripts/screens/copyright", "active": true },
+    { "path": "scripts/screens/title", "active": false },
+    { "path": "scripts/screens/settings" },
+    { "path": "scripts/screens/choose_ship" },
+    { "path": "scripts/screens/begin_map" },
+    { "path": "scripts/screens/end_map" },
+    { "path": "scripts/screens/boss_warning" },
+    { "path": "scripts/screens/game_over" },
+    { "path": "scripts/screens/credits" },
+    { "path": "scripts/screens/score_board" }
   ],
-  
   "tilemaps":
   [
     {
