@@ -41,9 +41,9 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx)
 	{
 		int tileIndex = 0;
 
-		for (auto tile : chunk.tiles)
+		for (auto& tile : chunk.tiles)
 		{
-			auto tilesetInfo = layer.tilemapResource->getTilesetInfoByTileId(tile);
+			auto& tilesetInfo = layer.tilemapResource->getTilesetInfoByTileId(tile);
 			auto tileData = tilesetInfo.tileset->findTileData(tile - tilesetInfo.firstGid);
 
 			if (tileData)

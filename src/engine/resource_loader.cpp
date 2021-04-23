@@ -48,7 +48,7 @@ void ResourceLoader::reloadScripts()
 {
 	LOG_INFO("Unloading script instances...");
 
-	for (auto res : scripts)
+	for (auto& res : scripts)
 	{
 		res->unload();
 	}
@@ -62,15 +62,15 @@ void ResourceLoader::reloadScripts()
 
 	LOG_INFO("Recreating Lua class instances...");
 
-	for (auto res : scripts)
+	for (auto& res : scripts)
 	{
 		res->load(json);
 	}
 
 	// setup controllers for units again
-	for (auto unit : Game::instance->units)
+	for (auto& unit : Game::instance->units)
 	{
-		for (auto ctrl : unit->controllers)
+		for (auto& ctrl : unit->controllers)
 		{
 			CALL_LUA_FUNC2(ctrl.second, "setup", &unit->unitResource->controllers[ctrl.first]);
 		}
@@ -85,7 +85,7 @@ void ResourceLoader::reloadWeapons()
 
 	LOG_INFO("Recreating weapons...");
 
-	for (auto res : resources)
+	for (auto& res : resources)
 	{
 		if (res.second->type == ResourceType::Weapon)
 		{
@@ -100,12 +100,12 @@ void ResourceLoader::reloadWeapons()
 		}
 	}
 
-	for (auto unitResource : Game::instance->units)
+	for (auto& unitResource : Game::instance->units)
 	{
-		for (auto wpn : unitResource->weapons)
+		for (auto& wpn : unitResource->weapons)
 		{
 			auto active = wpn.second->active;
-			auto pos = wpn.second->params.position;
+			auto& pos = wpn.second->params.position;
 			auto ammo = wpn.second->params.ammo;
 
 			wpn.second->initializeFrom(wpn.second->weaponResource);

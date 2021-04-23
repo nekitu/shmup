@@ -795,7 +795,7 @@ void Graphics::drawText(struct FontResource* font, const Vec2& pos, const std::s
 	Vec2 crtPos = pos;
 	u32 i = 0;
 
-	for (auto chr : ustr)
+	for (auto& chr : ustr)
 	{
 		auto frame = font->getGlyphSpriteFrame(chr);
 		auto frameUvRect = font->charsSprite->getFrameUvRect(frame);
@@ -823,7 +823,7 @@ Vec2 Graphics::getTextSize(struct FontResource* font, const std::string& text)
 	u32 i = 0;
 	Vec2 textSize;
 
-	for (auto chr : ustr)
+	for (auto& chr : ustr)
 	{
 		auto frame = font->getGlyphSpriteFrame(chr);
 		auto framePixRect = font->charsSprite->getFramePixelRect(frame);
@@ -921,6 +921,12 @@ void Graphics::popAlphaMode()
 {
 	alphaMode = (u32)alphaModeStack.back();
 	alphaModeStack.pop_back();
+}
+
+void Graphics::setupColor(u32 newColor, ColorMode newColorMode)
+{
+	color = newColor;
+	colorMode = (u32)newColorMode;
 }
 
 u32 Graphics::allocPaletteSlot()

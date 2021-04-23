@@ -16,12 +16,13 @@ struct Weapon
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	Sound fireSound;
 	f32 angle = 0;
-	BeamCollisionInfo dbgBeamCol;
-	Vec2 dbgBeamStartPos;
+	BeamCollisionInfo beamCollision;
+	Vec2 beamBeginPos;
 	f32 fireTimer = 0.0f;
 	f32 fireInterval = 0;
 	f32 fireAngleOffset = 0.0f;
 	f32 activeTimer = 0;
+	f32 beamFrameAnimationTime = 0;
 	bool paused = false;
 	bool firing = false;
 	bool autoFire = false;

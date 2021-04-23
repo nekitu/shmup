@@ -97,6 +97,7 @@ struct Graphics
 	void popColor();
 	void popColorMode();
 	void popAlphaMode();
+	void setupColor(u32 newColor = 0, ColorMode newColorMode = ColorMode::Add);
 	u32 allocPaletteSlot();
 	void freePaletteSlot(u32 slot);
 	void uploadPalette(u32 slot, u32* paletteColors);

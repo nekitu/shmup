@@ -71,7 +71,7 @@ void ScriptResource::serialize()
 
 	serializedInstancesTable = LuaIntf::LuaRef::createTable(getLuaState());
 	int i = 1;
-	for (auto ci : classInstances)
+	for (auto& ci : classInstances)
 	{
 		LuaIntf::LuaRef tbl = LuaIntf::LuaRef::createTable(getLuaState());
 		CALL_LUA_FUNC2(ci, "onSerialize", tbl);
@@ -100,7 +100,7 @@ void ScriptResource::deserialize()
 	serializedInstancesTable = luaDeserialize.call<LuaIntf::LuaRef>(serializedInstancesString);
 
 	int i = 1;
-	for (auto ci : classInstances)
+	for (auto& ci : classInstances)
 	{
 		CALL_LUA_FUNC2(ci, "onDeserialize", serializedInstancesTable.get(i));
 		i++;

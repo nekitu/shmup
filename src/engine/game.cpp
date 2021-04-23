@@ -563,11 +563,11 @@ void Game::checkCollisions()
 	collisionPairs.clear();
 
 	// check normal units
-	for (auto unit1 : units)
+	for (auto& unit1 : units)
 	{
 		if (!unit1->collide) continue;
 
-		for (auto unit2 : units)
+		for (auto& unit2 : units)
 		{
 			if (!unit2->collide) continue;
 			if (!unit1->unitResource) continue;
@@ -618,11 +618,11 @@ void Game::checkCollisions()
 	}
 
 	// check projectiles vs normal units
-	for (auto unitProj : projectiles)
+	for (auto& unitProj : projectiles)
 	{
 		if (!unitProj->collide) continue;
 
-		for (auto unit2 : units)
+		for (auto& unit2 : units)
 		{
 			if (!unit2->collide) continue;
 			if (!unitProj->unitResource) continue;
@@ -728,11 +728,11 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 		rc.set(pos.x, pos.y - beamWidth / 2, graphics->videoWidth - pos.x, beamWidth);
 	}
 
-	for (auto unit1 : units)
+	for (auto& unit1 : units)
 	{
 		if (unit1 == unit || !unit1->collide) continue;
 
-		for (auto sprite2 : unit1->sprites)
+		for (auto& sprite2 : unit1->sprites)
 		{
 			if (sprite == sprite2) continue;
 			if (!sprite2->collide) continue;
@@ -1006,7 +1006,7 @@ void Game::preloadSprites()
 
 	LOG_INFO("Computing sprite params after packing...");
 
-	for (auto spriteResource : resourceLoader->sprites)
+	for (auto& spriteResource : resourceLoader->sprites)
 	{
 		spriteResource->computeParamsAfterAtlasGeneration();
 	}
@@ -1248,7 +1248,7 @@ bool Game::changeMap(i32 index)
 
 	LOG_INFO("Computing sprite params after packing...");
 
-	for (auto spriteResource : resourceLoader->sprites)
+	for (auto& spriteResource : resourceLoader->sprites)
 	{
 		spriteResource->computeParamsAfterAtlasGeneration();
 	}

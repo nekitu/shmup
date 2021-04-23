@@ -30,19 +30,19 @@ Unit::~Unit()
 
 void Unit::reset()
 {
-	for (auto spr : sprites) delete spr;
+	for (auto& spr : sprites) delete spr;
 
-	for (auto sprAnimPair : spriteAnimations)
+	for (auto& sprAnimPair : spriteAnimations)
 	{
-		for (auto sprAnim : sprAnimPair.second)
+		for (auto& sprAnim : sprAnimPair.second)
 		{
 			delete sprAnim.second;
 		}
 	}
 
-	for (auto wpn : weapons) delete wpn.second;
+	for (auto& wpn : weapons) delete wpn.second;
 
-	for (auto ctrl : controllers)
+	for (auto& ctrl : controllers)
 	{
 		delete ctrl.second;
 	}
@@ -339,7 +339,7 @@ void Unit::update(Game* game)
 
 	if (spriteAnimationMap)
 	{
-		for (auto iter : *spriteAnimationMap)
+		for (auto& iter : *spriteAnimationMap)
 		{
 			auto& spr = iter.first;
 			auto& sprAnim = iter.second;
@@ -362,7 +362,7 @@ void Unit::update(Game* game)
 		wp.second->update(game);
 	}
 
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		spr->update(game);
 	}
@@ -415,7 +415,7 @@ void Unit::computeHealth()
 	health = 0;
 	maxHealth = 0.0f;
 
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		if (!spr->visible) continue;
 
@@ -498,70 +498,70 @@ void Unit::computeBoundingBox()
 		root->rect.y = roundf(root->rect.y);
 		root->rect.width = roundf(root->rect.width);
 		root->rect.height = roundf(root->rect.height);
-	}
 
-	// compute bbox for the rest of the sprites
-	for (auto spr : sprites)
-	{
-		if (!spr->visible || spr == root) continue;
-
-		Vec2 pos;
-
-		// if relative to root sprite
-		if (spr->relativeToRoot)
+		// compute bbox for the rest of the sprites
+		for (auto& spr : sprites)
 		{
-			pos = root->position;
-		}
+			if (!spr->visible || spr == root) continue;
 
-		pos.x += spr->position.x;
-		pos.y += spr->position.y;
+			Vec2 pos;
 
-		f32 renderW = spr->spriteResource->frameWidth * spr->scale.x * root->scale.x;
-		f32 renderH = spr->spriteResource->frameHeight * spr->scale.y * root->scale.y;
+			// if relative to root sprite
+			if (spr->relativeToRoot)
+			{
+				pos = root->position;
+			}
 
-		pos.x -= renderW / 2.0f;
-		pos.y -= renderH / 2.0f;
-		spr->localRect = Rect(roundf(pos.x), roundf(pos.y), roundf(renderW), roundf(renderH));
-		pos = Game::instance->worldToScreen(pos, layerIndex);
+			pos.x += spr->position.x;
+			pos.y += spr->position.y;
 
-		Rect spriteRc =
-		{
-			roundf(pos.x),
-			roundf(pos.y),
-			roundf(renderW),
-			roundf(renderH)
-		};
+			f32 renderW = spr->spriteResource->frameWidth * spr->scale.x * root->scale.x;
+			f32 renderH = spr->spriteResource->frameHeight * spr->scale.y * root->scale.y;
 
-		if (spr->rotation != 0)
-		{
-			Vec2 v0(spriteRc.topLeft());
-			Vec2 v1(spriteRc.topRight());
-			Vec2 v2(spriteRc.bottomRight());
-			Vec2 v3(spriteRc.bottomLeft());
+			pos.x -= renderW / 2.0f;
+			pos.y -= renderH / 2.0f;
+			spr->localRect = Rect(roundf(pos.x), roundf(pos.y), roundf(renderW), roundf(renderH));
+			pos = Game::instance->worldToScreen(pos, layerIndex);
 
-			Vec2 center = spriteRc.center();
-			auto angle = deg2rad(spr->rotation);
+			Rect spriteRc =
+			{
+				roundf(pos.x),
+				roundf(pos.y),
+				roundf(renderW),
+				roundf(renderH)
+			};
 
-			v0.rotateAround(center, angle);
-			v1.rotateAround(center, angle);
-			v2.rotateAround(center, angle);
-			v3.rotateAround(center, angle);
+			if (spr->rotation != 0)
+			{
+				Vec2 v0(spriteRc.topLeft());
+				Vec2 v1(spriteRc.topRight());
+				Vec2 v2(spriteRc.bottomRight());
+				Vec2 v3(spriteRc.bottomLeft());
 
-			spr->rect = Rect(center.x, center.y, 0, 0);
-			spr->rect.add(v0);
-			spr->rect.add(v1);
-			spr->rect.add(v2);
-			spr->rect.add(v3);
+				Vec2 center = spriteRc.center();
+				auto angle = deg2rad(spr->rotation);
 
-			boundingBox.add(v0);
-			boundingBox.add(v1);
-			boundingBox.add(v2);
-			boundingBox.add(v3);
-		}
-		else
-		{
-			boundingBox.add(spriteRc);
-			spr->rect = spriteRc;
+				v0.rotateAround(center, angle);
+				v1.rotateAround(center, angle);
+				v2.rotateAround(center, angle);
+				v3.rotateAround(center, angle);
+
+				spr->rect = Rect(center.x, center.y, 0, 0);
+				spr->rect.add(v0);
+				spr->rect.add(v1);
+				spr->rect.add(v2);
+				spr->rect.add(v3);
+
+				boundingBox.add(v0);
+				boundingBox.add(v1);
+				boundingBox.add(v2);
+				boundingBox.add(v3);
+			}
+			else
+			{
+				boundingBox.add(spriteRc);
+				spr->rect = spriteRc;
+			}
 		}
 	}
 
@@ -583,10 +583,10 @@ void Unit::computeBoundingBox()
 
 void Unit::render(Graphics* gfx)
 {
-	if (!visible)
+	if (!visible || !root)
 		return;
 
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		if (!spr->visible) continue;
 
@@ -630,7 +630,7 @@ void Unit::render(Graphics* gfx)
 
 	// draw shadows first
 	if (shadow && shadowToggle)
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		if (!spr->visible || !spr->shadow) continue;
 
@@ -651,7 +651,7 @@ void Unit::render(Graphics* gfx)
 	CALL_LUA_FUNC("onBeforeRender");
 
 	// draw color sprites
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		if (!spr->visible) continue;
 
@@ -681,7 +681,7 @@ void Unit::render(Graphics* gfx)
 		}
 	}
 
-	for (auto weapon : weapons)
+	for (auto& weapon : weapons)
 	{
 		weapon.second->render();
 	}
@@ -691,7 +691,7 @@ void Unit::render(Graphics* gfx)
 
 Sprite* Unit::findSprite(const std::string& sname)
 {
-	for (auto spr : sprites)
+	for (auto& spr : sprites)
 	{
 		if (sname == spr->name)
 			return spr;
@@ -705,9 +705,9 @@ bool Unit::checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>&
 	bool collided = false;
 	Vec2 collisionCenter;
 
-	for (auto sprInst1 : sprites)
+	for (auto& sprInst1 : sprites)
 	{
-		for (auto sprInst2 : other->sprites)
+		for (auto& sprInst2 : other->sprites)
 		{
 			if (sprInst1->health > 0 && sprInst2->health > 0 && sprInst1->checkPixelCollision(sprInst2, collisionCenter))
 			{

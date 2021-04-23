@@ -132,8 +132,8 @@ void Weapon::update(struct Game* game)
 		// line to sprite check collision
 		BeamCollisionInfo bci = game->checkBeamIntersection(parentUnit, attachTo, pos, params.beamWidth);
 
-		dbgBeamStartPos = pos;
-		dbgBeamCol = bci;
+		beamBeginPos = pos;
+		beamCollision = bci;
 
 		return;
 	}
@@ -164,6 +164,10 @@ void Weapon::update(struct Game* game)
 		fireInterval = 1.0f / params.fireRate;
 		fireTimer += game->deltaTime;
 		fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
+		beamFrameAnimationTime += game->deltaTime;
+
+		if (beamFrameAnimationTime > 1)
+			beamFrameAnimationTime = 0;
 
 		if (fireTimer >= fireInterval)
 		{
@@ -183,26 +187,43 @@ void Weapon::render()
 	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam)
 	{
-		static f32 f = 0;
-		static f32 f2 = 0;
-		static f32 f3 = 0;
-		auto spr = Game::instance->resourceLoader->loadSprite("sprites/beam");
-		auto sprTop = Game::instance->resourceLoader->loadSprite("sprites/beam_top");
-		auto sprBtm = Game::instance->resourceLoader->loadSprite("sprites/beam_btm");
-		Game::instance->graphics->color = 0;
-		Game::instance->graphics->colorMode = (u32)ColorMode::Add;
+		auto sprBody = weaponResource->beamBodySprite;
+		auto sprBegin = weaponResource->beamBeginSprite;
+		auto sprEnd = weaponResource->beamEndSprite;
 
-		if (!dbgBeamCol.valid) dbgBeamCol.distance = dbgBeamStartPos.y;
+		Game::instance->graphics->setupColor(0);
 
-		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - params.beamWidth / 2, dbgBeamStartPos.y, params.beamWidth, -dbgBeamCol.distance }, spr->getFrameUvRect(f));
-		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - 25, dbgBeamCol.point.y - 50, 50, (f32)sprTop->frameHeight }, sprTop->getFrameUvRect(f2));
-		Game::instance->graphics->drawQuad({ dbgBeamStartPos.x - 25, dbgBeamStartPos.y - 50, 50, (f32)sprBtm->frameHeight }, sprBtm->getFrameUvRect(f3));
-		f += Game::instance->deltaTime * 20;
-		if (f > spr->frameCount - 1) f = 0;
-		f2 += Game::instance->deltaTime * 20;
-		if ((u32)f2 > 1) f2 = 0;
-		f3 += Game::instance->deltaTime * 20;
-		if ((u32)f3 > 1) f3 = 0;
+		if (Game::instance->screenMode == ScreenMode::Vertical)
+		{
+			if (!beamCollision.valid)
+				beamCollision.distance = beamBeginPos.y;
+
+			// draw the beam body
+			Game::instance->graphics->drawQuad({
+					beamBeginPos.x - params.beamWidth / 2,
+					beamBeginPos.y,
+					params.beamWidth,
+					beamCollision.distance },
+					sprBody->getFrameUvRect(beamFrameAnimationTime * (sprBody->frameCount - 1)));
+
+			Game::instance->graphics->drawQuad({
+				beamBeginPos.x - sprBegin->frameWidth / 2,
+				beamCollision.point.y,
+				(f32)sprBegin->frameWidth,
+				(f32)sprBegin->frameHeight },
+				sprBegin->getFrameUvRect(beamFrameAnimationTime * (sprBegin->frameCount - 1)));
+
+			Game::instance->graphics->drawQuad({
+				beamBeginPos.x - sprEnd->frameWidth / 2,
+				beamBeginPos.y,
+				(f32)sprEnd->frameWidth,
+				(f32)sprEnd->frameHeight },
+				sprEnd->getFrameUvRect(beamFrameAnimationTime * (sprEnd->frameCount - 1)));
+		}
+		else
+		{
+			//TODO: horizontal screen
+		}
 	}
 }
 

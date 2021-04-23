@@ -39,6 +39,13 @@ bool WeaponResource::load(Json::Value& json)
 	if (typeStr == "Projectile") params.type = Type::Projectile;
 	else if (typeStr == "Beam") params.type = Type::Beam;
 
+	if (params.type == Type::Beam)
+	{
+		beamBeginSprite = loader->loadSprite(json.get("beamBeginSprite", "").asString());
+		beamEndSprite = loader->loadSprite(json.get("beamEndSprite", "").asString());
+		beamBodySprite = loader->loadSprite(json.get("beamBodySprite", "").asString());
+	}
+
 	if (rotTypeStr == "Custom") params.rotationType = RotationType::Custom;
 	if (rotTypeStr == "PingPong") params.rotationType = RotationType::PingPong;
 	if (rotTypeStr == "EasedPingPong") params.rotationType = RotationType::EasedPingPong;

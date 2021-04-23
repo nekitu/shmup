@@ -414,7 +414,7 @@ void ImageAtlas::repackImages()
 {
 	deletePackerImages();
 
-	for (auto img : images)
+	for (auto& img : images)
 	{
 		PackImageData packImg;
 
