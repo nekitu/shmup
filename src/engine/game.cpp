@@ -712,7 +712,7 @@ void Game::checkCollisions()
 	}
 }
 
-BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const Vec2& pos, f32 beamWidth)
+BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const Vec2& pos, f32 beamWidth, f32 beamDir)
 {
 	BeamCollisionInfo closest;
 	Rect rc;

@@ -25,7 +25,7 @@ function C:onRender()
 
   mp.x = math.ceil(mp.x)
   mp.y = math.ceil(mp.y)
-  gfx:drawText(self.fnt, mp, "AICI!")
+  gfx:drawText(self.fnt, mp, tostring(mp.x) .. " " .. tostring(mp.y))
 
   if self.time > 0.2 and self.time < 1 then
     gfx.colorMode = ColorMode_Mul
@@ -59,7 +59,7 @@ function C:onActivate()
   game:showMousePointer(false)
   game:setMusicVolume(0.0)
   game:setChannelVolume(SoundChannel_Enemy, 0.0)
-  game:setChannelVolume(SoundChannel_Player, 0.0)
+  --game:setChannelVolume(SoundChannel_Player, 0.0)
 end
 
 function C:onDeactivate()

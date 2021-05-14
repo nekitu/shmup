@@ -30,9 +30,14 @@ function C:onUpdate()
 
   if self.playerControl then
     -- fire if the button is pressed, the repeat fire logic is done in the engine
+    -- TODO: fire1 and fire2 handle, not all weapons
     if game:isPlayerFire1(self.playerIndex) then
       for _, weapon in ipairs(self.unit:getWeapons()) do
         weapon:fire()
+      end
+    else
+      for _, weapon in ipairs(self.unit:getWeapons()) do
+        weapon:stopFire()
       end
     end
 

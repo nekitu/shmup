@@ -33,6 +33,13 @@ bool WeaponResource::load(Json::Value& json)
 		fireSound = loader->loadSound(fireSoundPath);
 	}
 
+	auto beamFireEndSoundPath = json.get("beamFireEndSound", "").asString();
+
+	if (!beamFireEndSoundPath.empty())
+	{
+		beamFireEndSound = loader->loadSound(beamFireEndSoundPath);
+	}
+
 	auto typeStr = json.get("type", "Projectile").asString();
 	auto rotTypeStr = json.get("rotationType", "custom").asString();
 

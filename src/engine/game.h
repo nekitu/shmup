@@ -167,7 +167,7 @@ struct Game
 	bool initializeAudio();
 	void handleInputEvents();
 	void checkCollisions();
-	BeamCollisionInfo checkBeamIntersection(struct Unit* unit, struct Sprite* sprite, const Vec2& pos, f32 beamWidth);
+	BeamCollisionInfo checkBeamIntersection(struct Unit* unit, struct Sprite* sprite, const Vec2& pos, f32 beamWidth, f32 beamDir);
 	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
 	Vec2 screenToWorld(const Vec2& pos, u32 layerIndex);
 	Rect worldToScreen(const Rect& rc, u32 layerIndex);

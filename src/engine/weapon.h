@@ -8,6 +8,9 @@ namespace engine
 {
 struct Weapon
 {
+	const f32 beamFromEnemy = 1;
+	const f32 beamFromPlayer = -1;
+
 	WeaponResource::Parameters params;
 	bool active = true;
 	struct WeaponResource* weaponResource = nullptr;
@@ -15,6 +18,7 @@ struct Weapon
 	struct Sprite* attachTo = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	Sound fireSound;
+	Sound beamFireEndSound;
 	f32 angle = 0;
 	BeamCollisionInfo beamCollision;
 	Vec2 beamBeginPos;
@@ -26,12 +30,16 @@ struct Weapon
 	bool paused = false;
 	bool firing = false;
 	bool autoFire = false;
+	bool startedFiring = false;
+	bool stoppedFiring = true;
 
 	~Weapon();
 
+	bool isBeamWeapon() const;
 	void reset();
 	void copyFrom(Weapon* other);
 	void fire();
+	void stopFire();
 	void initializeFrom(struct WeaponResource* res);
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);

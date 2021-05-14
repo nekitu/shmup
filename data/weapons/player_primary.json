@@ -10,5 +10,11 @@
   "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/primary",
   "script": "scripts/weapon_primary",
-  "fireSound": "sounds/Laser03.wav"
+  "fireSound": "sounds/Laser03.wav",
+  "beamFireEndSound": "sounds/Laser01.wav",
+
+  "type":"Beam",
+  "beamBeginSprite":"sprites/beam_top",
+  "beamEndSprite":"sprites/beam_btm",
+  "beamBodySprite":"sprites/beam"
 }

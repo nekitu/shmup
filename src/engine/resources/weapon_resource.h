@@ -40,7 +40,7 @@ struct WeaponResource : Resource
 		f32 minProjectileSpeed = 10;
 		f32 maxProjectileSpeed = 10000000;
 		f32 fireDamage = 1; /// if this is projectile, damage is per projectile hit, if beam then its per second
-		f32 beamWidth = 1;
+		f32 beamWidth = 16;
 		Vec2 position; /// relative to sprite
 		Vec2 offset;
 		f32 offsetRadius = 0;
@@ -58,6 +58,7 @@ struct WeaponResource : Resource
 	struct UnitResource* projectileUnit = nullptr;
 	struct ScriptResource* script = nullptr;
 	struct SoundResource* fireSound = nullptr;
+	struct SoundResource* beamFireEndSound = nullptr;
 	LuaIntf::LuaRef scriptClassInstance;
 
 	bool load(Json::Value& json) override;

@@ -22,7 +22,8 @@ struct Sound
 	struct SoundResource* soundResource = nullptr;
 	SoundChannel channel = SoundChannel::Other;
 
-	bool play();
+	bool play(int loops = 0);
+	void stop();
 	bool isPlaying();
 };
 
