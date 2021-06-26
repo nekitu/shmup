@@ -33,6 +33,7 @@ void Weapon::copyFrom(Weapon* other)
 	parentUnit = other->parentUnit;
 	attachTo = other->attachTo;
 	fireSound.soundResource = other->fireSound.soundResource;
+	beamFireEndSound.soundResource = other->beamFireEndSound.soundResource;
 }
 
 void Weapon::initializeFrom(struct WeaponResource* res)
@@ -47,6 +48,7 @@ void Weapon::initializeFrom(struct WeaponResource* res)
 	}
 
 	fireSound.soundResource = res->fireSound;
+	beamFireEndSound.soundResource = res->beamFireEndSound;
 }
 
 void Weapon::fire()
@@ -235,7 +237,7 @@ void Weapon::render()
 			// draw the beam body
 			Game::instance->graphics->drawQuad({
 					beamBeginPos.x - params.beamWidth / 2,
-					beamBeginPos.y,
+					beamBeginPos.y - beamCollision.distance,
 					params.beamWidth,
 					beamCollision.distance },
 					sprBody->getFrameUvRect(beamFrameAnimationTime * (sprBody->frameCount - 1)));
