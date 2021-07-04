@@ -13,7 +13,7 @@ struct Sprite
 	struct SpriteResource* spriteResource = nullptr;
 	struct Unit* unit = nullptr;
 	Vec2 position;
-	Vec2 scale = { 1.0f, 1.0f };
+	Vec2 scale = { 1.0f, 1.0f }; // scale is positive only, use flip to mirror sprite
 	bool verticalFlip = false;
 	bool horizontalFlip = false;
 	f32 rotation = 0;

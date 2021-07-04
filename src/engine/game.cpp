@@ -797,12 +797,12 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 				else
 				{
 					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
-
-					for (int y = sprite2->spriteResource->frameHeight - 1; y >= 0; y--)
+					f32 stepY = 1.0f / sprite2->scale.y;
+					for (f32 y = sprite2->spriteResource->frameHeight - 1; y >= 0; y-= stepY)
 					{
 						// get the scaled pixel from the sprite image
-						f32 scaledY = frmRc.y + y * sprite2->scale.y;
-						f32 scaledX = frmRc.x + relativeX * sprite2->scale.x;
+						f32 scaledY = frmRc.y + y;
+						f32 scaledX = frmRc.x + relativeX / sprite2->scale.x;
 
 						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
 							(u32)scaledY * sprite2->spriteResource->image->width
@@ -811,7 +811,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.y -= sprite2->rect.height - y;
+							col.y -= sprite2->rect.height - y * sprite2->scale.y;
 							break;
 						}
 					}
