@@ -52,27 +52,27 @@ function C:onStageChange(old, new)
     self.unit:findWeapon("gun2").active = true
     self.unit:findWeapon("gun1").active = false
     print("ACTIVATING LAST RESORT SWORD")
-    
+
     tlleg = self.unit:findSprite("tl_leg")
     trleg = self.unit:findSprite("tr_leg")
     blleg = self.unit:findSprite("bl_leg")
     brleg = self.unit:findSprite("br_leg")
 
-    
+
     tlfrom.x = tlleg.position.x
     tlfrom.y = tlleg.position.y
-    
+
     trfrom.x = trleg.position.x
     trfrom.y = trleg.position.y
 
     blfrom.x = blleg.position.x
     blfrom.y = blleg.position.y
-    
+
     brfrom.x = brleg.position.x
     brfrom.y = brleg.position.y
-    
+
     local tpos = self.unit:findSprite("movebody").position
-    
+
     tltarget:set(tpos.x - 20, tpos.y - 40)
     trtarget:set(tpos.x + 20, tpos.y - 40)
     bltarget:set(tpos.x - 20, tpos.y + 20)
@@ -107,7 +107,7 @@ function C:onUpdate()
   if self.unit.stageIndex == 1 then
     local movebody = self.unit:findSprite("movebody")
     movebody.position = from:lerp(targets[tindex], tbody)
-    local legScale = 0.5 + (1 - math.abs(t - 0.5) * 2) * 0.06
+    local legScale = 1 --0.5 + (1 - math.abs(t - 0.5) * 2) * 0.06
 
     if legset == 0 then
         tlleg.scale.x = legScale
@@ -124,21 +124,21 @@ function C:onUpdate()
         trleg.position = trfrom:lerp(trtarget, t)
         blleg.position = blfrom:lerp(bltarget, t)
     end
-    
+
     local speed = 1.5
 
     if pauseTimer <= 0 then
     tbody = tbody + game.deltaTime * 0.1 * speed
     t = t + game.deltaTime * 1.5 * speed
     end
-    
+
     pauseTimer = pauseTimer - game.deltaTime * 1.8 * speed
-    
+
       tltarget:set(movebody.position.x - 20, movebody.position.y - 40)
       trtarget:set(movebody.position.x + 20, movebody.position.y - 40)
       bltarget:set(movebody.position.x - 20, movebody.position.y + 20)
       brtarget:set(movebody.position.x + 20, movebody.position.y + 20)
-    
+
     if t > 1 then
       t = 0
       pauseTimer = 1

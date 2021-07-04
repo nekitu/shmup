@@ -800,10 +800,14 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 
 					for (int y = sprite2->spriteResource->frameHeight - 1; y >= 0; y--)
 					{
-						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
-							(u32)(frmRc.y + y) * sprite2->spriteResource->image->width
-								+ (u32)(frmRc.x + relativeX)];
+						// get the scaled pixel from the sprite image
+						f32 scaledY = frmRc.y + y * sprite2->scale.y;
+						f32 scaledX = frmRc.x + relativeX * sprite2->scale.x;
 
+						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
+							(u32)scaledY * sprite2->spriteResource->image->width
+								+ (u32)scaledX];
+						// if alpha is FF or float 1, then we hit something
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;

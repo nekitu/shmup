@@ -207,6 +207,18 @@ struct Rect
 		};
 	}
 
+	inline Rect getCenterScaled(f32 amountX, f32 amountY)
+	{
+		auto c = center();
+
+		return {
+			c.x - width * amountX / 2.0f,
+			c.y - height * amountY / 2.0f,
+			width * amountX,
+			height * amountY
+		};
+	}
+
     inline Rect getContracted(f32 amount)
     {
         return getExpanded(-amount);
