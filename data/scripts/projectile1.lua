@@ -10,12 +10,7 @@ end
 function C:onUpdate()
 end
 
-function C:onCollide(other)
-  local pos = Vec2(0, 0)
-  if self.unit.root:checkPixelCollision(other.root, pos) then
-    other.root:hit(1)
-    print("HIT")
-  end
+function C:onCollide(other, cols)
 end
 
 return newInstance(C)

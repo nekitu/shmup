@@ -717,6 +717,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 	BeamCollisionInfo closest;
 	Rect rc;
 
+	closest.beamStart = pos;
 	closest.distance = FLT_MAX;
 
 	if (screenMode == ScreenMode::Vertical)
@@ -746,7 +747,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 					closest.valid = true;
 					closest.distance = 0;
 					closest.point = pos;
-					closest.unit = unit;
+					closest.unit = unit1;
 					closest.sprite = sprite2;
 
 					return closest;
@@ -761,7 +762,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 					closest.valid = true;
 					closest.distance = 0;
 					closest.point = pos;
-					closest.unit = unit;
+					closest.unit = unit1;
 					closest.sprite = sprite2;
 
 					return closest;
@@ -798,20 +799,25 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 				{
 					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
 					f32 stepY = 1.0f / sprite2->scale.y;
+
+					// consider flipping
+					f32 xFinal = sprite2->horizontalFlip ? sprite2->spriteResource->frameWidth - relativeX : relativeX;
+
 					for (f32 y = sprite2->spriteResource->frameHeight - 1; y >= 0; y-= stepY)
 					{
+						f32 yFinal = sprite2->verticalFlip ? sprite2->spriteResource->frameHeight - y : y;
 						// get the scaled pixel from the sprite image
-						f32 scaledY = frmRc.y + y;
-						f32 scaledX = frmRc.x + relativeX / sprite2->scale.x;
+						f32 scaledY = frmRc.y + yFinal;
+						f32 scaledX = frmRc.x + xFinal / sprite2->scale.x;
 
 						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
 							(u32)scaledY * sprite2->spriteResource->image->width
 								+ (u32)scaledX];
-						// if alpha is FF or float 1, then we hit something
+						// if alpha is 0xFF, then we hit an opaque pixel
 						if (p[3] == 0xff)
 						{
 							pixelCollided = true;
-							col.y -= sprite2->rect.height - y * sprite2->scale.y;
+							col.y -= sprite2->rect.height - yFinal * sprite2->scale.y;
 							break;
 						}
 					}
@@ -826,7 +832,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 						closest.valid = true;
 						closest.distance = dist;
 						closest.point = col;
-						closest.unit = unit;
+						closest.unit = unit1;
 						closest.sprite = sprite2;
 					}
 				}
@@ -884,7 +890,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 						closest.valid = true;
 						closest.distance = dist;
 						closest.point = col;
-						closest.unit = unit;
+						closest.unit = unit1;
 						closest.sprite = sprite2;
 					}
 				}

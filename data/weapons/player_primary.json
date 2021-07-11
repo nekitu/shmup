@@ -11,9 +11,10 @@
   "projectileUnit" : "units/projectile/primary",
   "script": "scripts/weapon_primary",
   "fireSound": "sounds/Laser03.wav",
-
+  "beamWidth": 40,
+  "offset": "0 -30",
   "type":"Beam",
-  "beamBeginSprite":"sprites/beam_top",
-  "beamEndSprite":"sprites/beam_btm",
+  "beamBeginSprite":"sprites/beam_btm",
+  "beamEndSprite":"sprites/beam_top",
   "beamBodySprite":"sprites/beam"
 }

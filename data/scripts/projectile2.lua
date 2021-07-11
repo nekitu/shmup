@@ -14,14 +14,8 @@ function C:onUpdate()
 end
 
 function C:onCollide(other, collisions)
-  if true then return end
-  local colCenter = Vec2(0, 0)
-  if self.unit.unitResource.type == 4 and self.unit.root:checkPixelCollision(other.root, colCenter) then
-    self.unit.deleteMeNow = true
-    if other.unitResource.type == 5 then other.deleteMeNow = true end
   game:spawn("units/small_spark", "expl", colCenter)
   other.root:hit(5)
-  end
 end
 
 return newInstance(C)

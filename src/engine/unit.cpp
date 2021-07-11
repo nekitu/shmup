@@ -597,24 +597,24 @@ void Unit::render(Graphics* gfx)
 			pos = spr != root ? root->position : Vec2();
 		}
 
-		f32 mirrorV = spr->verticalFlip ? -1 : 1;
-		f32 mirrorH = spr->horizontalFlip ? -1 : 1;
+		f32 flipV = spr->verticalFlip ? -1 : 1;
+		f32 flipH = spr->horizontalFlip ? -1 : 1;
 
 		if (spr != root)
 		{
-			if (root->verticalFlip) mirrorV *= -1;
-			if (root->horizontalFlip) mirrorH *= -1;
+			if (root->verticalFlip) flipV *= -1;
+			if (root->horizontalFlip) flipH *= -1;
 		}
 
 		Rect uvRc = spr->spriteResource->getFrameUvRect(spr->animationFrame);
 
-		if (mirrorV < 0)
+		if (flipV < 0)
 		{
 			uvRc.y = uvRc.bottom();
 			uvRc.height *= -1.0f;
 		}
 
-		if (mirrorH < 0)
+		if (flipH < 0)
 		{
 			uvRc.x = uvRc.right();
 			uvRc.width *= -1.0f;

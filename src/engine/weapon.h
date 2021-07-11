@@ -21,7 +21,6 @@ struct Weapon
 	Sound beamFireEndSound;
 	f32 angle = 0;
 	BeamCollisionInfo beamCollision;
-	Vec2 beamBeginPos;
 	f32 fireTimer = 0.0f;
 	f32 fireInterval = 0;
 	f32 fireAngleOffset = 0.0f;

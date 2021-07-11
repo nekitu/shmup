@@ -133,7 +133,9 @@ void Weapon::update(struct Game* game)
 	if (!active)
 		return;
 
-	if (attachTo && isBeamWeapon() && firing)
+	beamCollision.valid = false;
+
+	if (isBeamWeapon() && attachTo && firing)
 	{
 		Vec2 pos = attachTo->position;
 
@@ -144,10 +146,7 @@ void Weapon::update(struct Game* game)
 
 		// line to sprite check collision
 		f32 beamDir = (parentUnit->unitResource->unitType == UnitType::Player) ? beamFromPlayer : beamFromEnemy;
-		BeamCollisionInfo bci = game->checkBeamIntersection(parentUnit, attachTo, pos, params.beamWidth, beamDir);
-
-		beamBeginPos = pos;
-		beamCollision = bci;
+		beamCollision = game->checkBeamIntersection(parentUnit, attachTo, pos, params.beamWidth, beamDir);
 	}
 
 	if (!isBeamWeapon() && params.activeTime > 0 && params.pauseDelay > 0)
@@ -188,12 +187,26 @@ void Weapon::update(struct Game* game)
 
 		if (firing)
 		{
-			beamFrameAnimationTime += game->deltaTime;
+			beamFrameAnimationTime += game->deltaTime * 10;
 
 			if (beamFrameAnimationTime > 1)
 				beamFrameAnimationTime = 0;
 
 			CALL_LUA_FUNC("onFire");
+
+			if (beamCollision.valid)
+			{
+				LuaIntf::LuaRef colsTbl = LuaIntf::LuaRef::createTable(getLuaState());
+				LuaIntf::LuaRef col = LuaIntf::LuaRef::createTable(getLuaState());
+
+				col.set("sprite1", attachTo);
+				col.set("sprite2", beamCollision.sprite);
+				col.set("collisionCenter", beamCollision.point);
+				colsTbl.set(1, col);
+				LOG_INFO("Collide {0} with target {1}", attachTo->unit->name, beamCollision.unit->name);
+				CALL_LUA_FUNC2(parentUnit->scriptClass, "onCollide", parentUnit, colsTbl)
+				CALL_LUA_FUNC2(beamCollision.unit->scriptClass, "onCollide", beamCollision.unit, colsTbl)
+			}
 		}
 	}
 	else
@@ -202,7 +215,6 @@ void Weapon::update(struct Game* game)
 		fireInterval = 1.0f / params.fireRate;
 		fireTimer += game->deltaTime;
 		fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
-
 
 		if (fireTimer >= fireInterval)
 		{
@@ -226,40 +238,41 @@ void Weapon::render()
 		auto sprBody = weaponResource->beamBodySprite;
 		auto sprBegin = weaponResource->beamBeginSprite;
 		auto sprEnd = weaponResource->beamEndSprite;
+		auto frames = 2;
 
 		Game::instance->graphics->setupColor(0);
 
 		if (Game::instance->screenMode == ScreenMode::Vertical)
 		{
 			if (!beamCollision.valid)
-				beamCollision.distance = beamBeginPos.y;
+				beamCollision.distance = beamCollision.beamStart.y;
 
 			// draw the beam body
 			Game::instance->graphics->drawQuad({
-					beamBeginPos.x - params.beamWidth / 2,
-					beamBeginPos.y - beamCollision.distance,
+					beamCollision.beamStart.x - params.beamWidth / 2,
+					beamCollision.beamStart.y - beamCollision.distance,
 					params.beamWidth,
 					beamCollision.distance },
-					sprBody->getFrameUvRect(beamFrameAnimationTime * (sprBody->frameCount - 1)));
+					sprBody->getFrameUvRect(beamFrameAnimationTime * frames));
 
-			//if (attachTo->unit->unitResource->unitType == UnitType::Player)
-			//{
-			//	// begin of beam
-			//	Game::instance->graphics->drawQuad({
-			//		beamBeginPos.x - sprBegin->frameWidth / 2,
-			//		beamCollision.point.y,
-			//		(f32)sprBegin->frameWidth,
-			//		(f32)sprBegin->frameHeight },
-			//		sprBegin->getFrameUvRect(beamFrameAnimationTime * (sprBegin->frameCount - 1)));
+			if (attachTo->unit->unitResource->unitType == UnitType::Player)
+			{
+				// begin of beam
+				Game::instance->graphics->drawQuad({
+					beamCollision.beamStart.x - sprBegin->frameWidth / 2,
+					beamCollision.beamStart.y - sprBegin->frameHeight / 2,
+					(f32)sprBegin->frameWidth,
+					(f32)sprBegin->frameHeight },
+					sprBegin->getFrameUvRect(beamFrameAnimationTime * frames));
 
-			//	// end of beam
-			//	Game::instance->graphics->drawQuad({
-			//		beamBeginPos.x - sprEnd->frameWidth / 2,
-			//		beamBeginPos.y,
-			//		(f32)sprEnd->frameWidth,
-			//		(f32)sprEnd->frameHeight },
-			//		sprEnd->getFrameUvRect(beamFrameAnimationTime * (sprEnd->frameCount - 1)));
-			//}
+				// end of beam
+				Game::instance->graphics->drawQuad({
+					beamCollision.beamStart.x - sprEnd->frameWidth / 2,
+					beamCollision.point.y - sprEnd->frameHeight / 2,
+					(f32)sprEnd->frameWidth,
+					(f32)sprEnd->frameHeight },
+					sprEnd->getFrameUvRect(beamFrameAnimationTime * frames));
+			}
 			//else if (attachTo->unit->unitResource->unitType == UnitType::Enemy)
 			//{
 			//	// begin of beam

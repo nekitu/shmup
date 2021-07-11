@@ -19,6 +19,11 @@ Rect SpriteResource::getFrameUvRect(u32 frame)
 {
 	Rect rc;
 
+	if (frame >= frameCount)
+	{
+		LOG_ERROR("Frame out of bounds, frame: {0} max: {1}", frame, frameCount);
+	}
+
 	u32 col = frame % columns;
 	u32 row = frame / columns;
 

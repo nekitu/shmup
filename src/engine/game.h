@@ -54,6 +54,7 @@ enum class ScreenMode
 struct BeamCollisionInfo
 {
 	bool valid = false;
+	Vec2 beamStart;
 	Vec2 point;
 	f32 distance = 0;
 	struct Unit* unit = nullptr;
