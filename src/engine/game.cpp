@@ -737,6 +737,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 		{
 			if (sprite == sprite2) continue;
 			if (!sprite2->collide) continue;
+			if (sprite2->health <= 0) continue;
 
 			if (screenMode == ScreenMode::Vertical)
 			{
