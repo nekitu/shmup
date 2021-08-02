@@ -31,6 +31,8 @@ struct Weapon
 	bool autoFire = false;
 	bool startedFiring = false;
 	bool stoppedFiring = true;
+	f32 currentBeamWidth = 0;
+	f32 beamAnimTime = 0;
 
 	~Weapon();
 

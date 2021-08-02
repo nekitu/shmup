@@ -7,6 +7,7 @@
 #include "resources/script_resource.h"
 #include <float.h>
 #include "resource_loader.h"
+#include "easing.h"
 
 namespace engine
 {
@@ -142,11 +143,12 @@ void Weapon::update(struct Game* game)
 		if (attachTo != parentUnit->root && attachTo->relativeToRoot)
 			pos += parentUnit->root->position;
 
+		pos += params.offset;
 		pos = Game::instance->worldToScreen(pos, parentUnit->layerIndex);
 
 		// line to sprite check collision
 		f32 beamDir = (parentUnit->unitResource->unitType == UnitType::Player) ? beamFromPlayer : beamFromEnemy;
-		beamCollision = game->checkBeamIntersection(parentUnit, attachTo, pos, params.beamWidth, beamDir);
+		beamCollision = game->checkBeamIntersection(parentUnit, attachTo, pos, currentBeamWidth, beamDir);
 	}
 
 	if (!isBeamWeapon() && params.activeTime > 0 && params.pauseDelay > 0)
@@ -176,10 +178,13 @@ void Weapon::update(struct Game* game)
 		{
 			startedFiring = true;
 			fireSound.play(-1); // infinite loop
+			currentBeamWidth = 0;
 		}
 
 		if (!firing && startedFiring)
 		{
+			beamAnimTime = 0;
+			currentBeamWidth = 0;
 			startedFiring = false;
 			fireSound.stop();
 			beamFireEndSound.play();
@@ -187,6 +192,13 @@ void Weapon::update(struct Game* game)
 
 		if (firing)
 		{
+			if (currentBeamWidth < params.beamWidth)
+			{
+				currentBeamWidth = Easing::easeValue(params.beamWidthAnimEasing, beamAnimTime, 0, params.beamWidth, 1);
+				clampValue(currentBeamWidth, 0, params.beamWidth);
+				beamAnimTime += game->deltaTime*10;
+			}
+
 			beamFrameAnimationTime += game->deltaTime * 10;
 
 			if (beamFrameAnimationTime > 1)
@@ -203,7 +215,7 @@ void Weapon::update(struct Game* game)
 				col.set("sprite2", beamCollision.sprite);
 				col.set("collisionCenter", beamCollision.point);
 				colsTbl.set(1, col);
-				LOG_INFO("Collide {0} with target {1}", attachTo->unit->name, beamCollision.unit->name);
+				LOG_INFO("Collide {} with target {} {}", attachTo->unit->name, beamCollision.unit->name, beamCollision.unit->health);
 				CALL_LUA_FUNC2(parentUnit->scriptClass, "onCollide", parentUnit, colsTbl)
 				CALL_LUA_FUNC2(beamCollision.unit->scriptClass, "onCollide", beamCollision.unit, colsTbl)
 			}
@@ -234,7 +246,6 @@ void Weapon::render()
 	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam && firing)
 	{
-		LOG_INFO("firing {0}", Game::instance->deltaTime);
 		auto sprBody = weaponResource->beamBodySprite;
 		auto sprBegin = weaponResource->beamBeginSprite;
 		auto sprEnd = weaponResource->beamEndSprite;
@@ -249,9 +260,9 @@ void Weapon::render()
 
 			// draw the beam body
 			Game::instance->graphics->drawQuad({
-					beamCollision.beamStart.x - params.beamWidth / 2,
+					beamCollision.beamStart.x - currentBeamWidth / 2,
 					beamCollision.beamStart.y - beamCollision.distance,
-					params.beamWidth,
+					currentBeamWidth,
 					beamCollision.distance },
 					sprBody->getFrameUvRect(beamFrameAnimationTime * frames));
 
@@ -266,9 +277,10 @@ void Weapon::render()
 					sprBegin->getFrameUvRect(beamFrameAnimationTime * frames));
 
 				// end of beam
+				if (beamCollision.valid && beamCollision.directHit)
 				Game::instance->graphics->drawQuad({
 					beamCollision.beamStart.x - sprEnd->frameWidth / 2,
-					beamCollision.point.y - sprEnd->frameHeight / 2,
+					beamCollision.point.y - sprEnd->frameHeight,
 					(f32)sprEnd->frameWidth,
 					(f32)sprEnd->frameHeight },
 					sprEnd->getFrameUvRect(beamFrameAnimationTime * frames));

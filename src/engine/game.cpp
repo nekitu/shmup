@@ -739,160 +739,161 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 			if (!sprite2->collide) continue;
 			if (sprite2->health <= 0) continue;
 
-			if (screenMode == ScreenMode::Vertical)
-			{
-				if (sprite2->rect.y > pos.y) continue;
+			//if (screenMode == ScreenMode::Vertical)
+			//{
+			//	if (sprite2->rect.y > pos.y) continue;
 
-				if (sprite2->rect.bottom() > pos.y && sprite2->rect.y <= pos.y)
-				{
-					closest.valid = true;
-					closest.distance = 0;
-					closest.point = pos;
-					closest.unit = unit1;
-					closest.sprite = sprite2;
+			//	if (sprite2->rect.bottom() > pos.y && sprite2->rect.y <= pos.y)
+			//	{
+			//		closest.valid = true;
+			//		closest.distance = 0;
+			//		closest.point = pos;
+			//		closest.unit = unit1;
+			//		closest.sprite = sprite2;
+			//		LOG_INFO("Acilea");
+			//		return closest;
+			//	}
+			//}
+			//else if (screenMode == ScreenMode::Horizontal)
+			//{
+			//	if (sprite2->rect.right() < pos.x) continue;
 
-					return closest;
-				}
-			}
-			else if (screenMode == ScreenMode::Horizontal)
-			{
-				if (sprite2->rect.right() < pos.x) continue;
+			//	if (sprite2->rect.x < pos.x && sprite2->rect.right() >= pos.x)
+			//	{
+			//		closest.valid = true;
+			//		closest.distance = 0;
+			//		closest.point = pos;
+			//		closest.unit = unit1;
+			//		closest.sprite = sprite2;
 
-				if (sprite2->rect.x < pos.x && sprite2->rect.right() >= pos.x)
-				{
-					closest.valid = true;
-					closest.distance = 0;
-					closest.point = pos;
-					closest.unit = unit1;
-					closest.sprite = sprite2;
-
-					return closest;
-				}
-			}
+			//		return closest;
+			//	}
+			//}
 
 			if (sprite2->rect.overlaps(rc))
-			if (screenMode == ScreenMode::Vertical)
 			{
-				Vec2 col;
-				col.x = pos.x;
-				col.y = sprite2->rect.bottom();
-
-				// for small sprites
-				bool isInsideBeam = rc.contains(sprite2->rect);
-				bool isTouchingHalfBeam = false;
-				bool pixelCollided = false;
-
-				f32 relativeX = round(col.x - sprite2->rect.x);
-
-				// if the middle of the beam is outside the sprite rect
-				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeX < 0 || relativeX >= sprite2->rect.width)
+				if (screenMode == ScreenMode::Vertical)
 				{
-					if (fabs(relativeX) <= beamWidth / 2 || (sprite2->rect.width - relativeX) <= beamWidth / 2)
+					Vec2 col;
+					col.x = pos.x;
+
+					// for small sprites
+					bool isInsideBeam = rc.contains(sprite2->rect);
+					bool isTouchingHalfBeam = false;
+					bool pixelCollided = false;
+
+					f32 relativeX = round(col.x - sprite2->rect.x);
+
+					// if the middle of the beam is outside the sprite rect
+					// one of the beam haves are touching the sprite, so just set hit to middle of sprite
+					if (relativeX < 0 || relativeX >= sprite2->rect.width)
 					{
-						isTouchingHalfBeam = true;
-						col.y = sprite2->rect.center().y;
+						if (fabs(relativeX) <= beamWidth / 2 || (sprite2->rect.width - relativeX) <= beamWidth / 2)
+						{
+							isTouchingHalfBeam = true;
+						}
+						else continue;
+					}
+					else
+					{
+						col.y = sprite2->rect.bottom();
+						Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
+						f32 stepY = 1.0f / sprite2->scale.y;
+
+						// consider flipping
+						f32 xFinal = sprite2->horizontalFlip ? sprite2->spriteResource->frameWidth - relativeX : relativeX;
+
+						for (f32 y = sprite2->spriteResource->frameHeight - 1; y >= 0; y -= stepY)
+						{
+							f32 yFinal = sprite2->verticalFlip ? sprite2->spriteResource->frameHeight - y : y;
+							// get the scaled pixel from the sprite image
+							f32 scaledY = frmRc.y + yFinal;
+							f32 scaledX = frmRc.x + xFinal / sprite2->scale.x;
+
+							u8* p = (u8*)&sprite2->spriteResource->image->imageData[
+								(u32)scaledY * sprite2->spriteResource->image->width
+									+ (u32)scaledX];
+							// if alpha is 0xFF, then we hit an opaque pixel
+							if (p[3] == 0xff)
+							{
+								pixelCollided = true;
+								col.y -= sprite2->rect.height - yFinal * sprite2->scale.y;
+								break;
+							}
+						}
 					}
 
-					continue;
-				}
-				else
-				{
-					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
-					f32 stepY = 1.0f / sprite2->scale.y;
-
-					// consider flipping
-					f32 xFinal = sprite2->horizontalFlip ? sprite2->spriteResource->frameWidth - relativeX : relativeX;
-
-					for (f32 y = sprite2->spriteResource->frameHeight - 1; y >= 0; y-= stepY)
+					if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
 					{
-						f32 yFinal = sprite2->verticalFlip ? sprite2->spriteResource->frameHeight - y : y;
-						// get the scaled pixel from the sprite image
-						f32 scaledY = frmRc.y + yFinal;
-						f32 scaledX = frmRc.x + xFinal / sprite2->scale.x;
+						f32 dist = pos.y - col.y;
 
-						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
-							(u32)scaledY * sprite2->spriteResource->image->width
-								+ (u32)scaledX];
-						// if alpha is 0xFF, then we hit an opaque pixel
-						if (p[3] == 0xff)
+						if (dist < closest.distance)
 						{
-							pixelCollided = true;
-							col.y -= sprite2->rect.height - yFinal * sprite2->scale.y;
-							break;
+							closest.directHit = !isTouchingHalfBeam;
+							closest.valid = true;
+							closest.distance = dist;
+							closest.point = col;
+							closest.unit = unit1;
+							closest.sprite = sprite2;
 						}
 					}
 				}
-
-				if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
+				else if (screenMode == ScreenMode::Horizontal)
 				{
-					f32 dist = pos.y - col.y;
+					Vec2 col;
+					col.x = sprite2->rect.x;
+					col.y = pos.y;
 
-					if (dist < closest.distance)
+					// for small sprites
+					bool isInsideBeam = rc.contains(sprite2->rect);
+					bool isTouchingHalfBeam = false;
+					bool pixelCollided = false;
+
+					f32 relativeY = round(col.y - sprite2->rect.y);
+
+					// if the middle of the beam is outside the sprite rect
+					// one of the beam haves are touching the sprite, so just set hit to middle of sprite
+					if (relativeY < 0 || relativeY >= sprite2->rect.height)
 					{
-						closest.valid = true;
-						closest.distance = dist;
-						closest.point = col;
-						closest.unit = unit1;
-						closest.sprite = sprite2;
-					}
-				}
-			}
-			else if (screenMode == ScreenMode::Horizontal)
-			{
-				Vec2 col;
-				col.x = sprite2->rect.x;
-				col.y = pos.y;
-
-				// for small sprites
-				bool isInsideBeam = rc.contains(sprite2->rect);
-				bool isTouchingHalfBeam = false;
-				bool pixelCollided = false;
-
-				f32 relativeY = round(col.y - sprite2->rect.y);
-
-				// if the middle of the beam is outside the sprite rect
-				// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-				if (relativeY < 0 || relativeY >= sprite2->rect.height)
-				{
-					if (fabs(relativeY) <= beamWidth / 2 || (sprite2->rect.height - relativeY) <= beamWidth / 2)
-					{
-						isTouchingHalfBeam = true;
-						col.x = sprite2->rect.center().x;
-					}
-
-					continue;
-				}
-				else
-				{
-					Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
-
-					for (int x = sprite2->spriteResource->frameWidth - 1; x >= 0; x--)
-					{
-						u8* p = (u8*)&sprite2->spriteResource->image->imageData[
-							(u32)(frmRc.y + relativeY) * sprite2->spriteResource->image->width
-								+ (u32)(frmRc.x + x)];
-
-						if (p[3] == 0xff)
+						if (fabs(relativeY) <= beamWidth / 2 || (sprite2->rect.height - relativeY) <= beamWidth / 2)
 						{
-							pixelCollided = true;
-							col.x -= sprite2->rect.width - x;
-							break;
+							isTouchingHalfBeam = true;
+							col.x = sprite2->rect.center().x;
+						}
+
+						continue;
+					}
+					else
+					{
+						Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
+
+						for (int x = sprite2->spriteResource->frameWidth - 1; x >= 0; x--)
+						{
+							u8* p = (u8*)&sprite2->spriteResource->image->imageData[
+								(u32)(frmRc.y + relativeY) * sprite2->spriteResource->image->width
+									+ (u32)(frmRc.x + x)];
+
+							if (p[3] == 0xff)
+							{
+								pixelCollided = true;
+								col.x -= sprite2->rect.width - x;
+								break;
+							}
 						}
 					}
-				}
 
-				if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
-				{
-					f32 dist = pos.x - col.x;
-
-					if (dist < closest.distance)
+					if (pixelCollided || isInsideBeam || isTouchingHalfBeam)
 					{
-						closest.valid = true;
-						closest.distance = dist;
-						closest.point = col;
-						closest.unit = unit1;
-						closest.sprite = sprite2;
+						f32 dist = pos.x - col.x;
+
+						if (dist < closest.distance)
+						{
+							closest.valid = true;
+							closest.distance = dist;
+							closest.point = col;
+							closest.unit = unit1;
+							closest.sprite = sprite2;
+						}
 					}
 				}
 			}

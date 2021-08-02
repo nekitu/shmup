@@ -93,8 +93,9 @@ function C:onUpdate()
     --self.unit.deleteMeNow = true
     local movebody = self.unit:findSprite("movebody")
     local loc = Vec2(self.unit.root.position.x + movebody.position.x, self.unit.root.position.y + movebody.position.y)
-    local unit = game:spawn("units/turret_expl", "expl2", loc)
+    local unit = game:spawn("units/turret_expl", "boss_expl2", loc)
     unit.layerIndex = self.unit.layerIndex
+    --unit.root.collide = false
     game:animateCameraSpeed(30, 0.6)
     game:shakeCamera(Vec2(10, 10), 3, 200)
     self.unit:hideAllSprites()

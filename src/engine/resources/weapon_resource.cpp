@@ -9,6 +9,7 @@ bool WeaponResource::load(Json::Value& json)
 	projectileUnit = loader->loadUnit(json.get("projectileUnit", "").asString());
 	params.fireDamage = json.get("fireDamage", params.fireDamage).asFloat();
 	params.beamWidth = json.get("beamWidth", params.beamWidth).asFloat();
+	params.beamWidthAnimEasing = Easing::getTypeFromString(json.get("beamWidthAnimEasing", "inLinear").asString());
 	params.fireRate = json.get("fireRate", params.fireRate).asFloat();
 	params.fireRays = json.get("fireRays", params.fireRays).asInt();
 	params.fireRaysAngle = json.get("fireRaysAngle", params.fireRaysAngle).asFloat();

@@ -4,6 +4,7 @@
 #include "vec2.h"
 #include "json/value.h"
 #include "lua_scripting.h"
+#include "easing.h"
 
 namespace engine
 {
@@ -41,6 +42,7 @@ struct WeaponResource : Resource
 		f32 maxProjectileSpeed = 10000000;
 		f32 fireDamage = 1; /// if this is projectile, damage is per projectile hit, if beam then its per second
 		f32 beamWidth = 16;
+		Easing::Type beamWidthAnimEasing = Easing::Type::inLinear;
 		Vec2 position; /// relative to sprite
 		Vec2 offset;
 		f32 offsetRadius = 0;

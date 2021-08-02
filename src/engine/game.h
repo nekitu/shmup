@@ -53,6 +53,7 @@ enum class ScreenMode
 
 struct BeamCollisionInfo
 {
+	bool directHit = false;
 	bool valid = false;
 	Vec2 beamStart;
 	Vec2 point;

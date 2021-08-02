@@ -9,7 +9,7 @@ end
 
 function C:onUpdate(deltaTime)
   delay = delay + deltaTime
-  if delay > 2.5 then
+  if delay > 0.5 then
     game:setScreenActive(self.gameScreen.name, false)
     game:changeMap(0)
     game:setScreenActive("play", true)
