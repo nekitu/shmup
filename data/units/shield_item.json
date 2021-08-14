@@ -18,7 +18,7 @@
       "position": "0 0",
       "scale": "1 1",
       "rotation": 0,
-	  "health": 100000000,
+      "health": 100000000,
       "horizontalFlip": false,
       "verticalFlip": false,
       "color": "0 0 0 1",

@@ -12,7 +12,7 @@
   "script": "scripts/weapon_primary",
   "fireSound": "sounds/Laser03.wav",
   "beamWidth": 40,
-  "beamWidthAnimEasing": "outQuad",
+  "beamWidthAnimEasing": "inCubic",
   "offset": "0 -45",
   "type":"Beam",
   "beamBeginSprite":"sprites/beam_btm",

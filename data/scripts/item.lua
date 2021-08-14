@@ -12,6 +12,7 @@ end
 
 function C:onCollide(other, colPairs)
   if other.unitResource.unitType == UnitType_Player then
+    print("deleting item")
     self.unit.deleteMeNow = true
   end
 end

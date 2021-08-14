@@ -43,6 +43,7 @@ struct WeaponResource : Resource
 		f32 fireDamage = 1; /// if this is projectile, damage is per projectile hit, if beam then its per second
 		f32 beamWidth = 16;
 		Easing::Type beamWidthAnimEasing = Easing::Type::inLinear;
+		f32 beamAnimSpeed = 10;
 		Vec2 position; /// relative to sprite
 		Vec2 offset;
 		f32 offsetRadius = 0;
