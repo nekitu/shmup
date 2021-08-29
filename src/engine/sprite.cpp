@@ -67,13 +67,38 @@ void Sprite::initializeFrom(SpriteInstanceResource* res)
 	animationRepeatCount = 0;
 	animationDirection = 1;
 	animationIsActive = true;
+
 	if (res->spriteResource->paletteInfo.isPaletted)
 		paletteSlot = Game::instance->graphics->allocPaletteSlot();
+
 	std::string animName = res->animationName;
 
 	if (animName.empty() && res->animations.size())
 	{
 		animName = res->animations.begin()->first;
+	}
+
+	setFrameAnimation(animName);
+}
+
+void Sprite::initializeFromSpriteResource(SpriteResource* res)
+{
+	spriteResource = res;
+	defaultColor = color = res->color;
+	colorMode = res->colorMode;
+	animationFrame = 0;
+	animationRepeatCount = 0;
+	animationDirection = 1;
+	animationIsActive = true;
+
+	if (res->paletteInfo.isPaletted)
+		paletteSlot = Game::instance->graphics->allocPaletteSlot();
+
+	std::string animName;
+
+	if (res->frameAnimations.size())
+	{
+		animName = res->frameAnimations.begin()->first;
 	}
 
 	setFrameAnimation(animName);
@@ -164,6 +189,100 @@ void Sprite::update(struct Game* game)
 				color = defaultColor;
 			}
 		}
+	}
+
+	// update rendering info
+	if (visible)
+	{
+		Vec2 pos;
+
+		if (unit && relativeToRoot)
+		{
+			pos = this != unit->root ? unit->root->position : Vec2();
+		}
+
+		f32 flipV = verticalFlip ? -1 : 1;
+		f32 flipH = horizontalFlip ? -1 : 1;
+
+		if (unit && this != unit->root)
+		{
+			if (unit->root->verticalFlip) flipV *= -1;
+			if (unit->root->horizontalFlip) flipH *= -1;
+		}
+
+		Rect uvRc = spriteResource->getFrameUvRect(animationFrame);
+
+		if (flipV < 0)
+		{
+			uvRc.y = uvRc.bottom();
+			uvRc.height *= -1.0f;
+		}
+
+		if (flipH < 0)
+		{
+			uvRc.x = uvRc.right();
+			uvRc.width *= -1.0f;
+		}
+
+		auto shadowRc = rect;
+
+		if (unit && unit->unitResource)
+		{
+			shadowRc += unit->unitResource->shadowOffset;
+			shadowRc.width *= unit->unitResource->shadowScale;
+			shadowRc.height *= unit->unitResource->shadowScale;
+		}
+
+		uvRect = uvRc;
+		shadowRect = shadowRc;
+	}
+}
+
+void Sprite::renderShadow(Graphics* gfx)
+{
+	if (!visible) return;
+	if (!shadow) return;
+
+	gfx->atlasTextureIndex = spriteResource->image->atlasTexture->textureIndex;
+	gfx->color = 0x00FFFFFF;
+	gfx->colorMode = (u32)ColorMode::Sub;
+
+	if (rotation > 0)
+	{
+		gfx->drawRotatedQuad(shadowRect, uvRect, spriteResource->image->rotated, rotation);
+	}
+	else
+	{
+		gfx->drawQuad(shadowRect, uvRect, spriteResource->image->rotated);
+	}
+}
+
+void Sprite::render(Graphics* gfx)
+{
+	if (!visible) return;
+
+	gfx->color = color.getRgba();
+	gfx->colorMode = (u32)colorMode;
+	auto usePalette = spriteResource->paletteInfo.isPaletted;
+	gfx->currentGpuProgram->setUIntValue((u32)usePalette, "usePalette");
+
+	if (usePalette)
+	{
+		gfx->currentGpuProgram->setUIntArrayValue(palette.size(), palette.data(), "palette");
+	}
+
+	if (rotation > 0)
+	{
+		gfx->drawRotatedQuad(rect, uvRect, spriteResource->image->rotated, rotation);
+	}
+	else
+	{
+		gfx->drawQuad(rect, uvRect, spriteResource->image->rotated);
+	}
+
+	if (usePalette)
+	{
+		gfx->currentGpuProgram->setUIntValue(0, "usePalette");
 	}
 }
 

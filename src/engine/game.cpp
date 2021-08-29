@@ -457,8 +457,6 @@ void Game::mainLoop()
 			std::stable_sort(units.begin(), units.end(), [](Unit* a, Unit* b) { return a->layerIndex < b->layerIndex; });
 		}
 
-		Unit::updateShadowToggle();
-
 		checkCollisions();
 
 		auto iter = units.begin();

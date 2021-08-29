@@ -24,6 +24,20 @@ void Weapon::reset()
 	scriptClass = nullptr;
 }
 
+void Weapon::createBeamSprites()
+{
+	delete beamBeginSprite;
+	delete beamEndSprite;
+	delete beamBodySprite;
+
+	beamBeginSprite = new Sprite();
+	beamEndSprite = new Sprite();
+	beamBodySprite = new Sprite();
+	beamBeginSprite->initializeFromSpriteResource(weaponResource->beamBeginSprite);
+	beamEndSprite->initializeFromSpriteResource(weaponResource->beamEndSprite);
+	beamBodySprite->initializeFromSpriteResource(weaponResource->beamBodySprite);
+}
+
 void Weapon::copyFrom(Weapon* other)
 {
 	reset();
@@ -35,6 +49,9 @@ void Weapon::copyFrom(Weapon* other)
 	attachTo = other->attachTo;
 	fireSound.soundResource = other->fireSound.soundResource;
 	beamFireEndSound.soundResource = other->beamFireEndSound.soundResource;
+
+	if (other->beamBeginSprite)
+		createBeamSprites();
 }
 
 void Weapon::initializeFrom(struct WeaponResource* res)
@@ -50,6 +67,9 @@ void Weapon::initializeFrom(struct WeaponResource* res)
 
 	fireSound.soundResource = res->fireSound;
 	beamFireEndSound.soundResource = res->beamFireEndSound;
+
+	if (res->params.type == WeaponResource::Type::Beam)
+		createBeamSprites();
 }
 
 void Weapon::fire()
@@ -149,6 +169,10 @@ void Weapon::update(struct Game* game)
 		// line to sprite check collision
 		f32 beamDir = (parentUnit->unitResource->unitType == UnitType::Player) ? beamFromPlayer : beamFromEnemy;
 		beamCollision = game->checkBeamIntersection(parentUnit, attachTo, pos, currentBeamScale * params.beamWidth, beamDir);
+
+		beamBeginSprite->update(game);
+		beamEndSprite->update(game);
+		beamBodySprite->update(game);
 	}
 
 	if (!isBeamWeapon() && params.activeTime > 0 && params.pauseDelay > 0)
@@ -183,7 +207,7 @@ void Weapon::update(struct Game* game)
 
 		if (!firing && startedFiring)
 		{
-			beamAnimTime = 0;
+			beamWidthAnimTime = 0;
 			currentBeamScale = 0;
 			startedFiring = false;
 			fireSound.stop();
@@ -194,15 +218,10 @@ void Weapon::update(struct Game* game)
 		{
 			if (currentBeamScale < 1.0f)
 			{
-				currentBeamScale = Easing::easeValue(params.beamWidthAnimEasing, beamAnimTime, 0, 1, 1);
+				currentBeamScale = Easing::easeValue(params.beamWidthAnimEasing, beamWidthAnimTime, 0, 1, 1);
 				clampValue(currentBeamScale, 0, 1);
-				beamAnimTime += game->deltaTime * params.beamAnimSpeed;
+				beamWidthAnimTime += game->deltaTime * params.beamAnimSpeed;
 			}
-
-			beamFrameAnimationTime += game->deltaTime;
-
-			if (beamFrameAnimationTime > 1)
-				beamFrameAnimationTime = 0;
 
 			CALL_LUA_FUNC("onFire");
 
@@ -241,7 +260,7 @@ void Weapon::update(struct Game* game)
 	CALL_LUA_FUNC("onUpdate");
 }
 
-void Weapon::render()
+void Weapon::render(Graphics* gfx)
 {
 	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam && firing)
@@ -251,7 +270,7 @@ void Weapon::render()
 		auto sprEnd = weaponResource->beamEndSprite;
 		auto frames = 2;
 
-		Game::instance->graphics->setupColor(0);
+		gfx->setupColor(0);
 
 		if (Game::instance->screenMode == ScreenMode::Vertical)
 		{
@@ -259,31 +278,40 @@ void Weapon::render()
 				beamCollision.distance = beamCollision.beamStart.y;
 
 			// draw the beam body
-			Game::instance->graphics->drawQuad({
-					beamCollision.beamStart.x - currentBeamScale * params.beamWidth / 2,
-					beamCollision.beamStart.y - beamCollision.distance,
-					currentBeamScale * params.beamWidth,
-					beamCollision.distance },
-					sprBody->getFrameUvRect(beamFrameAnimationTime * frames));
+			if (beamBodySprite)
+			{
+				beamBodySprite->rect = {
+						beamCollision.beamStart.x - currentBeamScale * params.beamWidth / 2,
+						beamCollision.beamStart.y - beamCollision.distance,
+						currentBeamScale * params.beamWidth,
+						beamCollision.distance };
+				beamBodySprite->render(gfx);
+			}
+
 
 			if (attachTo->unit->unitResource->unitType == UnitType::Player)
 			{
-				// begin of beam
-				Game::instance->graphics->drawQuad({
+				// draw the beam begin
+				if (beamBeginSprite)
+				{
+					beamBeginSprite->rect = {
 					beamCollision.beamStart.x - sprBegin->frameWidth * currentBeamScale / 2,
 					beamCollision.beamStart.y - sprBegin->frameHeight / 2,
 					(f32)sprBegin->frameWidth * currentBeamScale,
-					(f32)sprBegin->frameHeight },
-					sprBegin->getFrameUvRect(beamFrameAnimationTime * frames));
+					(f32)sprBegin->frameHeight };
+					beamBeginSprite->render(gfx);
+				}
 
-				// end of beam
-				if (beamCollision.valid && beamCollision.directHit)
-				Game::instance->graphics->drawQuad({
+				// draw the beam end
+				if (beamEndSprite && beamCollision.valid && beamCollision.directHit)
+				{
+					beamEndSprite->rect = {
 					beamCollision.beamStart.x - sprEnd->frameWidth * currentBeamScale / 2,
 					beamCollision.point.y - sprEnd->frameHeight,
 					(f32)sprEnd->frameWidth * currentBeamScale,
-					(f32)sprEnd->frameHeight },
-					sprEnd->getFrameUvRect(beamFrameAnimationTime * frames));
+					(f32)sprEnd->frameHeight };
+					beamEndSprite->render(gfx);
+				}
 			}
 			//else if (attachTo->unit->unitResource->unitType == UnitType::Enemy)
 			//{

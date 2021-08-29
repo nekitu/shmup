@@ -67,7 +67,6 @@ struct Unit
 	void deleteQueuedSprites();
 	void replaceSprite(const std::string& sname, const std::string& path);
 	bool checkPixelCollision(struct Unit* other, std::vector<SpriteCollision>& collisions);
-	static void updateShadowToggle();
 	void onAnimationEvent(struct Sprite* sprite, const std::string& eventName);
 	void hideAllSprites();
 	void disableAllWeapons();
@@ -75,7 +74,6 @@ struct Unit
 	bool isSoundPlaying(const std::string& sndName);
 
 private:
-	static bool shadowToggle;
 	std::set<Sprite*> deleteSpritesQueue;
 
 	void removeSpriteAnimations(struct Sprite* spr);

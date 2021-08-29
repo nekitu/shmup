@@ -16,6 +16,9 @@ struct Weapon
 	struct WeaponResource* weaponResource = nullptr;
 	struct Unit* parentUnit = nullptr;
 	struct Sprite* attachTo = nullptr;
+	struct Sprite* beamBeginSprite = nullptr;
+	struct Sprite* beamBodySprite = nullptr;
+	struct Sprite* beamEndSprite = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	Sound fireSound;
 	Sound beamFireEndSound;
@@ -25,14 +28,13 @@ struct Weapon
 	f32 fireInterval = 0;
 	f32 fireAngleOffset = 0.0f;
 	f32 activeTimer = 0;
-	f32 beamFrameAnimationTime = 0;
 	bool paused = false;
 	bool firing = false;
 	bool autoFire = false;
 	bool startedFiring = false;
 	bool stoppedFiring = true;
 	f32 currentBeamScale = 0;
-	f32 beamAnimTime = 0;
+	f32 beamWidthAnimTime = 0;
 
 	~Weapon();
 
@@ -44,7 +46,9 @@ struct Weapon
 	void initializeFrom(struct WeaponResource* res);
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);
-	void render();
+	void render(struct Graphics* gfx);
+private:
+	void createBeamSprites();
 };
 
 }

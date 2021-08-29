@@ -63,6 +63,7 @@ struct Graphics
 	u32 atlasTextureIndex = 0;
 	u32 paletteIndex = 0;
 	u32 transparentColorIndex = 0;
+	bool shadowToggle = false; // used to toggle shadow each Nth frame to simulate transparency, like arcade did on CRT displays, taking advantage of refresh rate
 	GpuProgram gpuProgram;
 	GpuProgram blitRTGpuProgram;
 	GpuProgram* currentGpuProgram = nullptr;

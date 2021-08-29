@@ -3,6 +3,8 @@
 #include "image_atlas.h"
 #include "game.h"
 #include "graphics.h"
+#include <chrono>
+#include <filesystem>
 
 namespace engine
 {
@@ -94,6 +96,22 @@ bool SpriteResource::load(Json::Value& json)
 		imagePath = path + ".png";
 	else
 		imagePath = path + ".tga";
+
+	// check if there are asset compile params
+	if (json.isMember("assetCompiler"))
+	{
+		auto asset = json.get("assetCompiler", Json::Value()).get("asset", "").asString();
+
+		auto timeAsset = std::filesystem::last_write_time(asset);
+		auto timeData = std::filesystem::last_write_time(Game::makeFullDataPath(imagePath));
+
+		if (timeAsset != timeData)
+		{
+			LOG_INFO("Asset {} changed, recompoling...", asset);
+			system((std::string("psd2sheet ") + asset + " " + Game::makeFullDataPath(imagePath)).c_str());
+			std::filesystem::last_write_time(Game::makeFullDataPath(imagePath), timeAsset);
+		}
+	}
 
 	frameWidth = json.get("frameWidth", Json::Value(0)).asInt();
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();

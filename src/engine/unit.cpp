@@ -15,7 +15,6 @@
 
 namespace engine
 {
-bool Unit::shadowToggle = true;
 u64 Unit::lastId = 1;
 
 Unit::Unit()
@@ -62,11 +61,6 @@ void Unit::reset()
 	spriteAnimationMap = nullptr;
 	appeared = false;
 	stageIndex = 0;
-}
-
-void Unit::updateShadowToggle()
-{
-	shadowToggle = !shadowToggle;
 }
 
 void Unit::onAnimationEvent(struct Sprite* sprite, const std::string& eventName)
@@ -586,104 +580,24 @@ void Unit::render(Graphics* gfx)
 	if (!visible || !root)
 		return;
 
-	for (auto& spr : sprites)
-	{
-		if (!spr->visible) continue;
-
-		Vec2 pos;
-
-		if (spr->relativeToRoot)
-		{
-			pos = spr != root ? root->position : Vec2();
-		}
-
-		f32 flipV = spr->verticalFlip ? -1 : 1;
-		f32 flipH = spr->horizontalFlip ? -1 : 1;
-
-		if (spr != root)
-		{
-			if (root->verticalFlip) flipV *= -1;
-			if (root->horizontalFlip) flipH *= -1;
-		}
-
-		Rect uvRc = spr->spriteResource->getFrameUvRect(spr->animationFrame);
-
-		if (flipV < 0)
-		{
-			uvRc.y = uvRc.bottom();
-			uvRc.height *= -1.0f;
-		}
-
-		if (flipH < 0)
-		{
-			uvRc.x = uvRc.right();
-			uvRc.width *= -1.0f;
-		}
-
-		auto shadowRc = spr->rect;
-		shadowRc += unitResource->shadowOffset;
-		shadowRc.width *= unitResource->shadowScale;
-		shadowRc.height *= unitResource->shadowScale;
-		spr->uvRect = uvRc;
-		spr->shadowRect = shadowRc;
-	}
+	CALL_LUA_FUNC("onBeforeRender");
 
 	// draw shadows first
-	if (shadow && shadowToggle)
+	if (shadow && gfx->shadowToggle)
 	for (auto& spr : sprites)
 	{
-		if (!spr->visible || !spr->shadow) continue;
-
-		Game::instance->graphics->atlasTextureIndex = spr->spriteResource->image->atlasTexture->textureIndex;
-		gfx->color = 0x00FFFFFF;
-		gfx->colorMode = (u32)ColorMode::Sub;
-
-		if (spr->rotation > 0)
-		{
-			gfx->drawRotatedQuad(spr->shadowRect, spr->uvRect, spr->spriteResource->image->rotated, spr->rotation);
-		}
-		else
-		{
-			gfx->drawQuad(spr->shadowRect, spr->uvRect, spr->spriteResource->image->rotated);
-		}
+		spr->renderShadow(gfx);
 	}
-
-	CALL_LUA_FUNC("onBeforeRender");
 
 	// draw color sprites
 	for (auto& spr : sprites)
 	{
-		if (!spr->visible) continue;
-
-		gfx->color = spr->color.getRgba();
-		gfx->colorMode = (u32)spr->colorMode;
-		auto usePalette = spr->spriteResource->paletteInfo.isPaletted;
-		gfx->currentGpuProgram->setUIntValue((u32)usePalette, "usePalette");
-
-		if (usePalette)
-		{
-			gfx->currentGpuProgram->setUIntArrayValue(spr->palette.size(), spr->palette.data(), "palette");
-		}
-
-		if (spr->rotation > 0)
-		{
-			gfx->drawRotatedQuad(spr->rect, spr->uvRect, spr->spriteResource->image->rotated, spr->rotation);
-		}
-		else
-		{
-			gfx->drawQuad(spr->rect, spr->uvRect, spr->spriteResource->image->rotated);
-		}
-
-		//TODO: should we remove this?
-		if (usePalette)
-		{
-			//gfx->currentGpuProgram->setUIntValue(0, "usePalette");
-		}
+		spr->render(gfx);
 	}
 
 	for (auto& weapon : weapons)
 	{
-		weapon.second->render();
+		weapon.second->render(gfx);
 	}
 
 	CALL_LUA_FUNC("onAfterRender");

@@ -87,6 +87,7 @@ struct Args
 	int endAngle = 360;
 	int stepAngle = 15;
 	bool neareast = false;
+	bool reverseFrameOrder = true;
 } args;
 
 cxxopts::ParseResult parseArgs(int argc, char* argv[])
@@ -98,40 +99,29 @@ cxxopts::ParseResult parseArgs(int argc, char* argv[])
 			.positional_help("[optional args]")
 			.show_positional_help();
 
-		bool apple = false;
-
 		options
 			.allow_unrecognised_options()
 			.add_options()
-			("s,sheet", "Make a sheet, otherwise output separate PNG files for each layer", cxxopts::value<bool>(args.sheet))
-			("h,nohidden", "Skip hidden layers", cxxopts::value<bool>(args.skipHiddenLayers))
-			("r,rotate", "Rotate sprite and generate images", cxxopts::value<bool>(args.rotate))
-			("n,nearest", "Use nearest interpolation when generating rotated images", cxxopts::value<bool>(args.neareast))
-			("x,startangle", "Start angle (deg)", cxxopts::value<i32>(args.startAngle))
-			("y,endangle", "End angle (deg)", cxxopts::value<i32>(args.endAngle))
-			("a,stepangle", "Step angle (deg)", cxxopts::value<i32>(args.stepAngle))
-			("f, file", "PSD filename", cxxopts::value<std::string>(), "<filename>")
-			("o, outfile", "Out filename for the PNG sheet", cxxopts::value<std::string>(), "<outfilename>")
+			("s,sheet", "Make a sheet, otherwise output separate PNG files for each layer", cxxopts::value<bool>(args.sheet)->default_value(args.sheet ? "true": "false"))
+			("h,nohidden", "Skip hidden layers", cxxopts::value<bool>(args.skipHiddenLayers)->default_value(args.skipHiddenLayers ? "true" : "false"))
+			("r,rotate", "Rotate sprite and generate images", cxxopts::value<bool>(args.rotate)->default_value(args.rotate ? "true" : "false"))
+			("n,nearest", "Use nearest interpolation when generating rotated images", cxxopts::value<bool>(args.neareast)->default_value(args.neareast ? "true": "false"))
+			("i,reverse", "Reverse frame order from PSD layer order", cxxopts::value<bool>(args.reverseFrameOrder)->default_value(args.reverseFrameOrder ? "true":"false"))
+			("x,startangle", "Start angle (deg)", cxxopts::value<i32>(args.startAngle)->default_value(std::to_string(args.startAngle)))
+			("y,endangle", "End angle (deg)", cxxopts::value<i32>(args.endAngle)->default_value(std::to_string(args.endAngle)))
+			("a,stepangle", "Step angle (deg)", cxxopts::value<i32>(args.stepAngle)->default_value(std::to_string(args.stepAngle)))
+			("f, file", "PSD filename", cxxopts::value<std::string>(args.filename), "<filename>")
+			("o, outfile", "Out filename for the PNG sheet", cxxopts::value<std::string>(args.outFilename), "<outfilename>")
 			;
 
 		options.parse_positional({ "file", "outfile", "positional" });
 
 		auto result = options.parse(argc, argv);
 
-		if (result.count("help"))
+		if (result.count("help") || args.filename.empty())
 		{
 			std::cout << "Help: " << options.help({ "" }) << std::endl;
 			exit(0);
-		}
-
-		if (result.count("file"))
-		{
-			args.filename = result["file"].as<std::string>();
-		}
-
-		if (result.count("outfile"))
-		{
-			args.outFilename = result["outfile"].as<std::string>();
 		}
 
 		return result;
@@ -156,6 +146,10 @@ struct LayerImage
 int main(int argc, char *argv[])
 {
 	auto argResult = parseArgs(argc, argv);
+
+	if (args.filename.empty())
+		return 0;
+
 	printf("Loading %s\n", args.filename.c_str());
 	psd_context* context = NULL;
 	psd_status status;
@@ -184,7 +178,11 @@ int main(int argc, char *argv[])
 			limg->pixels = imgdata;
 			limg->rotatedRect = limg->rect;
 			limg->rotatedPixels = imgdata;
-			layerImages.push_back(limg);
+
+			if (args.reverseFrameOrder)
+				layerImages.insert(layerImages.begin(), limg);
+			else
+				layerImages.push_back(limg);
 		}
 	}
 	else
@@ -299,7 +297,11 @@ int main(int argc, char *argv[])
 		maxRotateBounds.add(v1);
 		maxRotateBounds.add(v2);
 		maxRotateBounds.add(v3);
-		layerImages.push_back(limg);
+
+		if (args.reverseFrameOrder)
+			layerImages.insert(layerImages.begin(), limg);
+		else
+			layerImages.push_back(limg);
 	}
 
 	maxRotateBounds.x = ceilf(maxRotateBounds.x);

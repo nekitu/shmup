@@ -1,4 +1,9 @@
 {
+    "assetCompiler":
+	{
+		"asset": "../assets/beam.psd",
+		"sheet": "true"
+	},
     "frameWidth": 40,
     "frameHeight": 40,
     "animations":
@@ -8,7 +13,7 @@
             "start": 0,
             "frames": 3,
             "type": "Normal",
-            "fps": 22,
+            "fps": 3,
             "repeat": 0
         }
     }

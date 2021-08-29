@@ -52,7 +52,10 @@ struct Sprite
 
 	void copyFrom(Sprite* other);
 	void initializeFrom(struct SpriteInstanceResource* res);
+	void initializeFromSpriteResource(struct SpriteResource* res);
 	void update(struct Game* game);
+	void renderShadow(struct Graphics* gfx);
+	void render(struct Graphics* gfx);
 	void setFrameAnimation(const std::string& name);
 	void play();
 	void hit(f32 hitDamage);

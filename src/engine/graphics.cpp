@@ -230,6 +230,7 @@ void Graphics::beginFrame()
 	drawVertexCount = 0;
 	glClearColor(0.2, 0.2, 0.2, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	shadowToggle = !shadowToggle;
 }
 
 void Graphics::setupProjection(f32 width, f32 height)
