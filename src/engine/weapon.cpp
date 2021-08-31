@@ -280,14 +280,46 @@ void Weapon::render(Graphics* gfx)
 			// draw the beam body
 			if (beamBodySprite)
 			{
-				beamBodySprite->rect = {
+				if (weaponResource->params.beamBodyType == WeaponResource::BeamBodyType::Stretch)
+				{
+					beamBodySprite->rect = {
 						beamCollision.beamStart.x - currentBeamScale * params.beamWidth / 2,
 						beamCollision.beamStart.y - beamCollision.distance,
 						currentBeamScale * params.beamWidth,
 						beamCollision.distance };
-				beamBodySprite->render(gfx);
-			}
+					beamBodySprite->render(gfx);
+				}
+				else if (weaponResource->params.beamBodyType == WeaponResource::BeamBodyType::Repeat)
+				{
+					auto repeatCount = beamCollision.distance / (f32)beamBodySprite->spriteResource->frameHeight;
+					f32 countFraction = repeatCount - (u32)repeatCount;
 
+					for (u32 i = 0; i < (u32)repeatCount; i++)
+					{
+						beamBodySprite->rect = {
+						beamCollision.beamStart.x - currentBeamScale * params.beamWidth / 2,
+						beamCollision.beamStart.y - (f32)i * beamBodySprite->spriteResource->frameHeight - beamBodySprite->spriteResource->frameHeight,
+						currentBeamScale * params.beamWidth,
+						(f32)beamBodySprite->spriteResource->frameHeight };
+
+						beamBodySprite->render(gfx);
+					}
+
+					if (countFraction > 0)
+					{
+						beamBodySprite->rect = {
+						beamCollision.beamStart.x - currentBeamScale * params.beamWidth / 2,
+						beamCollision.beamStart.y - (repeatCount - 1) * beamBodySprite->spriteResource->frameHeight - beamBodySprite->spriteResource->frameHeight,
+						currentBeamScale * params.beamWidth,
+						(f32)beamBodySprite->spriteResource->frameHeight * countFraction };
+						// scale UV coord height left of sprite after fraction
+						beamBodySprite->uvRect.y += beamBodySprite->uvRect.height * (1.0f - countFraction);
+						beamBodySprite->uvRect.height *= countFraction;
+
+						beamBodySprite->render(gfx);
+					}
+				}
+			}
 
 			if (attachTo->unit->unitResource->unitType == UnitType::Player)
 			{

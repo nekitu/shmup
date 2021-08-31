@@ -14,6 +14,7 @@
 #include "image_atlas.h"
 #include "weapon.h"
 #include "game.h"
+#include "sprite.h"
 #include <json/json.h>
 #include "utils.h"
 
@@ -157,6 +158,12 @@ void ResourceLoader::reloadSprites()
 
 			res.second->load(json);
 		}
+	}
+
+
+	for (auto& spr : Sprite::allSprites)
+	{
+		spr->setFrameAnimation(spr->currentFrameAnimationName);
 	}
 
 	// resolve/reload the tilesets also

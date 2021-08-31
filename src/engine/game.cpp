@@ -370,6 +370,7 @@ void Game::mainLoop()
 		if (isControlDown(InputControl::Exit))
 			exitGame = true;
 
+		//TODO: make a proper state object for the key presses
 		static bool reloadScriptsKeyDown = false;
 		static bool reloadSpritesKeyDown = false;
 		static bool reloadAnimationsKeyDown = false;

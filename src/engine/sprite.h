@@ -44,12 +44,17 @@ struct Sprite
 	f32 hitColorTimer = 0.0f;
 	f32 currentHitFlashCount = 0;
 
+	std::string currentFrameAnimationName;
 	SpriteFrameAnimation* frameAnimation = nullptr;
 	f32 animationFrame = 0;
 	u32 animationRepeatCount = 0;
 	f32 animationDirection = 1;
 	bool animationIsActive = true;
 
+	static std::vector<Sprite*> allSprites;
+
+	Sprite();
+	virtual ~Sprite();
 	void copyFrom(Sprite* other);
 	void initializeFrom(struct SpriteInstanceResource* res);
 	void initializeFromSpriteResource(struct SpriteResource* res);

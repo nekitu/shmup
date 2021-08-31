@@ -15,6 +15,7 @@
   "beamWidthAnimEasing": "inCubic",
   "offset": "0 -45",
   "type":"Beam",
+  "beamBodyType":"Repeat",
   "beamBeginSprite":"sprites/beam_btm",
   "beamEndSprite":"sprites/beam_top",
   "beamBodySprite":"sprites/beam"

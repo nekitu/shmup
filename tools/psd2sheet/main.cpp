@@ -349,22 +349,32 @@ int main(int argc, char *argv[])
 				u8* pixel = (u8*)&(src[y * (u32)layerImages[i]->rotatedRect.width + x]);
 				i32 dstX = 0;
 				i32 dstY = 0;
+				Rect frameRect = {
+					maxRotateBounds.width * sheetCol,
+					maxRotateBounds.height * sheetRow,
+					maxRotateBounds.width,
+					maxRotateBounds.height };
 
 				if (args.rotate)
 				{
 					// destination is current sheet cell
 					// starting at the center of it
 					// with pivot added
-					dstX = x + layerImages[i]->pivot.x + maxRotateBounds.width * sheetCol - layerImages[i]->rotatedRect.width / 2;
-					dstY = y + layerImages[i]->pivot.y + maxRotateBounds.height * sheetRow - layerImages[i]->rotatedRect.height / 2;
+					auto crtFrameX = layerImages[i]->pivot.x + maxRotateBounds.width * sheetCol - layerImages[i]->rotatedRect.width / 2;
+					auto crtFrameY = layerImages[i]->pivot.y + maxRotateBounds.height * sheetRow - layerImages[i]->rotatedRect.height / 2;
+
+					dstX = x + crtFrameX;
+					dstY = y + crtFrameY;
 				}
 				else
 				{
-					dstX = x + layerImages[i]->rect.x + maxRotateBounds.width * sheetCol;
-					dstY = y + layerImages[i]->rect.y + maxRotateBounds.height * sheetRow;
+					auto crtFrameX = layerImages[i]->rect.x + maxRotateBounds.width * sheetCol;
+					auto crtFrameY = layerImages[i]->rect.y + maxRotateBounds.height * sheetRow;
+					dstX = x + crtFrameX;
+					dstY = y + crtFrameY;
 				}
 
-				if (dstX >= 0 && dstY >= 0 && dstX < sheetWidth && dstY < sheetHeight)
+				if (frameRect.contains(dstX, dstY))
 				{
 					u8* npixel = (u8*)&(imagedata[dstY * sheetWidth	+ dstX]);
 					npixel[0] = pixel[2];

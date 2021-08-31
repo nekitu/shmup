@@ -11,6 +11,23 @@
 
 namespace engine
 {
+std::vector<Sprite*> Sprite::allSprites;
+
+Sprite::Sprite()
+{
+	allSprites.push_back(this);
+}
+
+Sprite::~Sprite()
+{
+	auto iter = std::find(allSprites.begin(), allSprites.end(), this);
+
+	if (iter != allSprites.end())
+	{
+		allSprites.erase(iter);
+	}
+}
+
 void Sprite::copyFrom(Sprite* other)
 {
 	name = other->name;
@@ -290,7 +307,15 @@ void Sprite::setFrameAnimation(const std::string& name)
 {
 	if (spriteResource && spriteResource->frameAnimations.size())
 	{
+		currentFrameAnimationName = name;
 		frameAnimation = spriteResource->frameAnimations[name];
+
+		if (!frameAnimation)
+		{
+			currentFrameAnimationName = "default";
+			frameAnimation = spriteResource->frameAnimations[currentFrameAnimationName];
+		}
+
 		play();
 	}
 }

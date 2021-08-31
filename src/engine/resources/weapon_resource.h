@@ -26,6 +26,13 @@ struct WeaponResource : Resource
 		Count
 	};
 
+	enum class BeamBodyType
+	{
+		Stretch,
+		Repeat,
+
+		Count
+	};
 
 	struct Parameters
 	{
@@ -42,6 +49,7 @@ struct WeaponResource : Resource
 		f32 maxProjectileSpeed = 10000000;
 		f32 fireDamage = 1; /// if this is projectile, damage is per projectile hit, if beam then its per second
 		f32 beamWidth = 16;
+		BeamBodyType beamBodyType = BeamBodyType::Repeat;
 		Easing::Type beamWidthAnimEasing = Easing::Type::inLinear;
 		f32 beamAnimSpeed = 10;
 		Vec2 position; /// relative to sprite
