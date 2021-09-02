@@ -154,6 +154,13 @@ void Weapon::update(struct Game* game)
 	if (!active)
 		return;
 
+	f32 deltaTime = game->deltaTime;
+
+	if (parentUnit)
+	{
+		deltaTime = parentUnit->isPlayer() ? game->realDeltaTime : deltaTime;
+	}
+
 	beamCollision.valid = false;
 
 	if (isBeamWeapon() && attachTo && firing)
@@ -177,7 +184,7 @@ void Weapon::update(struct Game* game)
 
 	if (!isBeamWeapon() && params.activeTime > 0 && params.pauseDelay > 0)
 	{
-		activeTimer += game->deltaTime;
+		activeTimer += deltaTime;
 
 		if (paused)
 		{
@@ -220,7 +227,7 @@ void Weapon::update(struct Game* game)
 			{
 				currentBeamScale = Easing::easeValue(params.beamWidthAnimEasing, beamWidthAnimTime, 0, 1, 1);
 				clampValue(currentBeamScale, 0, 1);
-				beamWidthAnimTime += game->deltaTime * params.beamAnimSpeed;
+				beamWidthAnimTime += deltaTime * params.beamAnimSpeed;
 			}
 
 			CALL_LUA_FUNC("onFire");
@@ -244,8 +251,8 @@ void Weapon::update(struct Game* game)
 	if (firing || autoFire)
 	{
 		fireInterval = 1.0f / params.fireRate;
-		fireTimer += game->deltaTime;
-		fireAngleOffset += params.fireRaysRotationSpeed * game->deltaTime;
+		fireTimer += deltaTime;
+		fireAngleOffset += params.fireRaysRotationSpeed * deltaTime;
 
 		if (fireTimer >= fireInterval)
 		{
@@ -262,7 +269,6 @@ void Weapon::update(struct Game* game)
 
 void Weapon::render(Graphics* gfx)
 {
-	//TODO: remove test beam
 	if (params.type == WeaponResource::Type::Beam && firing)
 	{
 		auto sprBody = weaponResource->beamBodySprite;
@@ -291,7 +297,7 @@ void Weapon::render(Graphics* gfx)
 				}
 				else if (weaponResource->params.beamBodyType == WeaponResource::BeamBodyType::Repeat)
 				{
-					auto repeatCount = beamCollision.distance / (f32)beamBodySprite->spriteResource->frameHeight;
+					auto repeatCount = fabsf(beamCollision.distance / (f32)beamBodySprite->spriteResource->frameHeight);
 					f32 countFraction = repeatCount - (u32)repeatCount;
 
 					for (u32 i = 0; i < (u32)repeatCount; i++)

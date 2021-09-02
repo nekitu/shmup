@@ -1,4 +1,9 @@
 {
+    "assetCompiler":
+	{
+		"asset": "../assets/beam_btm.psd",
+		"sheet": "true"
+	},
     "frameWidth": 50,
     "frameHeight": 50,
     "animations":

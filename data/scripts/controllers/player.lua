@@ -66,7 +66,7 @@ function C:onUpdate()
   end
 
   moveDir:normalize()
-  self.unit.root.position:add(moveDir:mulScalarReturn(game.deltaTime * self.unit.speed))
+  self.unit.root.position:add(moveDir:mulScalarReturn(game.realDeltaTime * self.unit.speed))
   self.unit.root.position.x = util.clampValue(self.unit.root.position.x, 0, gfx.videoWidth)
   self.unit.root.position.y = util.clampValue(self.unit.root.position.y, 0, gfx.videoHeight)
   game.cameraState.parallaxOffset = (gfx.videoWidth / 2 - self.unit.root.position.x) * game.cameraState.parallaxScale

@@ -90,6 +90,7 @@ local pauseTimer = 0
 function C:onUpdate()
   if self.unit.health == 0 and self.unit:findSprite("movebody").visible then
     print("BOSS DESTROYED")
+    game:animateTimeScale(0.1, 3, 1, 1)
     --self.unit.deleteMeNow = true
     local movebody = self.unit:findSprite("movebody")
     local loc = Vec2(self.unit.root.position.x + movebody.position.x, self.unit.root.position.y + movebody.position.y)
