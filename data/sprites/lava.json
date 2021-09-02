@@ -1,14 +1,19 @@
 {
-    "frameWidth": 100,
+  "assetCompiler":
+	{
+		"asset": "../assets/lava.psd",
+		"sheet": "true"
+	},
+      "frameWidth": 100,
     "frameHeight": 100,
     "animations":
     {
         "default":
         {
             "start": 0,
-            "frames": 1,
+            "frames": 4,
             "type": "Normal",
-            "fps": 1,
+            "fps": 5,
             "repeat": 0
         }
     }
