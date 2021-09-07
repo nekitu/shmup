@@ -117,6 +117,7 @@ bool UnitResource::load(Json::Value& json)
 			weaponInstRes->weaponResource = loader->loadWeapon(weaponJson.get("weapon", "").asString());
 			weaponInstRes->ammo = weaponJson.get("ammo", weaponInstRes->weaponResource->params.ammo).asFloat();
 			weaponInstRes->active = weaponJson.get("active", weaponInstRes->active).asBool();
+			weaponInstRes->groupIndex = weaponJson.get("groupIndex", weaponInstRes->groupIndex).asInt();
 			weaponInstRes->autoFire = weaponJson.get("autoFire", weaponInstRes->autoFire).asBool();
 			weapons[weaponName] = weaponInstRes;
 		}

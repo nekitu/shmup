@@ -29,7 +29,18 @@
   [
     {
       "name": "body",
-      "health": 1000,
+      "health": 1000000,
+      "sprite": "sprites/bomb",
+      "position": "0 0",
+      "scale": "1 1",
+      "rotation": 0,
+      "horizontalFlip": false,
+      "verticalFlip": false,
+      "color": "0 0 0 1"
+    },
+    {
+      "name": "body",
+      "health": 1000000,
       "sprite": "sprites/player",
       "position": "0 0",
       "scale": "1 1",
@@ -42,27 +53,31 @@
       {
         "lprimary":
         {
+          "groupIndex": 0,
           "position": "-12 0",
           "weapon": "weapons/player_primary",
           "active": true
         },
         "rprimary":
         {
+          "groupIndex": 0,
           "position": "12 0",
           "weapon": "weapons/player_primary",
           "active": true
         },
         "lsecondary":
         {
+          "groupIndex": 1,
           "position": "0 0",
           "weapon": "weapons/player_secondary",
-          "active": false
+          "active": true
         },
         "rsecondary":
         {
+          "groupIndex": 1,
           "position": "0 0",
           "weapon": "weapons/player_secondary",
-          "active": false
+          "active": true
         }
       }
     }

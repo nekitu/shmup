@@ -30,14 +30,35 @@ function C:onUpdate()
 
   if self.playerControl then
     -- fire if the button is pressed, the repeat fire logic is done in the engine
-    -- TODO: fire1 and fire2 handle, not all weapons
     if game:isPlayerFire1(self.playerIndex) then
-      for _, weapon in ipairs(self.unit:getWeapons()) do
-        weapon:fire()
+      local wpns = self.unit:getGroupWeapons(0)
+      for _, wpn in ipairs(wpns) do
+        wpn:fire()
       end
     else
-      for _, weapon in ipairs(self.unit:getWeapons()) do
-        weapon:stopFire()
+      local wpns = self.unit:getGroupWeapons(0)
+      for _, wpn in ipairs(wpns) do
+        wpn:stopFire()
+      end
+    end
+
+    if game:isPlayerFire2(self.playerIndex) then
+      local wpns = self.unit:getGroupWeapons(1)
+      for _, wpn in ipairs(wpns) do
+        wpn:fire()
+      end
+    else
+      local wpns = self.unit:getGroupWeapons(1)
+      for _, wpn in ipairs(wpns) do
+        wpn:stopFire()
+      end
+    end
+
+    if game:isPlayerFire3(self.playerIndex) then
+      local bomb = self.unit:findSprite("bomb")
+      if bomb then
+        bomb.visible = true
+        bomb:setFrameAnimation("explode")
       end
     end
 

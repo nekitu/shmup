@@ -249,6 +249,7 @@ void Unit::initializeFrom(UnitResource* res)
 
 		weapon->initializeFrom(weaponRes.second->weaponResource);
 		weapon->parentUnit = this;
+		weapon->groupIndex = weaponRes.second->groupIndex;
 		weapon->attachTo = spriteMap[weaponRes.second->attachTo];
 		weapon->active = weaponRes.second->active;
 		weapon->params.ammo = weaponRes.second->ammo;

@@ -178,8 +178,8 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_UP] = InputControl::Player1_MoveUp;
 	mapSdlToControl[SDLK_DOWN] = InputControl::Player1_MoveDown;
 	mapSdlToControl[SDLK_LCTRL] = InputControl::Player1_Fire1;
-	mapSdlToControl[SDLK_RSHIFT] = InputControl::Player1_Fire2;
-	mapSdlToControl[SDLK_RALT] = InputControl::Player1_Fire3;
+	mapSdlToControl[SDLK_LSHIFT] = InputControl::Player1_Fire2;
+	mapSdlToControl[SDLK_SPACE] = InputControl::Player1_Fire3;
 	mapSdlToControl[SDLK_a] = InputControl::Player2_MoveLeft;
 	mapSdlToControl[SDLK_d] = InputControl::Player2_MoveRight;
 	mapSdlToControl[SDLK_w] = InputControl::Player2_MoveUp;

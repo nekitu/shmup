@@ -51,6 +51,7 @@ struct WeaponInstanceResource
 	f32 ammo = 100;
 	bool active = true;
 	bool autoFire = false;
+	u32 groupIndex = 0;
 };
 
 struct ControllerInstanceResource

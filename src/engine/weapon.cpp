@@ -43,6 +43,7 @@ void Weapon::copyFrom(Weapon* other)
 	reset();
 	params = other->params;
 	active = other->active;
+	groupIndex = other->groupIndex;
 	autoFire = other->autoFire;
 	weaponResource = other->weaponResource;
 	parentUnit = other->parentUnit;
@@ -242,8 +243,8 @@ void Weapon::update(struct Game* game)
 				col.set("collisionCenter", beamCollision.point);
 				colsTbl.set(1, col);
 				LOG_INFO("Collide {} with target {} {}", attachTo->unit->name, beamCollision.unit->name, beamCollision.unit->health);
-				CALL_LUA_FUNC2(parentUnit->scriptClass, "onCollide", parentUnit, colsTbl)
-				CALL_LUA_FUNC2(beamCollision.unit->scriptClass, "onCollide", beamCollision.unit, colsTbl)
+				CALL_LUA_FUNC2(parentUnit->scriptClass, "onCollide", beamCollision.unit, colsTbl)
+				CALL_LUA_FUNC2(beamCollision.unit->scriptClass, "onCollide", parentUnit, colsTbl)
 			}
 		}
 	}

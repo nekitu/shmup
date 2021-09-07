@@ -363,6 +363,22 @@ bool initializeLua()
 
 				return wpns;
 			})
+		.addFunction("getGroupWeapons", [](Unit* thisObj, int groupIndex)
+			{
+				LuaIntf::LuaRef wpns = LuaIntf::LuaRef::createTable(getLuaState());
+				int i = 1;
+
+				for (auto& wpn : thisObj->weapons)
+				{
+					if (wpn.second->groupIndex == groupIndex)
+					{
+						wpns.set(i, wpn.second);
+						++i;
+					}
+				}
+
+				return wpns;
+			})
 		.addFunction("checkPixelCollision", [](Unit* thisObj, Unit* other, LuaIntf::LuaRef& collisions)
 			{
 				std::vector<SpriteCollision> cols;
