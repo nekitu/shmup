@@ -11,7 +11,7 @@
         "default":
         {
             "start": 0,
-            "frames": 3,
+            "frameCount": 3,
             "type": "Normal",
             "fps": 18,
             "repeat": 0

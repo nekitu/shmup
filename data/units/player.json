@@ -28,12 +28,15 @@
   "sprites":
   [
     {
-      "name": "body",
+      "name": "bomb",
+      "relativeToRoot": false,
       "health": 1000000,
+      "visible": false,
       "sprite": "sprites/bomb",
-      "position": "0 0",
+      "position": "120 160",
       "scale": "1 1",
       "rotation": 0,
+      "shadow": false,
       "horizontalFlip": false,
       "verticalFlip": false,
       "color": "0 0 0 1"

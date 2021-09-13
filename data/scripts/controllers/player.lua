@@ -61,7 +61,7 @@ function C:onUpdate()
         bomb:setFrameAnimation("explode")
       end
     end
-
+    
     if game:isPlayerMoveLeft(self.playerIndex) then
       moveDir.x = -1
       self.unit.root:setFrameAnimation("left")

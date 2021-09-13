@@ -164,7 +164,7 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<GameState>("GameState")
-		.addVariable("score", &GameState::hiscore)
+		.addVariable("score", &GameState::score)
 		.endClass();
 
 	LUA.beginClass<Game>("game")

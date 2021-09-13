@@ -6,7 +6,7 @@
         "default":
         {
             "start": 0,
-            "frames": 8,
+            "frameCount": 8,
             "type": "Normal",
             "fps": 16,
             "repeat": 0

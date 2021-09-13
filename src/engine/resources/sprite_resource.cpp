@@ -102,12 +102,33 @@ bool SpriteResource::load(Json::Value& json)
 	{
 		auto asset = json.get("assetCompiler", Json::Value()).get("asset", "").asString();
 
-		auto timeAsset = std::filesystem::last_write_time(asset);
-		auto timeData = std::filesystem::last_write_time(Game::makeFullDataPath(imagePath));
+		bool mustCompile = false;
+		auto imgExists = std::filesystem::exists(Game::makeFullDataPath(imagePath));
+		auto assetExists = std::filesystem::exists(asset);
 
-		if (timeAsset != timeData)
+		std::filesystem::file_time_type timeAsset, timeData;
+		timeAsset = std::filesystem::last_write_time(asset);
+
+		if (assetExists)
 		{
-			LOG_INFO("Asset {} changed, recompoling...", asset);
+			if (imgExists)
+			{
+				timeData = std::filesystem::last_write_time(Game::makeFullDataPath(imagePath));
+
+				if (timeAsset != timeData)
+				{
+					mustCompile = true;
+				}
+			}
+			else
+			{
+				mustCompile = true;
+			}
+		}
+
+		if (mustCompile)
+		{
+			LOG_INFO("Asset {} changed, recompiling...", asset);
 			system((std::string("psd2sheet ") + asset + " " + Game::makeFullDataPath(imagePath)).c_str());
 			std::filesystem::last_write_time(Game::makeFullDataPath(imagePath), timeAsset);
 		}
@@ -117,6 +138,18 @@ bool SpriteResource::load(Json::Value& json)
 	frameHeight = json.get("frameHeight", Json::Value(0)).asInt();
 	color.parse(json.get("color", color.toString()).asString());
 	auto colMode = json.get("colorMode", "Add").asString();
+
+	image = loadImage(Game::makeFullDataPath(imagePath));
+
+	if (image)
+	{
+		if (!frameWidth) frameWidth = image->width;
+		if (!frameHeight) frameHeight = image->height;
+	}
+
+	columns = image->width / frameWidth;
+	rows = image->height / frameHeight;
+	frameCount = rows * columns;
 
 	if (colMode == "Add") colorMode = ColorMode::Add;
 	if (colMode == "Sub") colorMode = ColorMode::Sub;
@@ -142,7 +175,7 @@ bool SpriteResource::load(Json::Value& json)
 		{
 			SpriteFrameAnimation* anim = new SpriteFrameAnimation();
 
-			anim->frameCount = frmCount;
+			anim->frameCount = frmCount ? frmCount : frameCount;
 			anim->framesPerSecond = fps;
 			char buf[10] = { 0 };
 			itoa(i, buf, 10);
@@ -164,7 +197,8 @@ bool SpriteResource::load(Json::Value& json)
 
 		anim->name = animName;
 		anim->startFrame = animJson.get("start", Json::Value(0)).asInt();
-		anim->frameCount = animJson.get("frames", Json::Value(0)).asInt();
+		anim->frameCount = animJson.get("frameCount", Json::Value(0)).asInt();
+		if (!anim->frameCount) anim->frameCount = frameCount;
 		anim->framesPerSecond = animJson.get("fps", Json::Value(0)).asInt();
 		anim->repeatCount = animJson.get("repeat", Json::Value(0)).asInt();
 		frameAnimations[animName] = anim;
@@ -173,14 +207,6 @@ bool SpriteResource::load(Json::Value& json)
 		if (type == "Normal") anim->type = SpriteFrameAnimation::Type::Normal;
 		if (type == "Reversed") anim->type = SpriteFrameAnimation::Type::Reversed;
 		if (type == "PingPong") anim->type = SpriteFrameAnimation::Type::PingPong;
-	}
-
-	image = loadImage(Game::makeFullDataPath(imagePath));
-
-	if (image)
-	{
-		if (!frameWidth) frameWidth = image->width;
-		if (!frameHeight) frameHeight = image->height;
 	}
 
 	if (isPalettedTga)

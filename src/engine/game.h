@@ -97,10 +97,9 @@ struct GameScreen
 
 struct GameState
 {
-	u32 hiscore = 0;
+	u32 score = 0;
 	u32 credit = 0;
 	bool playerActive[maxPlayerCount] = { false };
-
 };
 
 struct CameraState
