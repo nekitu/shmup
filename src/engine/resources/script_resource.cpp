@@ -404,6 +404,7 @@ bool initializeLua()
 		.addFunction("setAnimation", &Unit::setAnimation)
 		.addFunction("playSound", &Unit::playSound)
 		.addFunction("isSoundPlaying", &Unit::isSoundPlaying)
+		.addVariableRef("params", [](Unit* unit) { return unit->params; })
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")
