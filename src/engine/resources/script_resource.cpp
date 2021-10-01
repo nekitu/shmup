@@ -148,11 +148,12 @@ bool initializeLua()
 		.endModule();
 
 	LUA.beginClass<GameScreen>("GameScreen")
+		.addConstructor(LUA_ARGS())
 		.addVariable("name", &GameScreen::name)
 		.addVariable("path", &GameScreen::path)
 		.endClass();
-
 	LUA.beginClass<CameraState>("CameraState")
+		.addConstructor(LUA_ARGS())
 		.addVariable("speed", &CameraState::speed)
 		.addVariable("parallaxOffset", &CameraState::parallaxOffset)
 		.addVariable("parallaxScale", &CameraState::parallaxScale)
