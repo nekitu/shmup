@@ -90,6 +90,7 @@ local pauseTimer = 0
 function C:onUpdate()
   if self.unit.health == 0 and self.unit:findSprite("movebody").visible then
     print("BOSS DESTROYED")
+    --game:animateTimeScale(0.1, 3, 1, 1)
     --self.unit.deleteMeNow = true
     local movebody = self.unit:findSprite("movebody")
     local loc = Vec2(self.unit.root.position.x + movebody.position.x, self.unit.root.position.y + movebody.position.y)
@@ -102,7 +103,7 @@ function C:onUpdate()
     self.unit:disableAllWeapons()
     self.unit:findSprite("crater").visible = true
     self.unit:findSprite("crater").position:set(movebody.position.x, movebody.position.y)
-    self.unit:playSound("explosion")
+    --self.unit:playSound("explosion")
     game:changeMusic("music/gui.wav")
   end
   if self.unit.stageIndex == 1 then
@@ -202,6 +203,8 @@ end
 
 function C:onCollide(other, cols)
   local pos = Vec2(0, 0)
+  -- if other.unitResource.unitType ~= UnitType_Player
+  -- and other.unitResource.unitType ~= UnitType_PlayerProjectile then return end
   --print(self.unit.health)
   for _,col in ipairs(cols) do
     col.sprite1:hit(15)

@@ -462,7 +462,7 @@ void Graphics::endFrame()
 
 void Graphics::needToAddVertexCount(u32 count)
 {
-	if (drawVertexCount + count < vertices.size())
+	if ((drawVertexCount + count) < (u32)vertices.size())
 	{
 		// already have space available
 		return;

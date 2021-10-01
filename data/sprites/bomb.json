@@ -1,15 +1,19 @@
 {
+    "assetCompiler":
+    {
+      "asset":"../assets/bomb.psd"
+    },
     "frameWidth": 240,
-    "frameHeight": 347,
+    "frameHeight": 320,
     "animations":
     {
-        "default":
+        "explode":
         {
             "start": 0,
             "frameCount": 0,
             "type": "Normal",
-            "fps": 3,
-            "repeat": 0
+            "fps": 30,
+            "repeat": 1
         }
     }
 }

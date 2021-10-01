@@ -72,7 +72,7 @@ struct Unit
 	void disableAllWeapons();
 	void playSound(const std::string& sndName);
 	bool isSoundPlaying(const std::string& sndName);
-
+	bool isPlayer() const;
 private:
 	std::set<Sprite*> deleteSpritesQueue;
 

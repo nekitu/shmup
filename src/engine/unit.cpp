@@ -249,6 +249,7 @@ void Unit::initializeFrom(UnitResource* res)
 
 		weapon->initializeFrom(weaponRes.second->weaponResource);
 		weapon->parentUnit = this;
+		weapon->groupIndex = weaponRes.second->groupIndex;
 		weapon->attachTo = spriteMap[weaponRes.second->attachTo];
 		weapon->active = weaponRes.second->active;
 		weapon->params.ammo = weaponRes.second->ammo;
@@ -305,6 +306,8 @@ void Unit::update(Game* game)
 	if (!visible)
 		return;
 
+	f32 deltaTime = isPlayer() ? game->realDeltaTime : game->deltaTime;
+
 	deleteQueuedSprites();
 	computeHealth();
 
@@ -340,7 +343,7 @@ void Unit::update(Game* game)
 
 			if (sprAnim->active)
 			{
-				sprAnim->update(game->deltaTime);
+				sprAnim->update(deltaTime);
 				sprAnim->animateSprite(spr);
 			}
 		}
@@ -396,7 +399,7 @@ void Unit::update(Game* game)
 			}
 		}
 
-		age += game->deltaTime;
+		age += deltaTime;
 	}
 
 	//TODO: call as fixed step/fps ?
@@ -742,6 +745,13 @@ bool Unit::isSoundPlaying(const std::string& name)
 		return false;
 
 	return sounds[iter->second.channel]->isPlaying();
+}
+
+bool Unit::isPlayer() const
+{
+	if (!unitResource) return false;
+	return unitResource->unitType == UnitType::Player
+		|| unitResource->unitType == UnitType::PlayerProjectile;
 }
 
 }

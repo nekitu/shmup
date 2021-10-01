@@ -6,7 +6,7 @@
         "default":
         {
             "start": 0,
-            "frames": 32,
+            "frameCount": 32,
             "type": "Reversed",
             "fps": 42,
             "repeat": 0

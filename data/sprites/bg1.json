@@ -6,7 +6,7 @@
         "default":
         {
             "start": 0,
-            "frames": 1,
+            "frameCount": 1,
             "type": "Normal",
             "fps": 3,
             "repeat": 0

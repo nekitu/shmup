@@ -13,6 +13,7 @@ struct Weapon
 
 	WeaponResource::Parameters params;
 	bool active = true;
+	u32 groupIndex = 0;
 	struct WeaponResource* weaponResource = nullptr;
 	struct Unit* parentUnit = nullptr;
 	struct Sprite* attachTo = nullptr;

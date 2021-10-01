@@ -51,6 +51,7 @@ struct WeaponInstanceResource
 	f32 ammo = 100;
 	bool active = true;
 	bool autoFire = false;
+	u32 groupIndex = 0;
 };
 
 struct ControllerInstanceResource
@@ -102,6 +103,7 @@ struct UnitResource : Resource
 	std::vector<UnitLifeStage*> stages;
 	std::map<std::string /*weapon name*/, WeaponInstanceResource*> weapons;
 	std::map<std::string /*controller name*/, ControllerInstanceResource> controllers;
+	std::map<std::string /*param name*/, std::string /*param value*/> parameters;
 	std::map<std::string /*sound name*/, SoundInfoResource> sounds;
 
 	bool load(Json::Value& json) override;

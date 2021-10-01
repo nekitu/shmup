@@ -5,6 +5,6 @@ namespace engine
 {
 struct EnemyWave : Unit
 {
-    u32 enemyCount = 0;
+
 };
 }

@@ -123,6 +123,14 @@ void Sprite::initializeFromSpriteResource(SpriteResource* res)
 
 void Sprite::update(struct Game* game)
 {
+	f32 deltaTime = game->deltaTime;
+
+	if (unit)
+	{
+		if (unit->isPlayer())
+			deltaTime = game->realDeltaTime;
+	}
+
 	// update the sprite frame animation
 	if (frameAnimation && animationIsActive)
 	{
@@ -131,7 +139,7 @@ void Sprite::update(struct Game* game)
 			animationDirection = -1;
 		}
 
-		animationFrame += (f32)frameAnimation->framesPerSecond * game->deltaTime * animationDirection;
+		animationFrame += (f32)frameAnimation->framesPerSecond * deltaTime * animationDirection;
 
 		f32 frame = (i32)animationFrame;
 		bool reachedEnd = false;
@@ -192,7 +200,7 @@ void Sprite::update(struct Game* game)
 	if (hitFlashActive)
 	{
 		color = defaultColor + (hitColor - defaultColor) * hitColorTimer;
-		hitColorTimer += hitColorFlashSpeed * game->deltaTime;
+		hitColorTimer += hitColorFlashSpeed * deltaTime;
 
 		if (hitColorTimer > 1.0f)
 		{

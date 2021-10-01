@@ -178,8 +178,8 @@ bool Game::initialize()
 	mapSdlToControl[SDLK_UP] = InputControl::Player1_MoveUp;
 	mapSdlToControl[SDLK_DOWN] = InputControl::Player1_MoveDown;
 	mapSdlToControl[SDLK_LCTRL] = InputControl::Player1_Fire1;
-	mapSdlToControl[SDLK_RSHIFT] = InputControl::Player1_Fire2;
-	mapSdlToControl[SDLK_RALT] = InputControl::Player1_Fire3;
+	mapSdlToControl[SDLK_LSHIFT] = InputControl::Player1_Fire2;
+	mapSdlToControl[SDLK_SPACE] = InputControl::Player1_Fire3;
 	mapSdlToControl[SDLK_a] = InputControl::Player2_MoveLeft;
 	mapSdlToControl[SDLK_d] = InputControl::Player2_MoveRight;
 	mapSdlToControl[SDLK_w] = InputControl::Player2_MoveUp;
@@ -364,6 +364,7 @@ void Game::mainLoop()
 	while (!exitGame)
 	{
 		computeDeltaTime();
+		updateTimeScaleAnimation();
 		handleInputEvents();
 		music->update();
 
@@ -826,7 +827,7 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 					{
 						f32 dist = pos.y - col.y;
 
-						if (dist < closest.distance)
+						if (dist >= 0 && dist < closest.distance)
 						{
 							closest.directHit = !isTouchingHalfBeam;
 							closest.valid = true;
@@ -1026,8 +1027,20 @@ void Game::preloadSprites()
 void Game::computeDeltaTime()
 {
 	f32 ticks = SDL_GetTicks();
-	deltaTime = (ticks - lastTime) / 1000.0f;
+	realDeltaTime = deltaTime = (ticks - lastTime) / 1000.0f;
+	deltaTime *= timeScale;
 	lastTime = ticks;
+}
+
+void Game::animateTimeScale(f32 targetTimeScale, f32 holdSeconds, f32 inSpeed, f32 outSpeed)
+{
+	timeScaleState.targetScale = targetTimeScale;
+	timeScaleState.holdSeconds = holdSeconds;
+	timeScaleState.inSpeed = inSpeed;
+	timeScaleState.outSpeed = outSpeed;
+	timeScaleState.timer = 0;
+	timeScaleState.previousScale = timeScale;
+	timeScaleState.stateType = TimeScaleState::StateType::AnimateIn;
 }
 
 void Game::animateCameraSpeed(f32 towardsSpeed, f32 animSpeed)
@@ -1125,6 +1138,56 @@ void Game::updateTileAnimations()
 			TilesetResource* tset = (TilesetResource*)res.second;
 			tset->updateAnimations(deltaTime);
 		}
+	}
+}
+
+void Game::updateTimeScaleAnimation()
+{
+	switch (timeScaleState.stateType)
+	{
+	case TimeScaleState::StateType::AnimateIn:
+	{
+		timeScaleState.timer += timeScaleState.inSpeed * realDeltaTime;
+
+		if (timeScaleState.timer > 1.0f)
+		{
+			timeScaleState.timer = 0.0f;
+			timeScaleState.stateType = TimeScaleState::StateType::Holding;
+			timeScale = timeScaleState.targetScale;
+		}
+		else
+		{
+			timeScale = lerp(timeScaleState.previousScale, timeScaleState.targetScale, timeScaleState.timer);
+		}
+		break;
+	}
+	case TimeScaleState::StateType::Holding:
+	{
+		timeScaleState.timer += realDeltaTime;
+		if (timeScaleState.timer >= timeScaleState.holdSeconds)
+		{
+			timeScaleState.timer = 0;
+			timeScaleState.stateType = TimeScaleState::StateType::AnimateOut;
+		}
+
+		break;
+	}
+	case TimeScaleState::StateType::AnimateOut:
+	{
+		timeScaleState.timer += timeScaleState.outSpeed * realDeltaTime;
+
+		if (timeScaleState.timer > 1.0f)
+		{
+			timeScaleState.timer = 0.0f;
+			timeScaleState.stateType = TimeScaleState::StateType::Off;
+			timeScale = timeScaleState.previousScale;
+		}
+		else
+		{
+			timeScale = lerp(timeScaleState.targetScale, timeScaleState.previousScale, timeScaleState.timer);
+		}
+		break;
+	}
 	}
 }
 

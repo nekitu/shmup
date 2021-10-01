@@ -23,9 +23,11 @@ void Projectile::update(Game* game)
 {
 	Unit::update(game);
 
+	f32 deltaTime = isPlayer() ? game->realDeltaTime : game->deltaTime;
+
 	if (!root) return;
-	root->position += velocity * speed * game->deltaTime;
-	speed += speed * acceleration * game->deltaTime;
+	root->position += velocity * speed * deltaTime;
+	speed += speed * acceleration * deltaTime;
 	clampValue(speed, minSpeed, maxSpeed);
 }
 

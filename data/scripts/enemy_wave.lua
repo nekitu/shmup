@@ -2,11 +2,10 @@ local C = {}
 
 function C:init(unit)
   self.unit = unit
-  self.time = 0
+  self.activeTime = unit:getFloat("activeTime")
 end
 
 function C:onUpdate()
-  self.unit.root.position:add(Vec2(math.sin(self.time)/20, 0))
   self.time = self.time + game.deltaTime
 end
 

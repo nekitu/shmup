@@ -165,11 +165,13 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<GameState>("GameState")
-		.addVariable("score", &GameState::hiscore)
+		.addVariable("score", &GameState::score)
 		.endClass();
 
 	LUA.beginClass<Game>("game")
 		.addVariable("deltaTime", &Game::deltaTime)
+		.addVariable("realDeltaTime", &Game::realDeltaTime)
+		.addFunction("animateTimeScale", &Game::animateTimeScale)
 		.addVariable("cameraState", &Game::cameraState)
 		.addFunction("createPlayers", &Game::createPlayers)
 		.addFunction("getProjectileCount", [](Game* game) { return Game::instance->projectiles.size(); })
@@ -362,6 +364,22 @@ bool initializeLua()
 
 				return wpns;
 			})
+		.addFunction("getGroupWeapons", [](Unit* thisObj, int groupIndex)
+			{
+				LuaIntf::LuaRef wpns = LuaIntf::LuaRef::createTable(getLuaState());
+				int i = 1;
+
+				for (auto& wpn : thisObj->weapons)
+				{
+					if (wpn.second->groupIndex == groupIndex)
+					{
+						wpns.set(i, wpn.second);
+						++i;
+					}
+				}
+
+				return wpns;
+			})
 		.addFunction("checkPixelCollision", [](Unit* thisObj, Unit* other, LuaIntf::LuaRef& collisions)
 			{
 				std::vector<SpriteCollision> cols;
@@ -387,6 +405,7 @@ bool initializeLua()
 		.addFunction("setAnimation", &Unit::setAnimation)
 		.addFunction("playSound", &Unit::playSound)
 		.addFunction("isSoundPlaying", &Unit::isSoundPlaying)
+		.addVariableRef("params", [](Unit* unit) { return unit->params; })
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")
@@ -492,7 +511,7 @@ bool initializeLua()
 		.addVariableRef("localRect", &Sprite::localRect)
 		.addVariable("animationIsActive", &Sprite::animationIsActive)
 		.addVariable("relativeToRoot", &Sprite::relativeToRoot)
-		.addFunction("getFrameAnimationName", [](Sprite* spr) { return spr->frameAnimation->name; })
+		.addFunction("getFrameAnimationName", [](Sprite* spr) { if (!spr->frameAnimation) return std::string(""); return spr->frameAnimation->name; })
 		.addFunction("setFrameAnimation", &Sprite::setFrameAnimation)
 		.addFunction("setFrameAnimationFromAngle", &Sprite::setFrameAnimationFromAngle)
 		.addFunction("checkPixelCollision", &Sprite::checkPixelCollision)

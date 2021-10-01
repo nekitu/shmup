@@ -1,0 +1,16 @@
+{
+  "name": "EnemyWave1",
+  "type": "Enemy",
+  "speed": 0.0,
+  "controllers":
+  [
+    {
+       "name": "main",
+       "script": "scripts/controllers/enemy_wave",
+       "moverType": "line",
+       "lineDirection": "0 1"
+     }
+  ],
+  "autoDeleteType": "EndOfScreen",
+  "script": "scripts/enemy_wave"
+}

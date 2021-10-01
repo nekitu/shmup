@@ -97,10 +97,9 @@ struct GameScreen
 
 struct GameState
 {
-	u32 hiscore = 0;
+	u32 score = 0;
 	u32 credit = 0;
 	bool playerActive[maxPlayerCount] = { false };
-
 };
 
 struct CameraState
@@ -116,6 +115,27 @@ struct CameraState
 	f32 oldSpeed = 0, newSpeed = 0;
 	f32 offscreenBoundaryScale = 1.5f;
 	Rect offscreenBoundary;
+};
+
+struct TimeScaleState
+{
+	enum class StateType
+	{
+		Off,
+		AnimateIn,
+		Holding,
+		AnimateOut,
+
+		Count
+	};
+
+	StateType stateType = StateType::Off;
+	f32 previousScale = 1.0f;
+	f32 targetScale = 1.0f;
+	f32 holdSeconds = 1.0f;
+	f32 inSpeed = 1.0f;
+	f32 outSpeed = 1.0f;
+	f32 timer = 0;
 };
 
 struct Game
@@ -138,8 +158,10 @@ struct Game
 	SDL_GLContext glContext = 0;
 	struct Graphics* graphics = nullptr;
 	struct ResourceLoader* resourceLoader = nullptr;
-	f32 deltaTime = 0;
+	f32 deltaTime = 0; // can be affected by time slowdown
+	f32 realDeltaTime = 0; // always real time
 	f32 lastTime = 0;
+	f32 timeScale = 1.0f;
 	bool pauseGame = false;
 	std::vector<Unit*> units; // all units from all layers
 	std::vector<Unit*> newUnits;
@@ -157,6 +179,7 @@ struct Game
 	Vec2 windowMousePosition;
 	GameState gameState;
 	CameraState cameraState;
+	TimeScaleState timeScaleState;
 	ScreenFx screenFx;
 	PlayerState playerState[maxPlayerCount];
 
@@ -178,12 +201,14 @@ struct Game
 	void mainLoop();
 	void renderUnits();
 	void computeDeltaTime();
+	void animateTimeScale(f32 targetTimeScale, f32 holdSeconds, f32 inSpeed, f32 outSpeed);
 	void animateCameraSpeed(f32 towardsSpeed, f32 animSpeed);
 	void shakeCamera(const Vec2& force, f32 duration, u32 count);
 	void fadeScreen(const Color& color1, const Color& color2, f32 duration, bool revertBackAfter, u32 layer = 1);
 	void updateScreenFx();
 	void updateCamera();
 	void updateTileAnimations();
+	void updateTimeScaleAnimation();
 	bool isControlDown(InputControl control) { return controls[(u32)control]; }
 	bool isPlayerMoveLeft(u32 playerIndex);
 	bool isPlayerMoveRight(u32 playerIndex);
