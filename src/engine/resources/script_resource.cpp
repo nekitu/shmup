@@ -415,10 +415,12 @@ bool initializeLua()
 		.addFunction("setAnimation", &Unit::setAnimation)
 		.addFunction("playSound", &Unit::playSound)
 		.addFunction("isSoundPlaying", &Unit::isSoundPlaying)
-		.addFunction("addController", [](Unit* unit, const std::string& scriptPath, const std::string& name, LuaIntf::LuaRef& paramsTbl)
+		.addFunction("addController", [](Unit* unit, const std::string& scriptPath, const std::string& name, Parameters* params)
 			{
-				ScriptClassInstanceBase*
+				auto script = Game::instance->resourceLoader->loadScript(scriptPath);
+				ScriptClassInstanceBase* ctrl = script->createClassInstance<Unit>(unit);
 				unit->controllers.insert(std::make_pair(name, ctrl));
+				CALL_LUA_FUNC2(ctrl, "setup", params);
 			})
 		.endClass();
 

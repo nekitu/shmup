@@ -94,7 +94,6 @@ void Unit::copyFrom(Unit* other)
 	shadow = other->shadow;
 	unitResource = other->unitResource;
 	deleteMeNow = other->deleteMeNow;
-	scriptClass = other->unitResource->script ? other->unitResource->script->createClassInstance(this) : nullptr;
 
 	// map from other unit to new sprites
 	std::map<Sprite*, Sprite*> spriteMap;
@@ -151,7 +150,7 @@ void Unit::copyFrom(Unit* other)
 		Weapon* wiNew = new Weapon();
 
 		wiNew->copyFrom(wi.second);
-		// reparent to this
+		// parent to this
 		wiNew->parentUnit = this;
 		// attach to new sprite
 		wiNew->attachTo = spriteMap[wi.second->attachTo];
@@ -176,6 +175,9 @@ void Unit::copyFrom(Unit* other)
 
 	setAnimation(currentAnimationName);
 
+	// create the script class instance and init it
+	scriptClass = other->unitResource->script ? other->unitResource->script->createClassInstance(this) : nullptr;
+
 	// controller script instances
 	for (auto& ctrl : unitResource->controllers)
 	{
@@ -192,7 +194,6 @@ void Unit::initializeFrom(UnitResource* res)
 	name = res->name;
 	speed = res->speed;
 	visible = res->visible;
-	scriptClass = res->script ? res->script->createClassInstance(this) : nullptr;
 	collide = res->collide;
 	shadow = res->shadow;
 
@@ -278,6 +279,8 @@ void Unit::initializeFrom(UnitResource* res)
 			sounds[snd.second.channel] = newSnd;
 		}
 	}
+
+	scriptClass = res->script ? res->script->createClassInstance(this) : nullptr;
 
 	// controller script instances
 	// has to be last since they will try to references sprites, weapons, etc.
