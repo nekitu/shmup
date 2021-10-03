@@ -270,6 +270,15 @@ bool initializeLua()
 		.addFunction("copyFromSprite", &ColorPalette::copyFromSprite)
 		.endClass();
 
+	LUA.beginClass<Parameters>("Parameters")
+		.addFunction("getInt", &Parameters::getInt)
+		.addFunction("getFloat", &Parameters::getFloat)
+		.addFunction("getString", &Parameters::getString)
+		.addFunction("getBool", &Parameters::getBool)
+		.addFunction("getVec2", &Parameters::getVec2)
+		.addFunction("getColor", &Parameters::getColor)
+		.endClass();
+
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
 		.addVariableRef("direction", &WeaponResource::Parameters::direction)
 		.endClass();
@@ -291,6 +300,7 @@ bool initializeLua()
 		.addVariable("name", &UnitResource::name)
 		.addVariable("path", &UnitResource::path)
 		.addVariable("unitType", &UnitResource::unitType)
+		.addVariableRef("parameters", &UnitResource::parameters)
 		.endClass();
 
 	LUA.beginExtendClass<SpriteResource, UnitResource>("SpriteResource")
@@ -405,7 +415,11 @@ bool initializeLua()
 		.addFunction("setAnimation", &Unit::setAnimation)
 		.addFunction("playSound", &Unit::playSound)
 		.addFunction("isSoundPlaying", &Unit::isSoundPlaying)
-		.addVariableRef("params", [](Unit* unit) { return unit->params; })
+		.addFunction("addController", [](Unit* unit, const std::string& scriptPath, const std::string& name, LuaIntf::LuaRef& paramsTbl)
+			{
+				ScriptClassInstanceBase*
+				unit->controllers.insert(std::make_pair(name, ctrl));
+			})
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")
@@ -417,18 +431,8 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<ControllerInstanceResource>("ControllerInstanceResource")
-		.addFunction("getInt", [](ControllerInstanceResource* cls, const std::string& name, int defaultVal) { return cls->json.get(name, defaultVal).asInt(); })
-		.addFunction("getFloat", [](ControllerInstanceResource* cls, const std::string& name, f32 defaultVal) { return cls->json.get(name, defaultVal).asFloat(); })
-		.addFunction("getString", [](ControllerInstanceResource* cls, const std::string& name, const std::string& defaultVal) { return cls->json.get(name, defaultVal).asString(); })
-		.addFunction("getBool", [](ControllerInstanceResource* cls, const std::string& name, bool defaultVal) { return cls->json.get(name, defaultVal).asBool(); })
-		.addFunction("getVec2", [](ControllerInstanceResource* cls, const std::string& name, const Vec2& defaultVal)
-			{
-
-				auto str = cls->json.get(name, defaultVal.toString()).asString();
-				Vec2 v;
-				v.parse(str);
-				return v;
-			})
+		.addVariable("name", &ControllerInstanceResource::name)
+		.addVariableRef("parameters", &ControllerInstanceResource::parameters)
 		.endClass();
 
 	LUA.beginClass<Color>("Color")

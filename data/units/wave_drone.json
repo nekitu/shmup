@@ -2,15 +2,14 @@
   "name": "EnemyWave1",
   "type": "Enemy",
   "speed": 0.0,
-  "controllers":
-  [
-    {
-       "name": "main",
-       "script": "scripts/controllers/enemy_wave",
-       "moverType": "line",
-       "lineDirection": "0 1"
-     }
-  ],
+  "controllers": [],
   "autoDeleteType": "EndOfScreen",
-  "script": "scripts/enemy_wave"
+  "script": "scripts/enemy_wave",
+  "parameters":
+  {
+    "mover" : "scripts/controllers/line_mover",
+    "activeTime": 10,
+    "spawnDelay": 2,
+    "spawnUnit" : "units/turret"
+  }
 }

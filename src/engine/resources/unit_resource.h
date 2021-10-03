@@ -9,6 +9,7 @@
 #include "resource.h"
 #include "resources/sprite_resource.h"
 #include "sound.h"
+#include "parameters.h"
 
 namespace engine
 {
@@ -56,7 +57,8 @@ struct WeaponInstanceResource
 
 struct ControllerInstanceResource
 {
-	Json::Value json;
+	std::string name;
+	Parameters parameters;
 	struct ScriptResource* script = nullptr;
 };
 
@@ -97,13 +99,13 @@ struct UnitResource : Resource
 	bool visible = true;
 	AutoDeleteType autoDeleteType = AutoDeleteType::EndOfScreen;
 	bool collide = true;
+	Parameters parameters;
 	std::string rootName;
 	struct ScriptResource* script = nullptr;
 	std::map<std::string /*sprite instance name*/, SpriteInstanceResource*> sprites;
 	std::vector<UnitLifeStage*> stages;
 	std::map<std::string /*weapon name*/, WeaponInstanceResource*> weapons;
 	std::map<std::string /*controller name*/, ControllerInstanceResource> controllers;
-	std::map<std::string /*param name*/, std::string /*param value*/> parameters;
 	std::map<std::string /*sound name*/, SoundInfoResource> sounds;
 
 	bool load(Json::Value& json) override;

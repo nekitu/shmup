@@ -4,9 +4,9 @@ function C:init(unit)
   self.unit = unit
 end
 
-function C:setup(ctrlInfo)
-  self.itemType = ctrlInfo:getString("itemType", "")
-  self.value = ctrlInfo:getFloat("value", 0)
+function C:setup(params)
+  self.itemType = params:getString("itemType", "")
+  self.value = params:getFloat("value", 0)
 end
 
 function C:onUpdate()

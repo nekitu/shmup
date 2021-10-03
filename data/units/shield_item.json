@@ -5,7 +5,7 @@
   "parallaxScale": 0.0,
   "controllers":
   [
-      { "name": "item", "script": "scripts/controllers/item", "itemType": "Shield", "value": 10 }
+      { "name": "item", "script": "scripts/controllers/item", "parameters": {"itemType": "Shield", "value": 10} }
   ],
   "root": "body",
   "collide": true,

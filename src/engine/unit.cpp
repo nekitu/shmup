@@ -180,7 +180,7 @@ void Unit::copyFrom(Unit* other)
 	for (auto& ctrl : unitResource->controllers)
 	{
 		auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
-		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
+		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second.parameters);
 		controllers[ctrl.first] = ctrlClassInst;
 	}
 }
