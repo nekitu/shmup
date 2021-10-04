@@ -2,10 +2,10 @@ local C = {}
 
 function C:init(unit)
   self.unit = unit
-  self.activeTime = unit.parameters:getFloat("activeTime", 10)
-  self.spawnDelay = unit.parameters:getFloat("spawnDelay", 2)
-  self.mover = unit.parameters:getString("mover", "")
-  self.spawnUnit = unit.parameters:getString("spawnUnit", "")
+  self.activeTime = unit.unitResource.parameters:getFloat("activeTime", 10)
+  self.spawnDelay = unit.unitResource.parameters:getFloat("spawnDelay", 2)
+  self.mover = unit.unitResource.parameters:getString("mover", "")
+  self.spawnUnit = unit.unitResource.parameters:getString("spawnUnit", "")
   self.spawnTimer = 0
   self.activeTimer = 0
 end
@@ -13,12 +13,15 @@ end
 function C:onUpdate()
   self.activeTimer = self.activeTimer + game.deltaTime
   self.spawnTimer = self.spawnTimer + game.deltaTime
-  if self.activeTimer >= self.activeTime then self.unit.deleteMeNow = true end
-
+  --if self.activeTimer >= self.activeTime then self.unit.deleteMeNow = true end
+  --print(self.spawnTimer, game.deltaTime, self.spawnDelay)
   if self.spawnTimer >= self.spawnDelay then
+    print("Spawning...")
     local unit = game:spawn(self.spawnUnit, "SpawnedWaveUnit", self.unit.root.position)
     self.spawnTimer = 0
-    unit:addController(self.mover, unit.unitResource.parameters)
+    unit.layerIndex = self.unit.layerIndex
+    unit.speed = 64
+    unit:addController(self.mover, "mover", self.unit.unitResource.parameters)
   end
 end
 

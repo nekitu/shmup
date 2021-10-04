@@ -458,6 +458,7 @@ bool initializeLua()
 		.addFunction("getCopy", [](Vec2* v) {return Vec2(v->x, v->y); })
 		.addFunction("dir2deg", [](Vec2* v) { return dir2deg(*v); })
 		.addFunction("normalize", &Vec2::normalize)
+		.addFunction("getNormalized", &Vec2::getNormalized)
 		.addFunction("getLength", &Vec2::getLength)
 		.addFunction("__add", [](Vec2* v1, Vec2* v2) { return *v1 + *v2; })
 		.addFunction("__sub", [](Vec2* v1, Vec2* v2) { return *v1 - *v2; })
@@ -535,6 +536,8 @@ bool initializeLua()
 
 	l.setGlobal("game", Game::instance);
 	l.setGlobal("gfx", Game::instance->graphics);
+
+	LUA.addFunction("randomFloat", &randomFloat);
 
 	// constants and enums
 	l.setGlobal("UnitType_Enemy", UnitType::Enemy);

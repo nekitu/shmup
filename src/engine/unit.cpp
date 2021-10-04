@@ -287,7 +287,7 @@ void Unit::initializeFrom(UnitResource* res)
 	for (auto& ctrl : res->controllers)
 	{
 		auto ctrlClassInst = ctrl.second.script->createClassInstance<Unit>(this);
-		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second);
+		CALL_LUA_FUNC2(ctrlClassInst, "setup", &ctrl.second.parameters);
 		controllers[ctrl.first] = ctrlClassInst;
 	}
 }

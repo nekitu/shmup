@@ -41,6 +41,10 @@ int Parameters::getInt(const std::string& name, int defaultValue)
 {
 	auto iter = parameters.find(name);
 	if (iter == parameters.end()) return defaultValue;
+
+	if (iter->second.type == Parameter::Type::Float)
+		return iter->second.value.floatVal;
+
 	return iter->second.value.intVal;
 }
 
@@ -55,6 +59,10 @@ f32 Parameters::getFloat(const std::string& name, f32 defaultValue)
 {
 	auto iter = parameters.find(name);
 	if (iter == parameters.end()) return defaultValue;
+
+	if (iter->second.type == Parameter::Type::Int)
+		return iter->second.value.intVal;
+
 	return iter->second.value.floatVal;
 }
 

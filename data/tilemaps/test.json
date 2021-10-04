@@ -651,6 +651,24 @@
                  "width":0,
                  "x":31.6666666666667,
                  "y":-582.333333333333
+                }, 
+                {
+                 "height":0,
+                 "id":51,
+                 "name":"wave_drone",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"unit",
+                         "type":"string",
+                         "value":"units\/wave_drone"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":87.5,
+                 "y":-355
                 }],
          "opacity":1,
          "properties":[
@@ -679,7 +697,7 @@
          "y":0
         }],
  "nextlayerid":16,
- "nextobjectid":51,
+ "nextobjectid":52,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"2020.10.30",
