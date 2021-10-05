@@ -1242,7 +1242,8 @@ void Game::deleteNonPersistentUnits()
 
 	while (iter != units.end())
 	{
-		if ((*iter)->unitResource->unitType != UnitType::Player)
+		bool isPlayer = (*iter)->unitResource && (*iter)->unitResource->unitType == UnitType::Player;
+		if (!isPlayer && !(*iter)->persistentOnChangeMap)
 		{
 			delete *iter;
 			iter = units.erase(iter);
@@ -1326,6 +1327,8 @@ bool Game::changeMap(i32 index)
 	{
 		spriteResource->computeParamsAfterAtlasGeneration();
 	}
+
+	cameraState.position.clear();
 
 	return true;
 }

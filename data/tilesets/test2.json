@@ -3,12 +3,12 @@
  "imageheight":168,
  "imagewidth":64,
  "margin":0,
- "name":"test",
+ "name":"test2",
  "spacing":0,
  "tilecount":168,
- "tiledversion":"2020.10.30",
+ "tiledversion":"1.7.2",
  "tileheight":8,
  "tilewidth":8,
  "type":"tileset",
- "version":"1.4"
+ "version":"1.6"
 }

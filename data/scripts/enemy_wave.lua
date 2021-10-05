@@ -13,10 +13,8 @@ end
 function C:onUpdate()
   self.activeTimer = self.activeTimer + game.deltaTime
   self.spawnTimer = self.spawnTimer + game.deltaTime
-  --if self.activeTimer >= self.activeTime then self.unit.deleteMeNow = true end
-  --print(self.spawnTimer, game.deltaTime, self.spawnDelay)
+  if self.activeTimer >= self.activeTime then self.unit.deleteMeNow = true end
   if self.spawnTimer >= self.spawnDelay then
-    print("Spawning...")
     local unit = game:spawn(self.spawnUnit, "SpawnedWaveUnit", self.unit.root.position)
     self.spawnTimer = 0
     unit.layerIndex = self.unit.layerIndex

@@ -109,7 +109,7 @@ function C:onUpdate()
   if self.unit.stageIndex == 1 then
     local movebody = self.unit:findSprite("movebody")
     movebody.position = from:lerp(targets[tindex], tbody)
-    local legScale = 1 --0.5 + (1 - math.abs(t - 0.5) * 2) * 0.06
+    local legScale = 0.5 + (1 - math.abs(t - 0.5) * 2) * 0.06
 
     if legset == 0 then
         tlleg.scale.x = legScale

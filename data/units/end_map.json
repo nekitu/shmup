@@ -2,8 +2,5 @@
   "name": "end_map",
   "type": "Item",
   "speed": 0.0,
-  "controllers":
-  [
-      { "name": "end_map", "script": "scripts/controllers/end_map" }
-  ]
+  "script": "scripts/end_map"
 }

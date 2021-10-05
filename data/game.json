@@ -26,6 +26,10 @@
     {
       "title": "Intro",
       "path": "tilemaps/test"
+    },
+    {
+      "title": "Main",
+      "path": "tilemaps/test2"
     }
   ]
 }

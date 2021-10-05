@@ -40,6 +40,7 @@ struct Unit
 	u32 stageIndex = 0;
 	bool collide = true;
 	bool shadow = false;
+	bool persistentOnChangeMap = false;
 	struct UnitResource* unitResource = nullptr;
 	struct ScriptClassInstanceBase* scriptClass = nullptr;
 	struct Sprite* root = nullptr;
