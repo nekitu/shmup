@@ -1,4 +1,4 @@
-# Stellar Eagle Shmup Arcade Game
+# StellarHawk Shmup Arcade Game
 
 ## OVERVIEW
 This is a game development project intended to pay an homage to the old school shmup arcade games of the past.
