@@ -32,6 +32,30 @@ namespace engine
 {
 Game* Game::instance = nullptr;
 
+CollisionMatrix::CollisionMatrix()
+{
+	set(UnitType::Enemy, UnitType::Enemy, CollideFlags::Friends);
+	set(UnitType::Enemy, UnitType::EnemyProjectile, CollideFlags::Friends);
+	set(UnitType::Enemy, UnitType::Player, CollideFlags::Collide);
+	set(UnitType::Enemy, UnitType::PlayerProjectile, CollideFlags::Collide);
+	set(UnitType::Enemy, UnitType::Item, CollideFlags::Friends);
+	set(UnitType::Player, UnitType::Item, CollideFlags::Collide |CollideFlags::Friends);
+	set(UnitType::Player, UnitType::Player, CollideFlags::Friends);
+	set(UnitType::Player, UnitType::PlayerProjectile, CollideFlags::Friends);
+	set(UnitType::Player, UnitType::EnemyProjectile, CollideFlags::Collide);
+}
+
+void CollisionMatrix::set(UnitType a, UnitType b, u32 flags)
+{
+	matrix[(int)a][(int)b] = (CollideFlags)flags;
+	matrix[(int)b][(int)a] = (CollideFlags)flags;
+}
+
+u32 CollisionMatrix::get(UnitType a, UnitType b)
+{
+	return matrix[(int)a][(int)b];
+}
+
 Game::Game()
 {
 	instance = this;
@@ -467,6 +491,7 @@ void Game::mainLoop()
 		{
 			if ((*iter)->deleteMeNow)
 			{
+				CALL_LUA_FUNC2((*iter)->scriptClass, "onDelete");
 				delete *iter;
 				iter = units.erase(iter);
 				continue;
@@ -576,21 +601,10 @@ void Game::checkCollisions()
 			if (unit1 == unit2
 				|| unit1->unitResource->unitType == unit2->unitResource->unitType) continue;
 
-			if ((unit1->unitResource->unitType == UnitType::Enemy &&
-				unit2->unitResource->unitType == UnitType::EnemyProjectile)
-				|| (unit2->unitResource->unitType == UnitType::Enemy &&
-					unit1->unitResource->unitType == UnitType::EnemyProjectile))
-			{
-				continue;
-			}
+			auto colFlags = collisionMatrix.get(unit1->unitResource->unitType, unit2->unitResource->unitType);
 
-			if ((unit1->unitResource->unitType == UnitType::Player &&
-				unit2->unitResource->unitType == UnitType::PlayerProjectile)
-				|| (unit2->unitResource->unitType == UnitType::Player &&
-					unit1->unitResource->unitType == UnitType::PlayerProjectile))
-			{
+			if (!(colFlags & CollideFlags::Collide))
 				continue;
-			}
 
 			if (unit1->boundingBox.overlaps(unit2->boundingBox))
 			{
@@ -631,17 +645,10 @@ void Game::checkCollisions()
 			if (unitProj == unit2
 				|| unitProj->unitResource->unitType == unit2->unitResource->unitType) continue;
 
-			if (unit2->unitResource->unitType == UnitType::Enemy &&
-				unitProj->unitResource->unitType == UnitType::EnemyProjectile)
-			{
-				continue;
-			}
+			auto colFlags = collisionMatrix.get(unit2->unitResource->unitType, unitProj->unitResource->unitType);
 
-			if (unit2->unitResource->unitType == UnitType::Player &&
-				unitProj->unitResource->unitType == UnitType::PlayerProjectile)
-			{
+			if (!(colFlags & CollideFlags::Collide))
 				continue;
-			}
 
 			if (unitProj->boundingBox.overlaps(unit2->boundingBox))
 			{
@@ -679,6 +686,7 @@ void Game::checkCollisions()
 
 		if (cp.first->checkPixelCollision(cp.second, pixelCols))
 		{
+			// delete projectiles colliding with other normal units
 			if (cp.first->unitResource->unitType == UnitType::EnemyProjectile
 				|| cp.first->unitResource->unitType == UnitType::PlayerProjectile)
 			{
@@ -703,6 +711,10 @@ void Game::checkCollisions()
 					col.set("sprite2", pixelCols[i].sprite2);
 					col.set("collisionCenter", pixelCols[i].collisionCenter);
 					colsTbl.set(i + 1, col);
+
+					// inflict damage
+					pixelCols[i].sprite1->hit(pixelCols[i].sprite2->damage);
+					pixelCols[i].sprite2->hit(pixelCols[i].sprite1->damage);
 				}
 
 				CALL_LUA_FUNC2(cp.first->scriptClass, "onCollide", cp.second, colsTbl)
@@ -729,48 +741,17 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 		rc.set(pos.x, pos.y - beamWidth / 2, graphics->videoWidth - pos.x, beamWidth);
 	}
 
-	for (auto& unit1 : units)
+	for (auto& otherUnit : units)
 	{
-		if (unit1 == unit || !unit1->collide) continue;
+		if (otherUnit == unit || !otherUnit->collide) continue;
 
-		for (auto& sprite2 : unit1->sprites)
+		for (auto& otherSprite : otherUnit->sprites)
 		{
-			if (sprite == sprite2) continue;
-			if (!sprite2->collide) continue;
-			if (sprite2->health <= 0) continue;
+			if (sprite == otherSprite) continue;
+			if (!otherSprite->collide) continue;
+			if (otherSprite->health <= 0) continue;
 
-			//if (screenMode == ScreenMode::Vertical)
-			//{
-			//	if (sprite2->rect.y > pos.y) continue;
-
-			//	if (sprite2->rect.bottom() > pos.y && sprite2->rect.y <= pos.y)
-			//	{
-			//		closest.valid = true;
-			//		closest.distance = 0;
-			//		closest.point = pos;
-			//		closest.unit = unit1;
-			//		closest.sprite = sprite2;
-			//		LOG_INFO("Acilea");
-			//		return closest;
-			//	}
-			//}
-			//else if (screenMode == ScreenMode::Horizontal)
-			//{
-			//	if (sprite2->rect.right() < pos.x) continue;
-
-			//	if (sprite2->rect.x < pos.x && sprite2->rect.right() >= pos.x)
-			//	{
-			//		closest.valid = true;
-			//		closest.distance = 0;
-			//		closest.point = pos;
-			//		closest.unit = unit1;
-			//		closest.sprite = sprite2;
-
-			//		return closest;
-			//	}
-			//}
-
-			if (sprite2->rect.overlaps(rc))
+			if (otherSprite->rect.overlaps(rc))
 			{
 				if (screenMode == ScreenMode::Vertical)
 				{
@@ -778,17 +759,17 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 					col.x = pos.x;
 
 					// for small sprites
-					bool isInsideBeam = rc.contains(sprite2->rect);
+					bool isInsideBeam = rc.contains(otherSprite->rect);
 					bool isTouchingHalfBeam = false;
 					bool pixelCollided = false;
 
-					f32 relativeX = round(col.x - sprite2->rect.x);
+					f32 relativeX = round(col.x - otherSprite->rect.x);
 
 					// if the middle of the beam is outside the sprite rect
 					// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-					if (relativeX < 0 || relativeX >= sprite2->rect.width)
+					if (relativeX < 0 || relativeX >= otherSprite->rect.width)
 					{
-						if (fabs(relativeX) <= beamWidth / 2 || (sprite2->rect.width - relativeX) <= beamWidth / 2)
+						if (fabs(relativeX) <= beamWidth / 2 || (otherSprite->rect.width - relativeX) <= beamWidth / 2)
 						{
 							isTouchingHalfBeam = true;
 						}
@@ -796,28 +777,28 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 					}
 					else
 					{
-						col.y = sprite2->rect.bottom();
-						Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
-						f32 stepY = 1.0f / sprite2->scale.y;
+						col.y = otherSprite->rect.bottom();
+						Rect frmRc = otherSprite->spriteResource->getSheetFramePixelRect(otherSprite->animationFrame);
+						f32 stepY = 1.0f / otherSprite->scale.y;
 
 						// consider flipping
-						f32 xFinal = sprite2->horizontalFlip ? sprite2->spriteResource->frameWidth - relativeX : relativeX;
+						f32 xFinal = otherSprite->horizontalFlip ? otherSprite->spriteResource->frameWidth - relativeX : relativeX;
 
-						for (f32 y = sprite2->spriteResource->frameHeight - 1; y >= 0; y -= stepY)
+						for (f32 y = otherSprite->spriteResource->frameHeight - 1; y >= 0; y -= stepY)
 						{
-							f32 yFinal = sprite2->verticalFlip ? sprite2->spriteResource->frameHeight - y : y;
+							f32 yFinal = otherSprite->verticalFlip ? otherSprite->spriteResource->frameHeight - y : y;
 							// get the scaled pixel from the sprite image
 							f32 scaledY = frmRc.y + yFinal;
-							f32 scaledX = frmRc.x + xFinal / sprite2->scale.x;
+							f32 scaledX = frmRc.x + xFinal / otherSprite->scale.x;
 
-							u8* p = (u8*)&sprite2->spriteResource->image->imageData[
-								(u32)scaledY * sprite2->spriteResource->image->width
+							u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
+								(u32)scaledY * otherSprite->spriteResource->image->width
 									+ (u32)scaledX];
 							// if alpha is 0xFF, then we hit an opaque pixel
 							if (p[3] == 0xff)
 							{
 								pixelCollided = true;
-								col.y -= sprite2->rect.height - yFinal * sprite2->scale.y;
+								col.y -= otherSprite->rect.height - yFinal * otherSprite->scale.y;
 								break;
 							}
 						}
@@ -833,50 +814,50 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 							closest.valid = true;
 							closest.distance = dist;
 							closest.point = col;
-							closest.unit = unit1;
-							closest.sprite = sprite2;
+							closest.unit = otherUnit;
+							closest.sprite = otherSprite;
 						}
 					}
 				}
 				else if (screenMode == ScreenMode::Horizontal)
 				{
 					Vec2 col;
-					col.x = sprite2->rect.x;
+					col.x = otherSprite->rect.x;
 					col.y = pos.y;
 
 					// for small sprites
-					bool isInsideBeam = rc.contains(sprite2->rect);
+					bool isInsideBeam = rc.contains(otherSprite->rect);
 					bool isTouchingHalfBeam = false;
 					bool pixelCollided = false;
 
-					f32 relativeY = round(col.y - sprite2->rect.y);
+					f32 relativeY = round(col.y - otherSprite->rect.y);
 
 					// if the middle of the beam is outside the sprite rect
 					// one of the beam haves are touching the sprite, so just set hit to middle of sprite
-					if (relativeY < 0 || relativeY >= sprite2->rect.height)
+					if (relativeY < 0 || relativeY >= otherSprite->rect.height)
 					{
-						if (fabs(relativeY) <= beamWidth / 2 || (sprite2->rect.height - relativeY) <= beamWidth / 2)
+						if (fabs(relativeY) <= beamWidth / 2 || (otherSprite->rect.height - relativeY) <= beamWidth / 2)
 						{
 							isTouchingHalfBeam = true;
-							col.x = sprite2->rect.center().x;
+							col.x = otherSprite->rect.center().x;
 						}
 
 						continue;
 					}
 					else
 					{
-						Rect frmRc = sprite2->spriteResource->getSheetFramePixelRect(sprite2->animationFrame);
+						Rect frmRc = otherSprite->spriteResource->getSheetFramePixelRect(otherSprite->animationFrame);
 
-						for (int x = sprite2->spriteResource->frameWidth - 1; x >= 0; x--)
+						for (int x = otherSprite->spriteResource->frameWidth - 1; x >= 0; x--)
 						{
-							u8* p = (u8*)&sprite2->spriteResource->image->imageData[
-								(u32)(frmRc.y + relativeY) * sprite2->spriteResource->image->width
+							u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
+								(u32)(frmRc.y + relativeY) * otherSprite->spriteResource->image->width
 									+ (u32)(frmRc.x + x)];
 
 							if (p[3] == 0xff)
 							{
 								pixelCollided = true;
-								col.x -= sprite2->rect.width - x;
+								col.x -= otherSprite->rect.width - x;
 								break;
 							}
 						}
@@ -891,8 +872,8 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 							closest.valid = true;
 							closest.distance = dist;
 							closest.point = col;
-							closest.unit = unit1;
-							closest.sprite = sprite2;
+							closest.unit = otherUnit;
+							closest.sprite = otherSprite;
 						}
 					}
 				}
@@ -1407,6 +1388,7 @@ std::vector<Projectile*>::iterator Game::releaseProjectile(Projectile* proj)
 
 	if (iter != projectiles.end())
 	{
+		CALL_LUA_FUNC2((*iter)->scriptClass, "onDelete");
 		auto newIter = projectiles.erase(iter);
 		return newIter;
 	}

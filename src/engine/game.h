@@ -138,6 +138,21 @@ struct TimeScaleState
 	f32 timer = 0;
 };
 
+enum CollideFlags
+{
+	Collide = BIT(1),
+	Friends = BIT(2)
+};
+
+struct CollisionMatrix
+{
+	CollideFlags matrix[(int)UnitType::Count][(int)UnitType::Count];
+
+	CollisionMatrix();
+	void set(UnitType a, UnitType b, u32 flags);
+	u32 get(UnitType a, UnitType b);
+};
+
 struct Game
 {
 	static const u32 maxMouseButtons = 6;
@@ -167,6 +182,7 @@ struct Game
 	std::vector<Unit*> newUnits;
 	std::vector<Projectile> projectilePool;
 	std::vector<Projectile*> projectiles;
+	CollisionMatrix collisionMatrix;
 	bool controls[(u32)InputControl::Count] = { false };
 	bool mouseButtonDown[maxMouseButtons];
 	std::unordered_map<u32, InputControl> mapSdlToControl;

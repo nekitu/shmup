@@ -37,6 +37,7 @@ struct SpriteInstanceResource
 	bool shadow = true;
 	bool relativeToRoot = true;
 	f32 health = 100.0f;
+	f32 damage = 1.0f;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;
 	Color hitColor = Color::red;

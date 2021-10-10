@@ -27,6 +27,7 @@ struct Sprite
 	bool shadow = false;
 	f32 health = 100;
 	f32 maxHealth = 100;
+	f32 damage = 1.0f;
 	Color defaultColor = Color::black;
 	Color color = Color::black;
 	ColorMode colorMode = ColorMode::Add;

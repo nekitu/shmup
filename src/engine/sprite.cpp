@@ -42,6 +42,7 @@ void Sprite::copyFrom(Sprite* other)
 	shadow = other->shadow;
 	collide = other->collide;
 	health = other->health;
+	damage = other->damage;
 	defaultColor = other->defaultColor;
 	color = other->color;
 	colorMode = other->colorMode;
@@ -58,8 +59,10 @@ void Sprite::copyFrom(Sprite* other)
 	animationRepeatCount = other->animationRepeatCount;
 	animationDirection = other->animationDirection;
 	animationIsActive = other->animationIsActive;
+
 	if (other->spriteResource->paletteInfo.isPaletted)
 		paletteSlot = Game::instance->graphics->allocPaletteSlot();
+
 	play();
 }
 
@@ -79,6 +82,7 @@ void Sprite::initializeFrom(SpriteInstanceResource* res)
 	visible = res->visible;
 	shadow = res->shadow;
 	maxHealth = health = res->health;
+	damage = res->damage;
 	relativeToRoot = res->relativeToRoot;
 	animationFrame = 0;
 	animationRepeatCount = 0;
