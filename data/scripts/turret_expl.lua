@@ -5,8 +5,9 @@ function C:init(unit)
 end
 
 function C:onUpdate()
-  if self.unit.age > 10 then
+  if self.unit.age > 5 then
     self.unit.deleteMeNow = true
+    print("deleting explosion unit")
   end
 end
 

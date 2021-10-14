@@ -138,7 +138,7 @@ struct TimeScaleState
 	f32 timer = 0;
 };
 
-enum CollideFlags
+enum CollideFlags : u32
 {
 	Collide = BIT(1),
 	Friends = BIT(2)

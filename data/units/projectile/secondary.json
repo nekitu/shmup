@@ -7,6 +7,7 @@
         {
             "name": "body",
             "scale": 1,
+            "damage": 10,
             "sprite": "sprites/fire2"
         }
     ]

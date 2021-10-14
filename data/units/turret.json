@@ -43,7 +43,7 @@
   [
     {
       "name": "body",
-      "health": 6,
+      "health": 10,
       "sprite": "sprites/gun",
       "position": "0 0",
       "scale": "1 1",

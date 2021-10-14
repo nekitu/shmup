@@ -573,6 +573,82 @@ void Graphics::drawCustomQuad(const Vec2& topLeft, const Vec2& topRight, const V
 	drawVertexCount = i;
 }
 
+void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 width)
+{
+	needToAddVertexCount(6);
+
+	u32 i = drawVertexCount;
+	auto uvRect = atlas->whiteImage->uvRect;
+	Vec2 seg = (b - a);
+	Vec2 n = Vec2(seg.y, -seg.x).getNormalized();
+	Vec2 a0 = a + n * width / 2.0f;
+	Vec2 a1 = a + n * (-width / 2.0f);
+	Vec2 b0 = b + n * width / 2.0f;
+	Vec2 b1 = b + n * (-width / 2.0f);
+
+	vertices[i].position = a0;
+	vertices[i].uv = uvRect.topLeft();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	vertices[i].position = a1;
+	vertices[i].uv = uvRect.topRight();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	vertices[i].position = b1;
+	vertices[i].uv = uvRect.bottomRight();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	vertices[i].position = b1;
+	vertices[i].uv = uvRect.bottomRight();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	vertices[i].position = b0;
+	vertices[i].uv = uvRect.bottomRight();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	vertices[i].position = a0;
+	vertices[i].uv = uvRect.bottomRight();
+	vertices[i].color = color;
+	vertices[i].colorMode = colorMode;
+	vertices[i].alphaMode = alphaMode;
+	vertices[i].textureIndex = atlasTextureIndex;
+	vertices[i].paletteIndex = paletteIndex;
+	vertices[i].transparentColorIndex = transparentColorIndex;
+	i++;
+
+	drawVertexCount = i;
+}
+
 void Graphics::drawQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90)
 {
 	needToAddVertexCount(6);

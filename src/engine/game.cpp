@@ -34,6 +34,7 @@ Game* Game::instance = nullptr;
 
 CollisionMatrix::CollisionMatrix()
 {
+	memset(matrix, 0, sizeof(u32) * (int)UnitType::Count * (int)UnitType::Count);
 	set(UnitType::Enemy, UnitType::Enemy, CollideFlags::Friends);
 	set(UnitType::Enemy, UnitType::EnemyProjectile, CollideFlags::Friends);
 	set(UnitType::Enemy, UnitType::Player, CollideFlags::Collide);
@@ -472,7 +473,8 @@ void Game::mainLoop()
 
 		for (auto& proj : projectiles)
 		{
-			proj->update(this);
+			if (proj->used)
+				proj->update(this);
 		}
 
 		// add the new created units
@@ -503,7 +505,7 @@ void Game::mainLoop()
 		auto iterProj = projectiles.begin();
 		while (iterProj != projectiles.end())
 		{
-			if ((*iterProj)->deleteMeNow)
+			if ((*iterProj)->used && (*iterProj)->deleteMeNow)
 			{
 				iterProj = releaseProjectile(*iterProj);
 				continue;
@@ -568,7 +570,7 @@ void Game::renderUnits()
 
 	for (auto& unit : projectiles)
 	{
-		if (unit)
+		if (unit && unit->used)
 			unit->render(graphics);
 	}
 
@@ -594,12 +596,15 @@ void Game::checkCollisions()
 
 		for (auto& unit2 : units)
 		{
-			if (!unit2->collide) continue;
+			if (unit1 == unit2)
+				continue;
+
 			if (!unit1->unitResource) continue;
 			if (!unit2->unitResource) continue;
 
-			if (unit1 == unit2
-				|| unit1->unitResource->unitType == unit2->unitResource->unitType) continue;
+			if (unit1->unitResource->unitType == unit2->unitResource->unitType) continue;
+
+			if (!unit2->collide) continue;
 
 			auto colFlags = collisionMatrix.get(unit1->unitResource->unitType, unit2->unitResource->unitType);
 
@@ -634,16 +639,16 @@ void Game::checkCollisions()
 	// check projectiles vs normal units
 	for (auto& unitProj : projectiles)
 	{
-		if (!unitProj->collide) continue;
+		if (!unitProj->used) continue;
 
 		for (auto& unit2 : units)
 		{
+			if (unitProj == unit2) continue;
+
 			if (!unit2->collide) continue;
 			if (!unitProj->unitResource) continue;
 			if (!unit2->unitResource) continue;
-
-			if (unitProj == unit2
-				|| unitProj->unitResource->unitType == unit2->unitResource->unitType) continue;
+			if (unitProj->unitResource->unitType == unit2->unitResource->unitType) continue;
 
 			auto colFlags = collisionMatrix.get(unit2->unitResource->unitType, unitProj->unitResource->unitType);
 
@@ -652,6 +657,9 @@ void Game::checkCollisions()
 
 			if (unitProj->boundingBox.overlaps(unit2->boundingBox))
 			{
+				LOG_INFO("{} {},{},{},{} --- {} {},{},{},{}", unitProj->name,
+					unitProj->boundingBox.x, unitProj->boundingBox.y, unitProj->boundingBox.right(), unitProj->boundingBox.bottom(),
+					unit2->name, unit2->boundingBox.x, unit2->boundingBox.y, unit2->boundingBox.right(), unit2->boundingBox.bottom());
 				auto iter1 = collisionPairs.find(unitProj);
 				auto iter2 = collisionPairs.find(unit2);
 				bool exists1 = false;
@@ -1338,6 +1346,9 @@ void Game::setScreenActive(const std::string& name, bool activate)
 Unit* Game::createUnit(UnitResource* unitResource)
 {
 	Unit* unit = nullptr;
+
+	if (!unitResource)
+		return nullptr;
 
 	if (unitResource->className == "")
 	{

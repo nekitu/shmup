@@ -175,6 +175,8 @@ bool initializeLua()
 		.addVariable("cameraState", &Game::cameraState)
 		.addFunction("createPlayers", &Game::createPlayers)
 		.addFunction("getProjectileCount", [](Game* game) { return Game::instance->projectiles.size(); })
+		.addFunction("getUnitCount", [](Game* game) { return Game::instance->units.size(); })
+		.addFunction("getUnit", [](Game* game, int idx) { return Game::instance->units[idx]; })
 		.addVariable("gameState", &Game::gameState)
 		.addFunction("player1", [](Game* g) { return g->playerState[0].unit; })
 		.addFunction("player2", [](Game* g) { return g->playerState[1].unit; })
@@ -262,6 +264,7 @@ bool initializeLua()
 			{
 				gfx->drawSprite(spr, rc, frame, angle, userPalette);
 			})
+		.addFunction("drawLine", &Graphics::drawLine)
 		.endClass();
 
 	LUA.beginClass<ColorPalette>("ColorPalette")
@@ -280,6 +283,7 @@ bool initializeLua()
 		.endClass();
 
 	LUA.beginClass<WeaponResource::Parameters>("WeaponParams")
+		.addVariable("fireRate", &WeaponResource::Parameters::fireRate)
 		.addVariableRef("direction", &WeaponResource::Parameters::direction)
 		.endClass();
 
@@ -423,6 +427,8 @@ bool initializeLua()
 				unit->controllers.insert(std::make_pair(name, ctrl));
 				CALL_LUA_FUNC2(ctrl, "setup", params);
 			})
+		.addFunction("getSpriteCount", [](Unit* unit) { return unit->sprites.size(); })
+		.addFunction("getSprite", [](Unit* unit, int idx) { return unit->sprites[idx]; })
 		.endClass();
 
 	LUA.beginExtendClass<Projectile, Unit>("Projectile")

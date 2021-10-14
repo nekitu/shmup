@@ -88,6 +88,7 @@ struct Graphics
 	Vec2 getTextSize(struct FontResource* font, const std::string& text);
 	void drawSprite(struct SpriteResource* spr, const Rect& rc, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
 	void drawSpriteCustomQuad(struct SpriteResource* spr, const Vec2& topLeft, const Vec2& topRight, const Vec2& btmRight, const Vec2& btmLeft, u32 frame, f32 angle, struct ColorPalette* userPalette = nullptr);
+	void drawLine(const Vec2& a, const Vec2& b, f32 width);
 	void beginFrame();
 	void setupProjection(f32 width, f32 height);
 	void endFrame();

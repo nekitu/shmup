@@ -5,6 +5,7 @@ function C:init(weapon)
 end
 
 function C:onFire()
+  print("fire" .. self.weapon.params.fireRate)
 end
 
 function C:onUpdate()

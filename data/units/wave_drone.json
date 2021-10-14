@@ -8,8 +8,8 @@
   "parameters":
   {
     "mover" : "scripts/controllers/edge_bounce_mover",
-    "activeTime": 50,
-    "spawnDelay": 1,
+    "activeTime": 150,
+    "spawnDelay": 5,
     "spawnUnit" : "units/turret",
     "lineDirection": "0 1"
   }

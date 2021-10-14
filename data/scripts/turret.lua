@@ -8,7 +8,7 @@ function C:onUpdate()
   local w = self.unit:findWeapon("gun1")
 
   if self.unit.appeared then
-      w.active = true
+      --w.active = true
   end
 
   self.unit.root:setFrameAnimationFromAngle(w.angle)
@@ -23,7 +23,7 @@ function C:onUpdate()
 end
 
 function C:onCollide(other, colPairs)
-  self.unit.root:hit(1)
+  print("hit by" .. other.name)
 end
 
 return newInstance(C)

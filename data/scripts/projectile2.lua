@@ -15,7 +15,6 @@ end
 
 function C:onCollide(other, collisions)
   game:spawn("units/small_spark", "expl", colCenter)
-  other.root:hit(5)
 end
 
 return newInstance(C)

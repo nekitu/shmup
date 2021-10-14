@@ -18,7 +18,7 @@ function C:onUpdate()
     local unit = game:spawn(self.spawnUnit, "SpawnedWaveUnit", self.unit.root.position)
     self.spawnTimer = 0
     unit.layerIndex = self.unit.layerIndex
-    unit.speed = 64
+    unit.speed = 5
     unit:addController(self.mover, "mover", self.unit.unitResource.parameters)
   end
 end

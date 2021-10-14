@@ -1,14 +1,14 @@
 {
-  "fireRate" : 100,
+  "fireRate" : 10,
   "fireRays" : 1,
   "type": "Projectile",
   "fireRaysAngle" : 0,
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,
-  "initialProjectileSpeed": 550,
-  "minProjectileSpeed": 550,
-  "maxProjectileSpeed": 550,
+  "initialProjectileSpeed": 40,
+  "minProjectileSpeed": 40,
+  "maxProjectileSpeed": 40,
   "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/secondary",
   "script": "scripts/weapon_secondary"

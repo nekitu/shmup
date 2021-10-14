@@ -5,9 +5,9 @@
 #include "utils.h"
 #include "graphics.h"
 #include "resources/script_resource.h"
-#include <float.h>
 #include "resource_loader.h"
 #include "easing.h"
+#include <float.h>
 
 namespace engine
 {
@@ -22,6 +22,7 @@ void Weapon::reset()
 	if (scriptClass)
 		delete scriptClass;
 	scriptClass = nullptr;
+	fireTimer = FLT_MAX;
 }
 
 void Weapon::createBeamSprites()
@@ -78,8 +79,6 @@ void Weapon::fire()
 	if (!active)
 		return;
 
-	// set timer to highest, hence triggering the spawn of projectiles
-	fireTimer = FLT_MAX;
 	firing = true;
 	startedFiring = false;
 }
@@ -237,7 +236,8 @@ void Weapon::update(struct Game* game)
 			{
 				LuaIntf::LuaRef colsTbl = LuaIntf::LuaRef::createTable(getLuaState());
 				LuaIntf::LuaRef col = LuaIntf::LuaRef::createTable(getLuaState());
-
+				attachTo->hit(beamCollision.sprite->damage);
+				beamCollision.sprite->hit(attachTo->damage);
 				col.set("sprite1", attachTo);
 				col.set("sprite2", beamCollision.sprite);
 				col.set("collisionCenter", beamCollision.point);
