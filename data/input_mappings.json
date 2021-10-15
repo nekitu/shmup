@@ -2,7 +2,7 @@
   "exit": ["esc"],
   "pause": [ "pause" ],
   "coin": ["1"],
-  "player1_moveLeft": [],
+  "player1_moveLeft": [""],
   "player1_moveRight": [],
   "player1_moveUp": [],
   "player1_moveDown": [],
