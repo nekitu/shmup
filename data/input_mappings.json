@@ -1,0 +1,22 @@
+{
+  "exit": ["esc"],
+  "pause": [ "pause" ],
+  "coin": ["1"],
+  "player1_moveLeft": [],
+  "player1_moveRight": [],
+  "player1_moveUp": [],
+  "player1_moveDown": [],
+  "player1_fire1": [],
+  "player1_fire2": [],
+  "player1_fire3": [],
+  "player2_moveLeft": [],
+  "player2_moveRight": [],
+  "player2_moveUp": [],
+  "player2_moveDown": [],
+  "player2_fire1": [],
+  "player2_fire2": [],
+  "player2_fire3": [],
+  "reloadScripts": [],
+  "reloadSprites": [],
+  "reloadAnimations": []
+}

@@ -6,9 +6,9 @@
   "direction" : "0 -1",
   "offsetRadius": 0,
   "fireRaysRotationSpeed": 0,
-  "initialProjectileSpeed": 40,
-  "minProjectileSpeed": 40,
-  "maxProjectileSpeed": 40,
+  "initialProjectileSpeed": 740,
+  "minProjectileSpeed": 740,
+  "maxProjectileSpeed": 740,
   "projectileAcceleration": 0,
   "projectileUnit" : "units/projectile/secondary",
   "script": "scripts/weapon_secondary"

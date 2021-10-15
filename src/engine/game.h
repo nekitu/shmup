@@ -13,37 +13,13 @@
 #include "resources/tilemap_resource.h"
 #include "lua_scripting.h"
 #include "projectile.h"
+#include "input.h"
 
 namespace engine
 {
 struct Unit;
 
-const u32 maxPlayerCount = 1;
-
-enum class InputControl
-{
-	Exit = 0,
-	Pause,
-	Coin,
-	Player1_MoveLeft,
-	Player1_MoveRight,
-	Player1_MoveUp,
-	Player1_MoveDown,
-	Player1_Fire1,
-	Player1_Fire2,
-	Player1_Fire3,
-	Player2_MoveLeft,
-	Player2_MoveRight,
-	Player2_MoveUp,
-	Player2_MoveDown,
-	Player2_Fire1,
-	Player2_Fire2,
-	Player2_Fire3,
-	ReloadScripts,
-	ReloadSprites,
-	ReloadAnimations,
-	Count
-};
+const u32 maxPlayerCount = 2;
 
 enum class ScreenMode
 {
@@ -173,6 +149,7 @@ struct Game
 	SDL_GLContext glContext = 0;
 	struct Graphics* graphics = nullptr;
 	struct ResourceLoader* resourceLoader = nullptr;
+	Input input;
 	f32 deltaTime = 0; // can be affected by time slowdown
 	f32 realDeltaTime = 0; // always real time
 	f32 lastTime = 0;
@@ -183,16 +160,11 @@ struct Game
 	std::vector<Projectile> projectilePool;
 	std::vector<Projectile*> projectiles;
 	CollisionMatrix collisionMatrix;
-	bool controls[(u32)InputControl::Count] = { false };
-	bool mouseButtonDown[maxMouseButtons];
-	std::unordered_map<u32, InputControl> mapSdlToControl;
 	struct Music* music = nullptr;
 	std::vector<std::pair<std::string /*map name*/, std::string /*map path*/>> maps;
 	u32 currentMapIndex = 0;
 	TilemapResource* map = nullptr;
 	std::vector<GameScreen*> gameScreens;
-	Vec2 mousePosition;
-	Vec2 windowMousePosition;
 	GameState gameState;
 	CameraState cameraState;
 	TimeScaleState timeScaleState;
@@ -206,7 +178,6 @@ struct Game
 	void shutdown();
 	void createPlayers();
 	bool initializeAudio();
-	void handleInputEvents();
 	void checkCollisions();
 	BeamCollisionInfo checkBeamIntersection(struct Unit* unit, struct Sprite* sprite, const Vec2& pos, f32 beamWidth, f32 beamDir);
 	Vec2 worldToScreen(const Vec2& pos, u32 layerIndex);
@@ -225,15 +196,6 @@ struct Game
 	void updateCamera();
 	void updateTileAnimations();
 	void updateTimeScaleAnimation();
-	bool isControlDown(InputControl control) { return controls[(u32)control]; }
-	bool isPlayerMoveLeft(u32 playerIndex);
-	bool isPlayerMoveRight(u32 playerIndex);
-	bool isPlayerMoveUp(u32 playerIndex);
-	bool isPlayerMoveDown(u32 playerIndex);
-	bool isPlayerFire1(u32 playerIndex);
-	bool isPlayerFire2(u32 playerIndex);
-	bool isPlayerFire3(u32 playerIndex);
-	bool isMouseDown(int btn);
 	void showMousePointer(bool hide);
 	void deleteNonPersistentUnits();
 	bool changeMap(i32 index);

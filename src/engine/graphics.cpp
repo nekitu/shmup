@@ -573,7 +573,7 @@ void Graphics::drawCustomQuad(const Vec2& topLeft, const Vec2& topRight, const V
 	drawVertexCount = i;
 }
 
-void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 width)
+void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 thickness)
 {
 	needToAddVertexCount(6);
 
@@ -581,10 +581,10 @@ void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 width)
 	auto uvRect = atlas->whiteImage->uvRect;
 	Vec2 seg = (b - a);
 	Vec2 n = Vec2(seg.y, -seg.x).getNormalized();
-	Vec2 a0 = a + n * width / 2.0f;
-	Vec2 a1 = a + n * (-width / 2.0f);
-	Vec2 b0 = b + n * width / 2.0f;
-	Vec2 b1 = b + n * (-width / 2.0f);
+	Vec2 a0 = a + n * thickness / 2.0f;
+	Vec2 a1 = a + n * (-thickness / 2.0f);
+	Vec2 b0 = b + n * thickness / 2.0f;
+	Vec2 b1 = b + n * (-thickness / 2.0f);
 
 	vertices[i].position = a0;
 	vertices[i].uv = uvRect.topLeft();
@@ -647,6 +647,14 @@ void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 width)
 	i++;
 
 	drawVertexCount = i;
+}
+
+void Graphics::drawRect(const Rect& rc, f32 thickness)
+{
+	drawLine(rc.topLeft(), rc.topRight(), thickness);
+	drawLine(rc.topLeft(), rc.bottomLeft(), thickness);
+	drawLine(rc.topRight(), rc.bottomRight(), thickness);
+	drawLine(rc.bottomLeft(), rc.bottomRight(), thickness);
 }
 
 void Graphics::drawQuad(const Rect& rect, const Rect& uvRect, bool rotateUv90)

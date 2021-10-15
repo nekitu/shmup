@@ -265,6 +265,7 @@ bool initializeLua()
 				gfx->drawSprite(spr, rc, frame, angle, userPalette);
 			})
 		.addFunction("drawLine", &Graphics::drawLine)
+		.addFunction("drawRect", &Graphics::drawRect)
 		.endClass();
 
 	LUA.beginClass<ColorPalette>("ColorPalette")
@@ -340,6 +341,7 @@ bool initializeLua()
 		.addVariable("health", &Unit::health)
 		.addVariable("speed", &Unit::speed)
 		.addVariable("stage", &Unit::currentStage)
+		.addVariableRef("boundingBox", &Unit::boundingBox)
 		.addVariable("deleteMeNow", &Unit::deleteMeNow)
 		.addVariable("root", &Unit::root)
 		.addFunction("replaceSprite", &Unit::replaceSprite)

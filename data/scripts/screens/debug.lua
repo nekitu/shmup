@@ -14,10 +14,11 @@ function C:onRender()
   local count = game:getUnitCount()
   for i = 0, count - 1 do
     local unit = game:getUnit(i)
-    local pos = Vec2(unit.root.position.x, unit.root.position.y)
-    gfx:drawText(self.fnt, pos, "UNIT:" .. unit.name)
+    --local pos = Vec2(unit.root.position.x, unit.root.position.y)
+    gfx:drawRect(unit.boundingBox, 1)
+    --gfx:drawText(self.fnt, pos, "UNIT:" .. unit.name)
   end
-  gfx:drawLine(Vec2(160,120), game.mousePosition, 1)
+  --gfx:drawLine(Vec2(160,120), game.mousePosition, 1)
 end
 
 function C:onActivate()

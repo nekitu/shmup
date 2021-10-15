@@ -35,14 +35,9 @@ Game* Game::instance = nullptr;
 CollisionMatrix::CollisionMatrix()
 {
 	memset(matrix, 0, sizeof(u32) * (int)UnitType::Count * (int)UnitType::Count);
-	set(UnitType::Enemy, UnitType::Enemy, CollideFlags::Friends);
-	set(UnitType::Enemy, UnitType::EnemyProjectile, CollideFlags::Friends);
 	set(UnitType::Enemy, UnitType::Player, CollideFlags::Collide);
 	set(UnitType::Enemy, UnitType::PlayerProjectile, CollideFlags::Collide);
-	set(UnitType::Enemy, UnitType::Item, CollideFlags::Friends);
 	set(UnitType::Player, UnitType::Item, CollideFlags::Collide |CollideFlags::Friends);
-	set(UnitType::Player, UnitType::Player, CollideFlags::Friends);
-	set(UnitType::Player, UnitType::PlayerProjectile, CollideFlags::Friends);
 	set(UnitType::Player, UnitType::EnemyProjectile, CollideFlags::Collide);
 }
 
@@ -261,100 +256,6 @@ bool Game::initializeAudio()
 	}
 }
 
-void Game::handleInputEvents()
-{
-	SDL_PumpEvents();
-
-	SDL_Event ev;
-
-	while (SDL_PollEvent(&ev))
-	{
-		switch (ev.type)
-		{
-		case SDL_KEYDOWN:
-		{
-			for (auto& item : mapSdlToControl)
-			{
-				if (item.first == (u32)ev.key.keysym.sym)
-				{
-					controls[(u32)item.second] = true;
-				}
-			}
-
-			break;
-		}
-
-		case SDL_KEYUP:
-		{
-			for (auto& item : mapSdlToControl)
-			{
-				if (item.first == (u32)ev.key.keysym.sym)
-				{
-					controls[(u32)item.second] = false;
-				}
-			}
-
-			break;
-		}
-		case SDL_WINDOWEVENT:
-		{
-			switch (ev.window.event)
-			{
-			case SDL_WINDOWEVENT_RESIZED:
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-			case SDL_WINDOWEVENT_MOVED:
-			case SDL_WINDOWEVENT_EXPOSED:
-				break;
-			case SDL_WINDOWEVENT_FOCUS_GAINED:
-			{
-				if (pauseOnAppDeactivate)
-					pauseGame = false;
-				break;
-			}
-			case SDL_WINDOWEVENT_ENTER:
-			{
-				break;
-			}
-			case SDL_WINDOWEVENT_FOCUS_LOST:
-			{
-				if (pauseOnAppDeactivate)
-					pauseGame = true;
-				break;
-			}
-			case SDL_WINDOWEVENT_CLOSE:
-			{
-				exitGame = true;
-				break;
-			}
-			default:
-				break;
-			}
-
-			break;
-		}
-
-		case SDL_MOUSEBUTTONDOWN:
-			mouseButtonDown[ev.button.button] = true;
-			break;
-
-		case SDL_MOUSEBUTTONUP:
-			mouseButtonDown[ev.button.button] = false;
-			break;
-
-		case SDL_MOUSEMOTION:
-		{
-			windowMousePosition = { (f32)ev.motion.x, (f32)ev.motion.y };
-			f32 scale = graphics->videoWidth / graphics->blittedRect.width;
-			mousePosition.x = (windowMousePosition.x - graphics->blittedRect.x) * scale;
-			mousePosition.y = (windowMousePosition.y - graphics->blittedRect.y) * scale;
-			break;
-		}
-		default:
-			break;
-		}
-	}
-}
-
 void Game::updateCamera()
 {
 	if (cameraState.animatingSpeed)
@@ -390,7 +291,7 @@ void Game::mainLoop()
 	{
 		computeDeltaTime();
 		updateTimeScaleAnimation();
-		handleInputEvents();
+		input.update();
 		music->update();
 
 		if (isControlDown(InputControl::Exit))
@@ -657,9 +558,6 @@ void Game::checkCollisions()
 
 			if (unitProj->boundingBox.overlaps(unit2->boundingBox))
 			{
-				LOG_INFO("{} {},{},{},{} --- {} {},{},{},{}", unitProj->name,
-					unitProj->boundingBox.x, unitProj->boundingBox.y, unitProj->boundingBox.right(), unitProj->boundingBox.bottom(),
-					unit2->name, unit2->boundingBox.x, unit2->boundingBox.y, unit2->boundingBox.right(), unit2->boundingBox.bottom());
 				auto iter1 = collisionPairs.find(unitProj);
 				auto iter2 = collisionPairs.find(unit2);
 				bool exists1 = false;
