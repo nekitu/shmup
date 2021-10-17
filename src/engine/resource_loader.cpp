@@ -73,7 +73,8 @@ void ResourceLoader::reloadScripts()
 	{
 		for (auto& ctrl : unit->controllers)
 		{
-			CALL_LUA_FUNC2(ctrl.second, "setup", &unit->unitResource->controllers[ctrl.first]);
+			if (unit->unitResource->controllers.find(ctrl.first) != unit->unitResource->controllers.end())
+			CALL_LUA_FUNC2(ctrl.second, "setup", &unit->unitResource->controllers[ctrl.first].parameters);
 		}
 	}
 

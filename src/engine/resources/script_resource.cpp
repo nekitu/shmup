@@ -50,6 +50,7 @@ bool ScriptResource::load(Json::Value& json)
 	// if we already have some class instances, recreate them with the new script
 	for (auto& ci : classInstances)
 	{
+		ci->script = this;
 		ci->createInstance();
 	}
 
@@ -177,6 +178,7 @@ bool initializeLua()
 		.addFunction("getProjectileCount", [](Game* game) { return Game::instance->projectiles.size(); })
 		.addFunction("getUnitCount", [](Game* game) { return Game::instance->units.size(); })
 		.addFunction("getUnit", [](Game* game, int idx) { return Game::instance->units[idx]; })
+		.addFunction("findUnitById", &Game::findUnitById)
 		.addVariable("gameState", &Game::gameState)
 		.addFunction("player1", [](Game* g) { return g->playerState[0].unit; })
 		.addFunction("player2", [](Game* g) { return g->playerState[1].unit; })
@@ -198,16 +200,6 @@ bool initializeLua()
 		)
 		.addFunction("loadFont", [](Game* g, const std::string& path) { return g->resourceLoader->loadFont(path); })
 		.addFunction("loadSprite", [](Game* g, const std::string& path) { return g->resourceLoader->loadSprite(path); })
-		.addFunction("isPlayerMoveUp", &Game::isPlayerMoveUp)
-		.addFunction("isPlayerMoveDown", &Game::isPlayerMoveDown)
-		.addFunction("isPlayerMoveLeft", &Game::isPlayerMoveLeft)
-		.addFunction("isPlayerMoveRight", &Game::isPlayerMoveRight)
-		.addFunction("isPlayerFire1", &Game::isPlayerFire1)
-		.addFunction("isPlayerFire2", &Game::isPlayerFire2)
-		.addFunction("isPlayerFire3", &Game::isPlayerFire3)
-		.addVariableRef("mousePosition", &Game::mousePosition)
-		.addVariableRef("windowMousePosition", &Game::windowMousePosition)
-		.addFunction("isMouseDown", &Game::isMouseDown)
 		.addFunction("showMousePointer", &Game::showMousePointer)
 		.addFunction("worldToScreen", [](Game* game, const Vec2& v, int layerIndex)
 			{
@@ -229,6 +221,14 @@ bool initializeLua()
 		})
 
 		.endClass();
+
+	LUA.beginClass<Input>("Input")
+		.addFunction("isDown", &Input::isDown)
+		.addFunction("wasPressed", &Input::wasPressed)
+		.addFunction("getValue", &Input::getValue)
+		.addVariableRef("mousePosition", &Input::mousePosition)
+		.addVariableRef("windowMousePosition", &Input::windowMousePosition)
+	.endClass();
 
 	LUA.beginModule("util")
 		.addFunction("clampValue", [](f32 val, f32 minVal, f32 maxVal)
@@ -425,7 +425,8 @@ bool initializeLua()
 		.addFunction("addController", [](Unit* unit, const std::string& scriptPath, const std::string& name, Parameters* params)
 			{
 				auto script = Game::instance->resourceLoader->loadScript(scriptPath);
-				ScriptClassInstanceBase* ctrl = script->createClassInstance<Unit>(unit);
+				auto ctrl = script->createClassInstance<Unit>(unit);
+				ctrl->script = script;
 				unit->controllers.insert(std::make_pair(name, ctrl));
 				CALL_LUA_FUNC2(ctrl, "setup", params);
 			})
@@ -544,6 +545,7 @@ bool initializeLua()
 		.endClass();
 
 	l.setGlobal("game", Game::instance);
+	l.setGlobal("input", &Game::instance->input);
 	l.setGlobal("gfx", Game::instance->graphics);
 
 	LUA.addFunction("randomFloat", &randomFloat);

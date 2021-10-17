@@ -51,6 +51,12 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 
 	bool createInstance() override
 	{
+		if (!script)
+		{
+			LOG_ERROR("No script associated with class instance");
+			return false;
+		}
+
 		if (script->code.empty())
 		{
 			LOG_WARN("No code in: '{0}'", script->path);
@@ -98,7 +104,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 			return false;
 		}
 
-		LOG_INFO("Lua: Created class instance for {0}'", script->path);
+		//LOG_INFO("Lua: Created class instance for {0}'", script->path);
 
 		return true;
 	}

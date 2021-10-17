@@ -205,6 +205,7 @@ struct Game
 	struct Weapon* createWeapon(const std::string& weaponResPath, struct Unit* unit, struct Sprite* sprite);
 	struct Projectile* newProjectile();
 	std::vector<Projectile*>::iterator releaseProjectile(Projectile* proj);
+	Unit* findUnitById(u32 id);
 };
 
 }

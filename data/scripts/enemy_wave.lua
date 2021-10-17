@@ -26,4 +26,24 @@ end
 function C:onCollide(other, colPairs)
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+  data.activeTime = self.activeTime
+  data.spawnDelay = self.spawnDelay
+  data.mover = self.mover
+  data.spawnUnit = self.spawnUnit
+  data.spawnTimer = self.spawnTimer
+  data.activeTimer = self.activeTimer
+end
+
+function C:onDeserialize(data)
+  self.unit = game:findUnitById(data.unitId)
+  self.activeTime = data.activeTime
+  self.spawnDelay = data.spawnDelay
+  self.mover = data.mover
+  self.spawnUnit = data.spawnUnit
+  self.spawnTimer = data.spawnTimer
+  self.activeTimer = data.activeTimer
+end
+
 return newInstance(C)

@@ -21,7 +21,7 @@ function C:onRender()
   gfx.color = Color.green:getRgba()
   gfx:drawText(self.fnt, Vec2(90, 12), "OOOOOOO")
 
-  local mp = game.mousePosition
+  local mp = input.mousePosition
 
   mp.x = math.ceil(mp.x)
   mp.y = math.ceil(mp.y)

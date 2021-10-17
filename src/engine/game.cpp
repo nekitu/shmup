@@ -118,7 +118,7 @@ bool Game::initialize()
 
 	SDL_SetMainReady();
 
-	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER);
 
 	if (err != 0)
 	{
@@ -190,26 +190,10 @@ bool Game::initialize()
 	cameraState.offscreenBoundary = cameraState.offscreenBoundary.getCenterScaled(cameraState.offscreenBoundaryScale);
 
 	initializeLua();
-	mapSdlToControl[SDLK_ESCAPE] = InputControl::Exit;
-	mapSdlToControl[SDLK_PAUSE] = InputControl::Pause;
-	mapSdlToControl[SDLK_1] = InputControl::Coin;
-	mapSdlToControl[SDLK_LEFT] = InputControl::Player1_MoveLeft;
-	mapSdlToControl[SDLK_RIGHT] = InputControl::Player1_MoveRight;
-	mapSdlToControl[SDLK_UP] = InputControl::Player1_MoveUp;
-	mapSdlToControl[SDLK_DOWN] = InputControl::Player1_MoveDown;
-	mapSdlToControl[SDLK_LCTRL] = InputControl::Player1_Fire1;
-	mapSdlToControl[SDLK_LSHIFT] = InputControl::Player1_Fire2;
-	mapSdlToControl[SDLK_SPACE] = InputControl::Player1_Fire3;
-	mapSdlToControl[SDLK_a] = InputControl::Player2_MoveLeft;
-	mapSdlToControl[SDLK_d] = InputControl::Player2_MoveRight;
-	mapSdlToControl[SDLK_w] = InputControl::Player2_MoveUp;
-	mapSdlToControl[SDLK_s] = InputControl::Player2_MoveDown;
-	mapSdlToControl[SDLK_b] = InputControl::Player2_Fire1;
-	mapSdlToControl[SDLK_g] = InputControl::Player2_Fire2;
-	mapSdlToControl[SDLK_t] = InputControl::Player2_Fire3;
-	mapSdlToControl[SDLK_F5] = InputControl::ReloadScripts;
-	mapSdlToControl[SDLK_F6] = InputControl::ReloadSprites;
-	mapSdlToControl[SDLK_F7] = InputControl::ReloadAnimations;
+	input.initialize();
+
+	input.loadActions("input_actions");
+	input.loadMappings("input_mappings");
 
 	music = new Music();
 	projectilePool.resize(maxProjectileCount);
@@ -294,61 +278,33 @@ void Game::mainLoop()
 		input.update();
 		music->update();
 
-		if (isControlDown(InputControl::Exit))
+		if (input.isDown("exit"))
 			exitGame = true;
 
-		//TODO: make a proper state object for the key presses
-		static bool reloadScriptsKeyDown = false;
-		static bool reloadSpritesKeyDown = false;
-		static bool reloadAnimationsKeyDown = false;
-		static bool pauseKeyDown = false;
+		bool reloadScripts = input.wasPressed("reloadScripts");
+		bool reloadSprites = input.wasPressed("reloadSprites");
+		bool reloadAnimations = input.wasPressed("reloadAnimations");
+		bool pause = input.wasPressed("pause");
 
-		bool reloadScripts = isControlDown(InputControl::ReloadScripts);
-		bool reloadSprites = isControlDown(InputControl::ReloadSprites);
-		bool reloadAnimations = isControlDown(InputControl::ReloadAnimations);
-		bool pause = isControlDown(InputControl::Pause);
-
-		if (!reloadScriptsKeyDown && reloadScripts)
+		if (reloadScripts)
 		{
-			reloadScriptsKeyDown = true;
 			resourceLoader->reloadScripts();
 		}
 
-		if (!reloadScripts)
-			reloadScriptsKeyDown = false;
-
-		//--
-
-		if (!reloadSpritesKeyDown && reloadSprites)
+		if (reloadSprites)
 		{
-			reloadSpritesKeyDown = true;
 			resourceLoader->reloadSprites();
 		}
 
-		if (!reloadSprites)
-			reloadSpritesKeyDown = false;
-
-		//--
-
-		if (!reloadAnimationsKeyDown && reloadAnimations)
+		if (reloadAnimations)
 		{
-			reloadAnimationsKeyDown = true;
 			resourceLoader->reloadAnimations();
 		}
 
-		if (!reloadAnimations)
-			reloadAnimationsKeyDown = false;
-
-		//--
-
-		if (!pauseKeyDown && pause)
+		if (pause)
 		{
-			pauseKeyDown = true;
 			pauseGame = !pauseGame;
 		}
-
-		if (!pause)
-			pauseKeyDown = false;
 
 		if (pauseGame)
 		{
@@ -1078,46 +1034,6 @@ void Game::updateTimeScaleAnimation()
 	}
 }
 
-bool Game::isPlayerMoveLeft(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_MoveLeft : InputControl::Player1_MoveLeft)];
-}
-
-bool Game::isPlayerMoveRight(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_MoveRight : InputControl::Player1_MoveRight)];
-}
-
-bool Game::isPlayerMoveUp(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_MoveUp : InputControl::Player1_MoveUp)];
-}
-
-bool Game::isPlayerMoveDown(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_MoveDown : InputControl::Player1_MoveDown)];
-}
-
-bool Game::isPlayerFire1(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_Fire1 : InputControl::Player1_Fire1)];
-}
-
-bool Game::isPlayerFire2(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_Fire2 : InputControl::Player1_Fire2)];
-}
-
-bool Game::isPlayerFire3(u32 playerIndex)
-{
-	return controls[(u32)(playerIndex ? InputControl::Player2_Fire3 : InputControl::Player1_Fire3)];
-}
-
-bool Game::isMouseDown(int btn)
-{
-	return mouseButtonDown[btn];
-}
-
 void Game::showMousePointer(bool hide)
 {
 	SDL_ShowCursor(hide);
@@ -1303,6 +1219,16 @@ std::vector<Projectile*>::iterator Game::releaseProjectile(Projectile* proj)
 	}
 
 	return projectiles.end();
+}
+
+Unit* Game::findUnitById(u32 id)
+{
+	for (auto& unit : units)
+	{
+		if (unit->id == id) return unit;
+	}
+
+	return nullptr;
 }
 
 }

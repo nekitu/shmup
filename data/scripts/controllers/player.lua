@@ -10,6 +10,7 @@ function C:setup(params)
   self.active = params:getBool("active", true)
   log.info("Setup player " .. tostring(self.playerIndex))
   self.unit:setAnimation("player_intro")
+  self.actionPrefix = "player" .. tostring(self.playerIndex + 1) .. "_"
 end
 
 function C:onAnimationEvent(sprite, eventName)
@@ -28,9 +29,13 @@ function C:onUpdate()
 
   local moveDir = Vec2()
 
+  if input:wasPressed("coin") then
+    print("COIN!")
+  end
+
   if self.playerControl then
     -- fire if the button is pressed, the repeat fire logic is done in the engine
-    if game:isPlayerFire1(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "fire1") then
       local wpns = self.unit:getGroupWeapons(0)
       for _, wpn in ipairs(wpns) do
         wpn:fire()
@@ -42,7 +47,7 @@ function C:onUpdate()
       end
     end
 
-    if game:isPlayerFire2(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "fire2") then
       local wpns = self.unit:getGroupWeapons(1)
       for _, wpn in ipairs(wpns) do
         wpn:fire()
@@ -54,26 +59,25 @@ function C:onUpdate()
       end
     end
 
-    if game:isPlayerFire3(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "fire3") then
       local bomb = self.unit:findSprite("bomb")
       if bomb then
         bomb.visible = true
         bomb:setFrameAnimation("explode")
       end
     end
-    
-    if game:isPlayerMoveLeft(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "moveLeft") then
       moveDir.x = -1
       self.unit.root:setFrameAnimation("left")
     end
-    if game:isPlayerMoveRight(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "moveRight") then
       moveDir.x = 1
       self.unit.root:setFrameAnimation("right")
     end
-    if game:isPlayerMoveUp(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "moveUp") then
       moveDir.y = -1
     end
-    if game:isPlayerMoveDown(self.playerIndex) then
+    if input:isDown(self.actionPrefix .. "moveDown") then
       moveDir.y = 1
     end
   end

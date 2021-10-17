@@ -12,7 +12,6 @@ function C:setup(params)
 	self.speed = params:getFloat("speed", 1)
 	self.constantSpeed = params:getBool("constantSpeed", false)
   self.offsetAcquired = false
-  print("setup "..tostring(self.follower).." ".. self.follow.name)
 end
 
 function C:onUnload()

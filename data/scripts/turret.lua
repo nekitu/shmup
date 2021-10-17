@@ -23,7 +23,6 @@ function C:onUpdate()
 end
 
 function C:onCollide(other, colPairs)
-  print("hit by" .. other.name)
 end
 
 return newInstance(C)
