@@ -14,4 +14,15 @@ function C:onUpdate()
   self.unit.root.position.y = self.unit.root.position.y + self.unit.speed * game.deltaTime * self.lineDirection.y
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+  data.lineDirectionX = self.lineDirection.x
+  data.lineDirectionY = self.lineDirection.y
+end
+
+function C:onDeserialize(data)
+  self.unit = game:findUnitById(data.unitId)
+  self.lineDirection = Vec2(data.lineDirectionX, data.lineDirectionY)
+end
+
 return newInstance(C)

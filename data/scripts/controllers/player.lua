@@ -99,4 +99,18 @@ function C:onUpdate()
   collectgarbage("count")
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+  data.playerIndex = self.playerIndex
+  data.active = self.active
+  data.actionPrefix = self.actionPrefix
+end
+
+function C:onDeserialize(data)
+  self.unit = game:findUnitById(data.unitId)
+  self.playerIndex = data.playerIndex
+  self.active = data.active
+  self.actionPrefix = data.actionPrefix
+end
+
 return newInstance(C)

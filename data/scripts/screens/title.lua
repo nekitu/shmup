@@ -118,4 +118,29 @@ function C:onDeactivate()
   print("leave title screen")
 end
 
+function C:onSerialize(data)
+  gfx:freeUserPalette(self.palette)
+  data.c = self.c
+  data.offs = offs
+  data.loffs = loffs
+  data.step = step
+  data.y = y
+  print("serialize title")
+end
+
+function C:onDeserialize(data)
+  dump(data)
+  self.titleSpr = game:loadSprite("sprites/title")
+  self.rocksSpr = game:loadSprite("sprites/rocks")
+  self.lavaSpr = game:loadSprite("sprites/lava")
+  self.iceSpr = game:loadSprite("sprites/ice")
+  self.palette = gfx:createUserPalette()
+  self.palette:copyFromSprite(self.titleSpr)
+  self.c = data.c
+  offs = data.offs
+  loffs = data.loffs
+  step = data.step
+  y = data.y
+end
+
 return newInstance(C)
