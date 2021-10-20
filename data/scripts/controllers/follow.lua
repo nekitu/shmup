@@ -58,4 +58,24 @@ function C:onUpdate()
   end
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+  data.followSprId = self.follow.id
+  data.followerSprId = self.follower.id
+  data.initialRelativeToRoot =  self.initialRelativeToRoot
+  data.initialPosition = tableFromVec2(self.initialPosition)
+  data.offset = tableFromVec2(self.offset)
+  data.offsetAcquired = self.offsetAcquired
+end
+
+function C:onDeserialize(data)
+  self.unit = unitFromId(data.unitId)
+  self.follow = data.followSprId
+  self.follower = data.followerSprId
+  self.initialRelativeToRoot =  data.initialRelativeToRoot
+  self.initialPosition = tableToVec2(data.initialPosition)
+  self.offset = tableToVec2(data.offset)
+  self.offsetAcquired = data.offsetAcquired
+end
+
 return newInstance(C)

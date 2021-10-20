@@ -9,4 +9,10 @@ function C:onUpdate()
   self.unit.root.position.y = self.unit.root.position.y + self.unit.speed * game.deltaTime
 end
 
+function C:onSerialize(data)
+end
+
+function C:onDeserialize(data)
+end
+
 return newInstance(C)

@@ -87,6 +87,7 @@ void Game::loadConfig()
 		Json::Value& screenInfoJson = screensJson[i];
 		GameScreen* gs = new GameScreen();
 
+		gs->id = i + 1;
 		auto path = screenInfoJson["path"].asString();
 		gs->name = path.substr(path.find_last_of("/") + 1);
 		gs->path = path;
@@ -1226,6 +1227,16 @@ Unit* Game::findUnitById(u32 id)
 	for (auto& unit : units)
 	{
 		if (unit->id == id) return unit;
+	}
+
+	return nullptr;
+}
+
+GameScreen* Game::findGameScreenById(u32 id)
+{
+	for (auto& gs : gameScreens)
+	{
+		if (gs->id == id) return gs;
 	}
 
 	return nullptr;

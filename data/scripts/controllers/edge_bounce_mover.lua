@@ -31,13 +31,12 @@ end
 
 function C:onSerialize(data)
   data.unitId = self.unit.id
-  data.directionX = self.direction.x
-  data.directionY = self.direction.y
+  data.direction = tableFromVec2(self.direction)
 end
 
 function C:onDeserialize(data)
-  self.unit = game:findUnitById(data.unitId)
-  self.direction = Vec2(data.directionX, data.directionY)
+  self.unit = unitFromId(data.unitId)
+  self.direction = tableToVec2(data.direction)
 end
 
 return newInstance(C)

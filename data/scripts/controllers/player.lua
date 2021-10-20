@@ -107,7 +107,7 @@ function C:onSerialize(data)
 end
 
 function C:onDeserialize(data)
-  self.unit = game:findUnitById(data.unitId)
+  self.unit = unitFromId(data.unitId)
   self.playerIndex = data.playerIndex
   self.active = data.active
   self.actionPrefix = data.actionPrefix

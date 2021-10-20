@@ -12,4 +12,12 @@ end
 function C:onUpdate()
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+end
+
+function C:onDeserialize(data)
+  self.unit = unitFromId(data.unitId)
+end
+
 return newInstance(C)

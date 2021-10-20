@@ -11,4 +11,12 @@ function C:onUpdate()
   util.clampValue(self.unit.speed, self.unit.minSpeed, self.unit.maxSpeed)
 end
 
+function C:onSerialize(data)
+  data.unitId = self.unit.id
+end
+
+function C:onDeserialize(data)
+  self.unit = unitFromId(data.unitId)
+end
+
 return newInstance(C)

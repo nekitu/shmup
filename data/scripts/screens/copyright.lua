@@ -29,4 +29,12 @@ end
 function C:onDeactivate()
 end
 
+function C:onSerialize(data)
+  data.gameScreenId = self.gameScreen.id
+end
+
+function C:onDeserialize(data)
+  self.gameScreen = gameScreenFromId(data.gameScreenId)
+end
+
 return newInstance(C)

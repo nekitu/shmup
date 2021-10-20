@@ -15,22 +15,25 @@ local credits = {
   }
 }
 
+function C:init(gs)
+  self.gameScreen = gs
+  self:loadFonts()
+  self.offset = gfx.videoHeight
+end
 
-local offset = gfx.videoHeight
-
-function C:init()
+function C:loadFonts()
   self.fntTitle = game:loadFont("fonts/credits_title")
   self.fntNormal = game:loadFont("fonts/default")
 end
 
 function C:onUpdate(dt)
-  offset = offset - dt * 20
+  self.offset = self.offset - dt * 20
 end
 
 function C:onRender()
   gfx.colorMode = ColorMode_Add
   gfx.color = 0
-  local y = offset
+  local y = self.offset
   for _, v in ipairs(credits) do
     local tsize = gfx:getTextSize(self.fntTitle, v.department)
     local pos = Vec2((gfx.videoWidth - tsize.x)/2, y)
@@ -47,10 +50,20 @@ function C:onRender()
 end
 
 function C:onActivate()
-
 end
 
 function C:onDeactivate()
+end
+
+function C:onSerialize(data)
+  data.gameScreenId = self.gameScreen.id
+  data.offset = self.offset
+end
+
+function C:onDeserialize(data)
+  self.gameScreen = gameScreenFromId(data.gameScreenId)
+  self:loadFonts()
+  self.offset = data.offset
 end
 
 return newInstance(C)

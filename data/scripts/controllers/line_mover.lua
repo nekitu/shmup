@@ -16,13 +16,12 @@ end
 
 function C:onSerialize(data)
   data.unitId = self.unit.id
-  data.lineDirectionX = self.lineDirection.x
-  data.lineDirectionY = self.lineDirection.y
+  data.lineDirection = tableFromVec2(self.lineDirection)
 end
 
 function C:onDeserialize(data)
-  self.unit = game:findUnitById(data.unitId)
-  self.lineDirection = Vec2(data.lineDirectionX, data.lineDirectionY)
+  self.unit = unitFromId(data.unitId)
+  self.lineDirection = tableToVec2(data.lineDirection)
 end
 
 return newInstance(C)

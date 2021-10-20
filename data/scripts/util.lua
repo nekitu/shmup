@@ -58,3 +58,39 @@ function projectPoint(x, y, z, roundCoords)
 
   return screen
 end
+
+-- Functions used for serialization
+-- since we need to convert all C++ objects/refs to tables to be stored
+-- during the serialization/deserialization
+
+function unitFromId(id)
+  return game:findUnitById(id)
+end
+
+function gameScreenFromId(id)
+  return game:findGameScreenById(id)
+end
+
+function tableFromVec2(vec)
+  return {x = vec.x, y = vec.y}
+end
+
+function tableToVec2(tbl)
+  return Vec2(tbl.x, tbl.y)
+end
+
+function tableFromColor(col)
+  return {r = col.r, g = col.g, b = col.b, a = col.a}
+end
+
+function tableToColor(tbl)
+  return Color(tbl.r, tbl.g, tbl.b, tbl.a)
+end
+
+function tableFromRect(rc)
+  return {x = rc.x, y = rc.y, width = rc.width, height = rc.height}
+end
+
+function tableToRect(tbl)
+  return Rect(tbl.x, tbl.y, tbl.width, tbl.height)
+end

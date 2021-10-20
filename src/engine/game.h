@@ -64,6 +64,7 @@ struct ScreenFx
 
 struct GameScreen
 {
+	u32 id = 0;
 	std::string name; // script file name part only
 	std::string path;
 	struct ScriptResource* script = nullptr;
@@ -206,6 +207,7 @@ struct Game
 	struct Projectile* newProjectile();
 	std::vector<Projectile*>::iterator releaseProjectile(Projectile* proj);
 	Unit* findUnitById(u32 id);
+	GameScreen* findGameScreenById(u32 id);
 };
 
 }
