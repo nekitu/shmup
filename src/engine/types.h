@@ -75,6 +75,8 @@ namespace engine
 #define LOG_CRITICAL(...) spdlog::critical(__VA_ARGS__)
 #define LOG_TMP(...) spdlog::info(__VA_ARGS__)
 
+#define ENGINE_DEVMODE
+
 typedef u32 Rgba32;
 typedef std::vector<u32> UnicodeString;
 

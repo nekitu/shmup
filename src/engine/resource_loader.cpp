@@ -97,7 +97,7 @@ void ResourceLoader::reloadWeapons()
 		for (auto& wpn : unitResource->weapons)
 		{
 			auto active = wpn.second->active;
-			auto& pos = wpn.second->params.position;
+			auto pos = wpn.second->params.position;
 			auto ammo = wpn.second->params.ammo;
 
 			wpn.second->initializeFrom(wpn.second->weaponResource);
@@ -134,7 +134,10 @@ void ResourceLoader::reloadSprites()
 	LOG_INFO("Reloading sprites...");
 	Json::Value json;
 
-	Game::instance->graphics->atlas->create(Graphics::textureAtlasWidth, Graphics::textureAtlasWidth);
+	if (!Game::instance->prebakedAtlas)
+	{
+		Game::instance->graphics->atlas->create(Graphics::textureAtlasWidth, Graphics::textureAtlasWidth);
+	}
 
 	for (auto& res : resources)
 	{
@@ -150,7 +153,6 @@ void ResourceLoader::reloadSprites()
 			res.second->load(json);
 		}
 	}
-
 
 	for (auto& spr : Sprite::allSprites)
 	{
@@ -192,14 +194,17 @@ void ResourceLoader::reloadSprites()
 		}
 	}
 
-	LOG_INFO("Packing atlas sprites...");
-	Game::instance->graphics->atlas->packWithLastUsedParams();
-
-	LOG_INFO("Computing sprite params after packing...");
-
-	for (auto& spriteResource : sprites)
+	if (!Game::instance->prebakedAtlas)
 	{
-		spriteResource->computeParamsAfterAtlasGeneration();
+		LOG_INFO("Packing atlas sprites...");
+		Game::instance->graphics->atlas->packWithLastUsedParams();
+
+		LOG_INFO("Computing sprite params after packing...");
+
+		for (auto& spriteResource : sprites)
+		{
+			spriteResource->computeParamsAfterAtlasGeneration();
+		}
 	}
 }
 

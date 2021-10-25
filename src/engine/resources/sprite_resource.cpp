@@ -139,7 +139,7 @@ bool SpriteResource::load(Json::Value& json)
 	color.parse(json.get("color", color.toString()).asString());
 	auto colMode = json.get("colorMode", "Add").asString();
 
-	image = loadImage(Game::makeFullDataPath(imagePath));
+	image = loadImage(imagePath);
 
 	if (image)
 	{

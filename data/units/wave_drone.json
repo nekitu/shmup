@@ -9,7 +9,7 @@
   {
     "mover" : "scripts/controllers/edge_bounce_mover",
     "activeTime": 11150,
-    "spawnDelay": 1,
+    "spawnDelay": 0.3,
     "spawnUnit" : "units/turret",
     "lineDirection": "0 1"
   }

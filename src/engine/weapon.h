@@ -48,6 +48,7 @@ struct Weapon
 	void spawnProjectiles(struct Game* game);
 	void update(struct Game* game);
 	void render(struct Graphics* gfx);
+
 private:
 	void createBeamSprites();
 };

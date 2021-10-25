@@ -6,6 +6,7 @@
 #include "graphics.h"
 #include "json/writer.h"
 #include "utils.h"
+#include <filesystem>
 
 namespace engine
 {
@@ -71,7 +72,7 @@ void TilemapLayer::loadImage()
 
 	if (!Game::instance->prebakedAtlas)
 	{
-		imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
+		imgData = stbi_load(Game::instance->makeFullDataPath(imagePath).c_str(), &imgWidth, &imgHeight, &comp, 4);
 		LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
 	}
 
@@ -144,9 +145,7 @@ void TilemapLayer::load(Json::Value& json)
 	{
 		type = TilemapLayer::Type::Image;
 		imagePath = json.get("image", "").asString();
-		//TODO: maybe not hardcode the data path
-		imagePath = "../data/" + getParentPath(tilemapResource->path) + "/" + imagePath;
-		replaceAll(imagePath, "\\/", "/");
+		imagePath = std::filesystem::path(getParentPath(tilemapResource->path) + "/" + imagePath).lexically_normal().generic_string();
 		loadImage();
 	}
 
@@ -248,8 +247,7 @@ bool TilemapResource::load(Json::Value& json)
 		TilesetInfo info;
 		auto srcPath = tilesetJson.get("source", "").asString();
 
-		replaceAll(srcPath, "..", "");
-		replaceAll(srcPath, "\/", "/");
+		srcPath = std::filesystem::path(getParentPath(path) + "/" + srcPath).lexically_normal().generic_string();
 		replaceAll(srcPath, ".json", "");
 
 		info.tileset = Game::instance->resourceLoader->loadTileset(srcPath);

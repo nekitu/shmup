@@ -21,6 +21,7 @@ void Weapon::reset()
 {
 	if (scriptClass)
 		delete scriptClass;
+
 	scriptClass = nullptr;
 	fireTimer = FLT_MAX;
 }

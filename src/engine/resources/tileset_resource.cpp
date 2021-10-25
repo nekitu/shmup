@@ -3,6 +3,7 @@
 #include "graphics.h"
 #include <stb_image.h>
 #include "image_atlas.h"
+#include <filesystem>
 
 namespace engine
 {
@@ -40,8 +41,9 @@ bool TilesetResource::load(Json::Value& json)
 	}
 
 	imagePath = json.get("image", "").asString();
-	imagePath = "tilesets/" + imagePath;
-	imagePath = Game::instance->makeFullDataPath(imagePath);
+	//imagePath = "tilesets/" + imagePath;
+	//imagePath = Game::instance->makeFullDataPath(imagePath);
+	imagePath = std::filesystem::path(getParentPath(path) + "/" + imagePath).lexically_normal().generic_string();
 
 	return loadImage();
 }
@@ -57,7 +59,7 @@ bool TilesetResource::loadImage()
 
 	if (!Game::instance->prebakedAtlas)
 	{
-		data = stbi_load(imagePath.c_str(), &width, &height, &comp, 4);
+		data = stbi_load(Game::instance->makeFullDataPath(imagePath).c_str(), &width, &height, &comp, 4);
 
 		if (!data)
 			return false;

@@ -289,6 +289,7 @@ void Game::mainLoop()
 		input.update();
 		music->update();
 
+#ifdef ENGINE_DEVMODE
 		if (input.isDown("exit"))
 			exitGame = true;
 
@@ -321,6 +322,7 @@ void Game::mainLoop()
 		{
 			deltaTime = 0;
 		}
+#endif
 
 		for (auto& scr : gameScreens)
 		{
@@ -939,7 +941,7 @@ void Game::preloadTilesetAndTilemapImages()
 								return;
 						}
 
-						Game::instance->graphics->atlas->addImage(Game::instance->makeFullDataPath(str), (Rgba32*)data, width, height);
+						Game::instance->graphics->atlas->addImage(str, (Rgba32*)data, width, height);
 						delete[] data;
 					}
 				}

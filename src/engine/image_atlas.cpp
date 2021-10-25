@@ -578,7 +578,7 @@ AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* p
 		{
 			tga::TGA tgaFile;
 
-			if (tgaFile.Load(path))
+			if (tgaFile.Load(Game::instance->makeFullDataPath(path)))
 			{
 				width = tgaFile.GetWidth();
 				height = tgaFile.GetHeight();
@@ -638,7 +638,7 @@ AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* p
 		}
 		else
 		{
-			data = (u8*)stbi_load(path.c_str(), &width, &height, &comp, 4);
+			data = (u8*)stbi_load(Game::instance->makeFullDataPath(path).c_str(), &width, &height, &comp, 4);
 		}
 
 		LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
