@@ -547,6 +547,13 @@ void Game::checkCollisions()
 		if (!cp.first->unitResource) continue;
 		if (!cp.second->unitResource) continue;
 
+		bool applyDamage = true;
+
+		if (collisionMatrix.get(cp.first->unitResource->unitType, cp.second->unitResource->unitType) & CollideFlags::Friends)
+		{
+			applyDamage = false;
+		}
+
 		if (cp.first->checkPixelCollision(cp.second, pixelCols))
 		{
 			// delete projectiles colliding with other normal units
@@ -575,9 +582,12 @@ void Game::checkCollisions()
 					col.set("collisionCenter", pixelCols[i].collisionCenter);
 					colsTbl.set(i + 1, col);
 
-					// inflict damage
-					pixelCols[i].sprite1->hit(pixelCols[i].sprite2->damage);
-					pixelCols[i].sprite2->hit(pixelCols[i].sprite1->damage);
+					// inflict damage if not friends
+					if (applyDamage)
+					{
+						pixelCols[i].sprite1->hit(pixelCols[i].sprite2->damage);
+						pixelCols[i].sprite2->hit(pixelCols[i].sprite1->damage);
+					}
 				}
 
 				CALL_LUA_FUNC2(cp.first->scriptClass, "onCollide", cp.second, colsTbl)
