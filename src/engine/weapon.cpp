@@ -236,8 +236,13 @@ void Weapon::update(struct Game* game)
 			{
 				LuaIntf::LuaRef colsTbl = LuaIntf::LuaRef::createTable(getLuaState());
 				LuaIntf::LuaRef col = LuaIntf::LuaRef::createTable(getLuaState());
-				attachTo->hit(beamCollision.sprite->damage);
-				beamCollision.sprite->hit(attachTo->damage);
+
+				if (!beamCollision.friendly)
+				{
+					attachTo->hit(beamCollision.sprite->damage);
+					beamCollision.sprite->hit(attachTo->damage);
+				}
+
 				col.set("sprite1", attachTo);
 				col.set("sprite2", beamCollision.sprite);
 				col.set("collisionCenter", beamCollision.point);

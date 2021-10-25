@@ -173,6 +173,7 @@ bool initializeLua()
 
 	LUA.beginClass<Game>("Game")
 		.addVariable("deltaTime", &Game::deltaTime)
+		.addVariable("prebakedAtlas", &Game::prebakedAtlas)
 		.addVariable("realDeltaTime", &Game::realDeltaTime)
 		.addFunction("animateTimeScale", &Game::animateTimeScale)
 		.addVariable("cameraState", &Game::cameraState)
@@ -239,6 +240,11 @@ bool initializeLua()
 				clampValue(val, minVal, maxVal);
 				return val;
 			})
+		.addFunction("saveAtlas", [](const std::string path)
+			{
+				return Game::instance->graphics->atlas->save(path);
+			}
+			)
 		.endModule();
 
 	LUA.beginClass<Graphics>("Graphics")

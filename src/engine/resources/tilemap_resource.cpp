@@ -67,14 +67,15 @@ void TilemapLayer::loadImage()
 	int imgWidth = 0;
 	int imgHeight = 0;
 	int comp = 0;
+	stbi_uc* imgData = nullptr;
 
-	stbi_uc* imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
-	LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
-
-	if (imgData)
+	if (!Game::instance->prebakedAtlas)
 	{
-		image = Game::instance->graphics->atlas->addImage((Rgba32*)imgData, imgWidth, imgHeight);
+		imgData = stbi_load(imagePath.c_str(), &imgWidth, &imgHeight, &comp, 4);
+		LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
 	}
+
+	image = Game::instance->graphics->atlas->addImage(imagePath, (Rgba32*)imgData, imgWidth, imgHeight);
 }
 
 void TilemapLayer::load(Json::Value& json)

@@ -411,8 +411,9 @@ bool Sprite::checkPixelCollision(Sprite* other, Vec2& outCollisionCenter)
 					}
 				}
 
-				u32 offs = newSrcY * spr->spriteResource->image->width + newSrcX;
-				u8* px = (u8*)&spr->spriteResource->image->imageData[offs];
+				//u32 offs = newSrcY * spr->spriteResource->image->width + newSrcX;
+				//u8* px = (u8*)&spr->spriteResource->image->imageData[offs];
+				auto px = spr->spriteResource->image->getPixelAddr(newSrcX, newSrcY);
 
 				if (!spr->horizontalFlip && !spr->verticalFlip)
 				{

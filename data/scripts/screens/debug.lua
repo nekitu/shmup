@@ -27,6 +27,9 @@ function C:onRender()
 end
 
 function C:onActivate()
+  if not game.prebakedAtlas then
+    util.saveAtlas("atlas")
+  end
 end
 
 function C:onDeactivate()

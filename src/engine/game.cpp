@@ -77,6 +77,7 @@ void Game::loadConfig()
 	windowTitle = json.get("windowTitle", windowTitle).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
+	prebakedAtlas = json.get("prebakedAtlas", prebakedAtlas).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
 	cameraState.speed = json.get("cameraSpeed", cameraState.speed).asFloat();
 
@@ -192,7 +193,6 @@ bool Game::initialize()
 
 	initializeLua();
 	input.initialize();
-
 	input.loadActions("input_actions");
 	input.loadMappings("input_mappings");
 
@@ -604,9 +604,27 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 		rc.set(pos.x, pos.y - beamWidth / 2, graphics->videoWidth - pos.x, beamWidth);
 	}
 
+	UnitType beamUnitType = UnitType::None;
+
+	if (unit->unitResource)
+	{
+		beamUnitType = unit->unitResource->unitType == UnitType::Player ? UnitType::PlayerProjectile : UnitType::EnemyProjectile;
+	}
+
 	for (auto& otherUnit : units)
 	{
 		if (otherUnit == unit || !otherUnit->collide) continue;
+		if (!otherUnit->unitResource) continue;
+		if (!unit->unitResource) continue;
+
+		auto colFlags = collisionMatrix.get(beamUnitType, otherUnit->unitResource->unitType);
+
+		if (!colFlags)
+		{
+			continue;
+		}
+
+		closest.friendly = CollideFlags::Friends & colFlags;
 
 		for (auto& otherSprite : otherUnit->sprites)
 		{
@@ -654,9 +672,12 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 							f32 scaledY = frmRc.y + yFinal;
 							f32 scaledX = frmRc.x + xFinal / otherSprite->scale.x;
 
-							u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
-								(u32)scaledY * otherSprite->spriteResource->image->width
-									+ (u32)scaledX];
+							//u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
+							//	(u32)scaledY * otherSprite->spriteResource->image->width
+							//		+ (u32)scaledX];
+
+							auto p = otherSprite->spriteResource->image->getPixelAddr((u32)scaledX, (u32)scaledY);
+
 							// if alpha is 0xFF, then we hit an opaque pixel
 							if (p[3] == 0xff)
 							{
@@ -713,10 +734,10 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 
 						for (int x = otherSprite->spriteResource->frameWidth - 1; x >= 0; x--)
 						{
-							u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
-								(u32)(frmRc.y + relativeY) * otherSprite->spriteResource->image->width
-									+ (u32)(frmRc.x + x)];
-
+							//u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
+							//	(u32)(frmRc.y + relativeY) * otherSprite->spriteResource->image->width
+							//		+ (u32)(frmRc.x + x)];
+							auto p = otherSprite->spriteResource->image->getPixelAddr((u32)(frmRc.x + x), (u32)(frmRc.y + relativeY));
 							if (p[3] == 0xff)
 							{
 								pixelCollided = true;
@@ -857,8 +878,11 @@ void Game::preloadSprites()
 
 	recursiveSearch(dataRoot + "sprites");
 
-	LOG_INFO("Packing atlas sprites...");
-	graphics->atlas->pack();
+	if (!prebakedAtlas)
+	{
+		LOG_INFO("Packing atlas sprites...");
+		graphics->atlas->pack();
+	}
 
 	LOG_INFO("Computing sprite params after packing...");
 

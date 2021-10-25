@@ -13,8 +13,8 @@
          "id":14,
          "image":"..\/sprites\/asteroids.png",
          "name":"meteors",
-         "offsetx":-20.8333333333333,
-         "offsety":-197.833333333333,
+         "offsetx":-51.8333333333333,
+         "offsety":-584.833333333333,
          "opacity":1,
          "properties":[
                 {

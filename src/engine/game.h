@@ -31,6 +31,7 @@ struct BeamCollisionInfo
 {
 	bool directHit = false;
 	bool valid = false;
+	bool friendly = false;
 	Vec2 beamStart;
 	Vec2 point;
 	f32 distance = 0;
@@ -141,8 +142,10 @@ struct Game
 	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
 	bool vSync = false;
+	bool prebakedAtlas = false;
 	std::string configPath = "game.json";
 	std::string dataRoot = "../data/";
+	std::string atlasFolder = "atlas";
 	bool exitGame = false;
 	bool editing = false;
 	bool pauseOnAppDeactivate = true;

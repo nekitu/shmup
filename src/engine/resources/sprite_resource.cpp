@@ -98,7 +98,7 @@ bool SpriteResource::load(Json::Value& json)
 		imagePath = path + ".tga";
 
 	// check if there are asset compile params
-	if (json.isMember("assetCompiler"))
+	if (!Game::instance->prebakedAtlas && json.isMember("assetCompiler"))
 	{
 		auto asset = json.get("assetCompiler", Json::Value()).get("asset", "").asString();
 
@@ -146,6 +146,8 @@ bool SpriteResource::load(Json::Value& json)
 		if (!frameWidth) frameWidth = image->width;
 		if (!frameHeight) frameHeight = image->height;
 	}
+
+	assert(image);
 
 	columns = image->width / frameWidth;
 	rows = image->height / frameHeight;

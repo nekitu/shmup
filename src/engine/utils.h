@@ -46,6 +46,7 @@ namespace engine
 	u32 singleUtf8ToUtf32(const char* glyph);
 	bool loadJson(const std::string& path, Json::Value& json);
 	std::string readTextFile(const std::string& path);
+	bool writeTextFile(const std::string& path, const std::string& text);
 	f32 deg2rad(f32 deg);
 	f32 rad2deg(f32 rad);
 	f32 dir2deg(const Vec2& dir);

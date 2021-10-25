@@ -152,6 +152,19 @@ std::string readTextFile(const std::string& path)
 	return text;
 }
 
+bool writeTextFile(const std::string& path, const std::string& text)
+{
+	FILE* file = fopen(path.c_str(), "wb");
+
+	if (!file)
+		return false;
+
+	auto written = fwrite(text.data(), 1, text.size(), file);
+	fclose(file);
+
+	return written == text.size();
+}
+
 f32 deg2rad(f32 deg) { return deg * M_PI / 180.f; }
 f32 rad2deg(f32 rad) { return rad * 180.f / M_PI; }
 f32 dir2deg(const Vec2& dir)

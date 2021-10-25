@@ -6,10 +6,43 @@
 #include "texture_array.h"
 #include <stb_image.h>
 #include <tga.hpp>
+#include <json/writer.h>
+#include "game.h"
+#include <filesystem>
 
 namespace engine
 {
 static u32 atlasId = 0;
+
+u32 AtlasImage::getPixelOffsetInsideAtlas(u32 x, u32 y)
+{
+	if (!rotated)
+		return (rect.y + y) * atlasTexture->textureArray->width + rect.x + x;
+
+	return (rect.y + x) * atlasTexture->textureArray->height + rect.x + y;
+}
+
+Rgba32 AtlasImage::getPixel(u32 x, u32 y)
+{
+	if (!atlasTexture || !atlasTexture->textureImage)
+		return 0;
+
+	return atlasTexture->textureImage[getPixelOffsetInsideAtlas(x, y)];
+}
+
+u8* AtlasImage::getPixelAddr(u32 x, u32 y)
+{
+	if (!atlasTexture || !atlasTexture->textureImage)
+		return nullptr;
+
+	return (u8*)(atlasTexture->textureImage + getPixelOffsetInsideAtlas(x, y));
+}
+
+void AtlasImage::setPixel(u32 x, u32 y, Rgba32 color)
+{
+	auto addr = getPixelAddr(x, y);
+	if (addr) (Rgba32&)addr = color;
+}
 
 ImageAtlas::ImageAtlas(u32 textureWidth, u32 textureHeight)
 {
@@ -23,6 +56,12 @@ ImageAtlas::~ImageAtlas()
 	for (auto& at : atlasTextures)
 	{
 		delete[] at->textureImage;
+	}
+
+	for (auto& img : images)
+	{
+		delete[] img.second->cachedImageData;
+		delete img.second;
 	}
 
 	for (auto& pps : pendingPackImages)
@@ -43,6 +82,7 @@ void ImageAtlas::create(u32 textureWidth, u32 textureHeight)
 		delete [] at->textureImage;
 		delete at;
 	}
+
 	atlasTextures.clear();
 	clearImages();
 	delete textureArray;
@@ -62,16 +102,30 @@ AtlasImage* ImageAtlas::getImageById(AtlasImageId id) const
 	return iter->second;
 }
 
-AtlasImage* ImageAtlas::addImage(const Rgba32* imageData, u32 width, u32 height, bool addBleedOut)
+AtlasImage* ImageAtlas::addImage(const std::string& path, const Rgba32* imageData, u32 width, u32 height, bool addBleedOut)
 {
-	return addImageInternal(lastImageId++, imageData, width, height, addBleedOut);
+	return addImageInternal(path, lastImageId++, imageData, width, height, addBleedOut);
 }
 
-AtlasImage* ImageAtlas::addImageInternal(AtlasImageId imgId, const Rgba32* imageData, u32 imageWidth, u32 imageHeight, bool addBleedOut)
+AtlasImage* ImageAtlas::addImageInternal(const std::string& path, AtlasImageId imgId, const Rgba32* imageData, u32 imageWidth, u32 imageHeight, bool addBleedOut)
 {
+	if (prebaked)
+	{
+		auto iter = pathImageLUT.find(path);
+
+		if (iter == pathImageLUT.end())
+		{
+			LOG_ERROR("Atlas: Cannot find image with path {} in prebaked atlas", path);
+			return nullptr;
+		}
+
+		return iter->second;
+	}
+
 	PackImageData psd;
 
 	u32 imageSize = imageWidth * imageHeight;
+	psd.path = path;
 	psd.imageData = new Rgba32[imageSize];
 	memcpy(psd.imageData, imageData, imageSize * 4);
 	psd.id = imgId;
@@ -88,13 +142,16 @@ AtlasImage* ImageAtlas::addImageInternal(AtlasImageId imgId, const Rgba32* image
 	image->width = imageWidth;
 	image->height = imageHeight;
 	image->atlas = this;
+	image->path = path;
 	images.insert(std::make_pair(psd.id, image));
+	pathImageLUT[path] = image;
 
 	return image;
 }
 
 void ImageAtlas::updateImageData(AtlasImageId imgId, const Rgba32* imageData, u32 width, u32 height)
 {
+	assert(false);
 	//TODO
 }
 
@@ -105,7 +162,7 @@ void ImageAtlas::deleteImage(AtlasImage* image)
 	if (iter == images.end())
 		return;
 
-	delete[] image->imageData;
+	delete[] image->cachedImageData;
 	delete image;
 
 	//TODO: we would need to recreate the atlas texture where this image was in
@@ -118,8 +175,8 @@ AtlasImage* ImageAtlas::addWhiteImage(u32 width)
 	Rgba32* whiteImageData = new Rgba32[whiteImageSize];
 
 	memset(whiteImageData, 0xff, whiteImageSize * 4);
-	whiteImage = addImage(whiteImageData, width, width, true);
-	delete[]whiteImageData;
+	whiteImage = addImage("white_image", whiteImageData, width, width, true);
+	delete[] whiteImageData;
 
 	return whiteImage;
 }
@@ -161,6 +218,7 @@ bool ImageAtlas::pack(
 					//TODO: if image is bigger than the atlas size, then resize or just skip
 					if (packImage.width >= width || packImage.height >= height)
 					{
+						LOG_ERROR("Image '{}' is too big for the atlas, skipping", packImage.path);
 						delete[] packImage.imageData;
 						iter = pendingPackImages.erase(iter);
 						continue;
@@ -351,9 +409,14 @@ bool ImageAtlas::pack(
 		}
 
 		// init image
-		// pass the ownership of the data ptr
+		// if not prebaked, pass the ownership of the image data ptr
+		// used for repacking the atlas at runtime again
+		if (!prebaked)
+		{
+			image->cachedImageData = packImage.imageData;
+		}
+
 		image->bleedOut = packImage.bleedOut;
-		image->imageData = packImage.imageData;
 		image->width = packImage.width;
 		image->height = packImage.height;
 		image->atlasTexture = packImage.atlasTexture;
@@ -374,10 +437,10 @@ bool ImageAtlas::pack(
 			{
 				for (u32 x = 0; x < packImage.width; x++)
 				{
-					u32 destIndex =
+					u32 destOffset =
 						packImage.packedRect.x + y + (packImage.packedRect.y + x) * width;
-					u32 srcIndex = y * packImage.width + (packImage.width - 1) - x;
-					image->atlasTexture->textureImage[destIndex] = ((Rgba32*)packImage.imageData)[srcIndex];
+					u32 srcOffset = y * packImage.width + (packImage.width - 1) - x;
+					image->atlasTexture->textureImage[destOffset] = ((Rgba32*)packImage.imageData)[srcOffset];
 				}
 			}
 		}
@@ -412,6 +475,12 @@ bool ImageAtlas::pack(
 
 void ImageAtlas::repackImages()
 {
+	if (prebaked)
+	{
+		LOG_ERROR("Repacking atlas images is only allowed on 'prebakedAtlas' config var set to false");
+		return;
+	}
+
 	deletePackerImages();
 
 	for (auto& img : images)
@@ -421,8 +490,8 @@ void ImageAtlas::repackImages()
 		packImg.id = img.first;
 
 		// pass over the data ptr, it will be passed again to the image
-		if (img.second->imageData)
-			packImg.imageData = img.second->imageData;
+		if (img.second->cachedImageData)
+			packImg.imageData = img.second->cachedImageData;
 
 		packImg.width = img.second->width;
 		packImg.height = img.second->height;
@@ -469,7 +538,7 @@ void ImageAtlas::clearImages()
 
 	for (auto& image : images)
 	{
-		delete [] image.second->imageData;
+		delete [] image.second->cachedImageData;
 		delete image.second;
 	}
 
@@ -479,9 +548,14 @@ void ImageAtlas::clearImages()
 	}
 
 	images.clear();
+	pathImageLUT.clear();
 	pendingPackImages.clear();
 }
 
+bool isPathTGA(const std::string& path)
+{
+	return strstr(path.c_str(), ".tga") || strstr(path.c_str(), ".TGA");
+}
 
 AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* paletteInfo)
 {
@@ -489,83 +563,246 @@ AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* p
 	int height = 0;
 	int comp = 0;
 	u8* data = 0;
+	bool isTGA = isPathTGA(path);
 
-	if (strstr(path.c_str(), ".tga") || strstr(path.c_str(), ".TGA"))
+	if (prebaked)
 	{
-		tga::TGA tgaFile;
-
-		if (tgaFile.Load(path))
+		if (isTGA && paletteInfo)
 		{
-			width = tgaFile.GetWidth();
-			height = tgaFile.GetHeight();
-			data = tgaFile.GetData();
-			auto format = tgaFile.GetFormat();
-			auto imgSize = width * height;
-
-			if (paletteInfo)
-			{
-				paletteInfo->isPaletted = tgaFile.GetIndexedData() != nullptr;
-				paletteInfo->bitsPerPixel = tgaFile.GetBpp();
-				paletteInfo->colors.resize(tgaFile.GetColorPaletteLength());
-
-				auto pal = tgaFile.GetColorPalette();
-				u8* color;
-
-				// copy palette
-				for (int i = 0; i < paletteInfo->colors.size(); i++)
-				{
-					color = &pal[i * 3];
-
-					if (tgaFile.GetFormat() == tga::ImageFormat::RGB)
-					{
-						paletteInfo->colors[i] =
-							packRGBA(color[2], color[1], color[0], 0xff);
-					}
-					else if (tgaFile.GetFormat() == tga::ImageFormat::RGBA)
-					{
-						paletteInfo->colors[i] = packRGBA(color[3], color[2], color[1], color[0]);
-					}
-				}
-
-				// we only support 256 color palettes
-				if (paletteInfo->isPaletted && paletteInfo->bitsPerPixel == 8)
-				{
-					u32* rgbaData = new u32[imgSize];
-					u8 index = 0;
-
-					for (int y = 0; y < height; y++)
-					{
-						for (int x = 0; x < width; x++)
-						{
-							auto offs = y * width + x;
-							index = *(u8*)(tgaFile.GetIndexedData() + offs);
-							u32 c = packRGBA(index, 0, 0, 255);
-							auto offsFlipped = (height - 1 - y) * width + x;
-							rgbaData[offsFlipped] = c;
-						}
-					}
-
-					data = (u8*)rgbaData;
-				}
-			}
+			*paletteInfo = tgaPalettes[path];
 		}
 	}
 	else
 	{
-		data = (u8*)stbi_load(path.c_str(), &width, &height, &comp, 4);
+		if (isTGA)
+		{
+			tga::TGA tgaFile;
+
+			if (tgaFile.Load(path))
+			{
+				width = tgaFile.GetWidth();
+				height = tgaFile.GetHeight();
+				data = tgaFile.GetData();
+				auto format = tgaFile.GetFormat();
+				auto imgSize = width * height;
+
+				if (paletteInfo)
+				{
+					paletteInfo->isPaletted = tgaFile.GetIndexedData() != nullptr;
+					paletteInfo->bitsPerPixel = tgaFile.GetBpp();
+					paletteInfo->colors.resize(tgaFile.GetColorPaletteLength());
+
+					auto pal = tgaFile.GetColorPalette();
+					u8* color;
+
+					// copy palette
+					for (int i = 0; i < paletteInfo->colors.size(); i++)
+					{
+						color = &pal[i * 3];
+
+						if (tgaFile.GetFormat() == tga::ImageFormat::RGB)
+						{
+							paletteInfo->colors[i] =
+								packRGBA(color[2], color[1], color[0], 0xff);
+						}
+						else if (tgaFile.GetFormat() == tga::ImageFormat::RGBA)
+						{
+							paletteInfo->colors[i] = packRGBA(color[3], color[2], color[1], color[0]);
+						}
+					}
+
+					// we only support 256 color palettes
+					if (paletteInfo->isPaletted && paletteInfo->bitsPerPixel == 8)
+					{
+						u32* rgbaData = new u32[imgSize];
+						u8 index = 0;
+
+						for (int y = 0; y < height; y++)
+						{
+							for (int x = 0; x < width; x++)
+							{
+								auto offs = y * width + x;
+								index = *(u8*)(tgaFile.GetIndexedData() + offs);
+								u32 c = packRGBA(index, 0, 0, 255);
+								auto offsFlipped = (height - 1 - y) * width + x;
+								rgbaData[offsFlipped] = c;
+							}
+						}
+
+						data = (u8*)rgbaData;
+					}
+
+					tgaPalettes[path] = *paletteInfo;
+				}
+			}
+		}
+		else
+		{
+			data = (u8*)stbi_load(path.c_str(), &width, &height, &comp, 4);
+		}
+
+		LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
+
+		if (!data)
+			return nullptr;
 	}
 
-	LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
-
-	if (!data)
-		return nullptr;
-
-	auto img = addImage((Rgba32*)data, width, height);
+	auto img = addImage(path, (Rgba32*)data, width, height);
 
 	delete[] data;
 
 	return img;
 }
 
+bool ImageAtlas::save(const std::string& path)
+{
+	std::filesystem::create_directories(Game::instance->makeFullDataPath(path));
+
+	int i = 0;
+
+	Json::Value doc;
+	Json::StyledWriter writer;
+
+	doc["version"] = 1;
+	doc["textureCount"] = atlasTextures.size();
+	doc["textureWidth"] = width;
+	doc["textureHeight"] = height;
+
+	Json::Value imgJsonArray(Json::ValueType::arrayValue);
+
+	for (auto& img : images)
+	{
+		Json::Value imgJson;
+
+		imgJson["id"] = img.second->id;
+		imgJson["path"] = img.second->path;
+		imgJson["width"] = img.second->width;
+		imgJson["height"] = img.second->height;
+		imgJson["textureIndex"] = img.second->atlasTexture->textureIndex;
+		imgJson["bleedOut"] = img.second->bleedOut;
+		imgJson["rectX"] = img.second->rect.x;
+		imgJson["rectY"] = img.second->rect.y;
+		imgJson["rectW"] = img.second->rect.width;
+		imgJson["rectH"] = img.second->rect.height;
+		imgJson["rotated"] = img.second->rotated;
+		imgJson["uvRectX"] = img.second->uvRect.x;
+		imgJson["uvRectY"] = img.second->uvRect.y;
+		imgJson["uvRectW"] = img.second->uvRect.width;
+		imgJson["uvRectH"] = img.second->uvRect.height;
+
+		if (isPathTGA(img.second->path))
+		{
+			auto& pal = tgaPalettes[img.second->path];
+
+			imgJson["paletteBpp"] = pal.bitsPerPixel;
+			imgJson["isPaletted"] = pal.isPaletted;
+			imgJson["paletteSlot"] = pal.paletteSlot;
+			imgJson["paletteTransparentColorIndex"] = pal.transparentColorIndex;
+
+			Json::Value paletteColorsJson(Json::ValueType::arrayValue);
+
+			for (auto j = 0; j < pal.colors.size(); j++)
+			{
+				paletteColorsJson.append(pal.colors[j]);
+			}
+
+			imgJson["palette"] = paletteColorsJson;
+		}
+
+		imgJsonArray.append(imgJson);
+	}
+
+	doc["images"] = imgJsonArray;
+
+	for (auto& tex : atlasTextures)
+	{
+		auto pngFile = Game::instance->makeFullDataPath(path + "/page" + std::to_string(i++) + ".png");
+
+		if (!stbi_write_png(pngFile.c_str(), tex->textureArray->width, tex->textureArray->height, 4, tex->textureImage, 0))
+		{
+			return false;
+		}
+	}
+
+	auto str = writer.write(doc);
+	writeTextFile(Game::instance->makeFullDataPath(path + "/atlas.json"), str);
+
+	return true;
+}
+
+bool ImageAtlas::load(const std::string& path)
+{
+	prebaked = true;
+	Json::Value doc;
+
+	loadJson(Game::instance->makeFullDataPath(path + "/atlas.json"), doc);
+
+	width = doc["textureWidth"].asInt();
+	height = doc["textureHeight"].asInt();
+	auto texCount = doc["textureCount"].asInt();
+	create(width, height);
+	textureArray->resize(texCount, width, height);
+
+	for (u32 i = 0; i < texCount; i++)
+	{
+		AtlasTexture* tex = new AtlasTexture();
+
+		tex->textureIndex = i;
+		int w, h, comp;
+		auto texData = stbi_load(Game::instance->makeFullDataPath(path + "/page" + std::to_string(i) + ".png").c_str(), &w, &h, &comp, 4);
+		tex->textureImage = (Rgba32*)texData;
+		tex->textureArray = textureArray;
+		tex->textureArray->updateLayerData(i, (Rgba32*)texData);
+		atlasTextures.push_back(tex);
+	}
+
+	auto imagesJsonArray = doc["images"];
+
+	for (auto& imgJson : imagesJsonArray)
+	{
+		AtlasImage* img = new AtlasImage();
+
+		img->atlas = this;
+		img->atlasTexture = atlasTextures[imgJson["textureIndex"].asInt()];
+		img->bleedOut = imgJson["bleedOut"].asBool();
+		img->width = imgJson["width"].asInt();
+		img->height = imgJson["height"].asInt();
+		img->id = imgJson["id"].asInt();
+		img->path = imgJson["path"].asString();
+		img->rect.x = imgJson["rectX"].asInt();
+		img->rect.y = imgJson["rectY"].asInt();
+		img->rect.width = imgJson["rectW"].asInt();
+		img->rect.height = imgJson["rectH"].asInt();
+		img->rotated = imgJson["rotated"].asBool();
+		img->uvRect.x = imgJson["uvRectX"].asFloat();
+		img->uvRect.y = imgJson["uvRectY"].asFloat();
+		img->uvRect.width = imgJson["uvRectW"].asFloat();
+		img->uvRect.height = imgJson["uvRectH"].asFloat();
+
+		if (isPathTGA(img->path))
+		{
+			auto& pal = tgaPalettes[img->path];
+
+			pal.bitsPerPixel = imgJson["paletteBpp"].asInt();
+			pal.isPaletted = imgJson["isPaletted"].asBool();
+			pal.paletteSlot = imgJson["paletteSlot"].asInt();
+			pal.transparentColorIndex = imgJson["paletteTransparentColorIndex"].asInt();
+
+			Json::Value paletteColorsJson = imgJson["palette"];
+
+			for (auto& col : paletteColorsJson)
+			{
+				pal.colors.push_back(col.asUInt());
+			}
+		}
+
+		images.insert(std::make_pair(img->id, img));
+		pathImageLUT[img->path] = img;
+	}
+
+	addWhiteImage();
+
+	return true;
+}
 
 }

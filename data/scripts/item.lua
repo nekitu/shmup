@@ -12,6 +12,7 @@ end
 
 function C:onCollide(other, colPairs)
   if other.unitResource.unitType == UnitType_Player then
+    --todo: dont delete if hit by weapon projectile or beam
     self.unit.deleteMeNow = true
   end
 end

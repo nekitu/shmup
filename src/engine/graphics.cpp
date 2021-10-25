@@ -146,7 +146,17 @@ Graphics::Graphics(Game* game)
 	this->game = game;
 	createScreenRenderTarget();
 	createGpuPrograms();
-	atlas = new ImageAtlas(textureAtlasWidth, textureAtlasWidth);
+
+	if (game->prebakedAtlas)
+	{
+		atlas = new ImageAtlas();
+		atlas->load(game->atlasFolder);
+	}
+	else
+	{
+		atlas = new ImageAtlas(textureAtlasWidth, textureAtlasWidth);
+	}
+
 	vertexBuffer = new VertexBuffer();
 	vertexBuffer->resize(maxVertexCount);
 	vertices.resize(maxVertexCount);

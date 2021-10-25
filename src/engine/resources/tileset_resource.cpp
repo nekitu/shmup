@@ -53,13 +53,17 @@ bool TilesetResource::loadImage()
 	int width = 0;
 	int height = 0;
 	int comp = 0;
+	stbi_uc* data = nullptr;
 
-	stbi_uc* data = stbi_load(imagePath.c_str(), &width, &height, &comp, 4);
+	if (!Game::instance->prebakedAtlas)
+	{
+		data = stbi_load(imagePath.c_str(), &width, &height, &comp, 4);
 
-	if (!data)
-		return false;
+		if (!data)
+			return false;
+	}
 
-	image = Game::instance->graphics->atlas->addImage((Rgba32*)data, width, height);
+	image = Game::instance->graphics->atlas->addImage(imagePath, (Rgba32*)data, width, height);
 
 	return image != nullptr;
 }
