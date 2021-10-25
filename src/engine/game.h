@@ -189,6 +189,7 @@ struct Game
 	Rect worldToScreen(const Rect& rc, u32 layerIndex);
 	Rect screenToWorld(const Rect& rc, u32 layerIndex);
 	void preloadSprites();
+	void preloadTilesetAndTilemapImages();
 	void mainLoop();
 	void renderUnits();
 	void computeDeltaTime();

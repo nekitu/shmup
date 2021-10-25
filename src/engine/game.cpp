@@ -27,6 +27,7 @@
 #include "projectile.h"
 #include "tilemap_layer_tiles.h"
 #include <filesystem>
+#include "stb_image.h"
 
 namespace engine
 {
@@ -199,6 +200,15 @@ bool Game::initialize()
 	music = new Music();
 	projectilePool.resize(maxProjectileCount);
 	preloadSprites();
+	preloadTilesetAndTilemapImages();
+
+	if (!prebakedAtlas)
+	{
+		LOG_INFO("Packing atlas sprites...");
+		graphics->atlas->pack();
+	}
+
+
 	lastTime = SDL_GetTicks();
 
 	for (auto& gs : gameScreens)
@@ -888,18 +898,65 @@ void Game::preloadSprites()
 
 	recursiveSearch(dataRoot + "sprites");
 
-	if (!prebakedAtlas)
-	{
-		LOG_INFO("Packing atlas sprites...");
-		graphics->atlas->pack();
-	}
-
 	LOG_INFO("Computing sprite params after packing...");
 
 	for (auto& spriteResource : resourceLoader->sprites)
 	{
 		spriteResource->computeParamsAfterAtlasGeneration();
 	}
+}
+
+void Game::preloadTilesetAndTilemapImages()
+{
+	auto recursiveSearch = [](const std::string& currentPath)
+	{
+		static void (*recursiveSearchIn)(const std::string&) = [](const std::string& currentPath)
+		{
+			for (auto& p : std::filesystem::directory_iterator(currentPath))
+			{
+				auto path = p.path();
+
+				if (p.is_regular_file())
+				{
+					if (path.extension() == ".png" || path.extension() == ".tga")
+					{
+						auto str = path.relative_path().u8string();
+						std::replace(str.begin(), str.end(), '\\', '/');
+						replaceAll(str, Game::instance->dataRoot, "");
+
+						int width = 0;
+						int height = 0;
+						int comp = 0;
+						stbi_uc* data = nullptr;
+
+						LOG_DEBUG("Preloading {}", str);
+
+						if (!Game::instance->prebakedAtlas)
+						{
+							data = stbi_load(Game::instance->makeFullDataPath(str).c_str(), &width, &height, &comp, 4);
+
+							if (!data)
+								return;
+						}
+
+						Game::instance->graphics->atlas->addImage(Game::instance->makeFullDataPath(str), (Rgba32*)data, width, height);
+						delete[] data;
+					}
+				}
+				else if (p.is_directory())
+				{
+					recursiveSearchIn(path.relative_path().u8string());
+				}
+			}
+		};
+
+		recursiveSearchIn(currentPath);
+	};
+
+	LOG_INFO("Preloading tileset images...");
+	recursiveSearch(dataRoot + "tilesets");
+	LOG_INFO("Preloading tilemap images...");
+	recursiveSearch(dataRoot + "tilemaps");
 }
 
 void Game::computeDeltaTime()

@@ -4,7 +4,7 @@
   "windowTitle": "Stellar Eagle",
   "fullscreen": false,
   "vSync": false,
-  "prebakedAtlas": false,
+  "prebakedAtlas": true,
   "startupScreenScript": "scripts/screens/title",
   "pauseOnAppDeactivate": false,
   "cameraSpeed": 40,
