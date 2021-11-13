@@ -1,0 +1,6 @@
+{
+  "name": "fade_screen",
+  "type": "Item",
+  "speed": 0.0,
+  "script": "scripts/fade_screen"
+}

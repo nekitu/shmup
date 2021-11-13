@@ -24,6 +24,7 @@ struct InputAction
 {
 	std::string title, info;
 	bool down = false;
+	bool downNow = false;
 	bool pressed = false;
 	f32 value = 0;
 };
@@ -62,11 +63,13 @@ struct Input
 	Vec2 mousePosition;
 	Vec2 windowMousePosition;
 	std::vector<SDL_GameController*> gamepads;
+	bool dirtyActions = false;
 
 	void loadActions(const std::string& path);
 	void loadMappings(const std::string& path);
 	bool isDown(const std::string& action);
 	bool wasPressed(const std::string& action);
+	bool wasDown(const std::string& action);
 	f32 getValue(const std::string& action);
 	void update();
 	void initialize();

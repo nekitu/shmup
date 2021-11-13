@@ -139,6 +139,7 @@ struct Game
 
 	std::string windowTitle = "Game";
 	u32 windowWidth = 800, windowHeight = 600;
+	u32 videoWidth = 240, videoHeight = 320;
 	ScreenMode screenMode = ScreenMode::Vertical;
 	bool fullscreen = false;
 	bool vSync = false;

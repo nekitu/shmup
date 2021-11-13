@@ -59,7 +59,7 @@ function C:onUpdate()
       end
     end
 
-    if input:isDown(self.actionPrefix .. "fire3") then
+    if input:wasDown(self.actionPrefix .. "fire3") then
       local bomb = self.unit:findSprite("bomb")
       if bomb then
         bomb.visible = true

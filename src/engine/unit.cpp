@@ -564,6 +564,12 @@ void Unit::computeBoundingBox()
 			}
 		}
 	}
+	else
+	{
+		boundingBox.set(0, 0, 0, 0);
+		boundingBox = Game::instance->worldToScreen(boundingBox, layerIndex);
+
+	 }
 
 	boundingBox.x = roundf(boundingBox.x);
 	boundingBox.y = roundf(boundingBox.y);

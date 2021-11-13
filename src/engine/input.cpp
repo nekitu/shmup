@@ -380,6 +380,18 @@ bool Input::wasPressed(const std::string& action)
 	return iter->second.pressed;
 }
 
+bool Input::wasDown(const std::string& action)
+{
+	auto iter = actions.find(action);
+	if (iter == actions.end())
+	{
+		LOG_ERROR("Input::wasDown: Unknown input action: {}", action);
+		return false;
+	}
+
+	return iter->second.downNow;
+}
+
 f32 Input::getValue(const std::string& action)
 {
 	auto iter = actions.find(action);
@@ -396,9 +408,13 @@ void Input::update()
 {
 	SDL_Event ev;
 
-	for (auto& action : actions)
+	if (dirtyActions)
 	{
-		action.second.pressed = false;
+		for (auto& action : actions)
+		{
+			action.second.pressed = false;
+			action.second.downNow = false;
+		}
 	}
 
 	SDL_PumpEvents();
@@ -459,6 +475,12 @@ void Input::update()
 							&& controls[ctrlMapping.controlName].deviceType == InputControl::DeviceType::Keyboard
 							&& ev.key.keysym.sym == controls[ctrlMapping.controlName].code)
 						{
+							if (!iterAction->second.down)
+							{
+								iterAction->second.downNow = true;
+								dirtyActions = true;
+							}
+
 							iterAction->second.down = true;
 							iterAction->second.value = 1;
 						}
@@ -485,7 +507,11 @@ void Input::update()
 							&& ev.key.keysym.sym == controls[ctrlMapping.controlName].code)
 						{
 							if (iterAction->second.down)
+							{
 								iterAction->second.pressed = true;
+								dirtyActions = true;
+							}
+
 							iterAction->second.down = false;
 							iterAction->second.value = 0;
 						}
@@ -511,6 +537,12 @@ void Input::update()
 							&& controls[ctrlMapping.controlName].deviceType == InputControl::DeviceType::MouseButton
 							&& ev.button.button == controls[ctrlMapping.controlName].code)
 						{
+							if (!iterAction->second.down)
+							{
+								iterAction->second.downNow = true;
+								dirtyActions = true;
+							}
+
 							iterAction->second.down = true;
 							iterAction->second.value = 1;
 						}
@@ -536,7 +568,10 @@ void Input::update()
 							&& ev.button.button == controls[ctrlMapping.controlName].code)
 						{
 							if (iterAction->second.down)
+							{
 								iterAction->second.pressed = true;
+								dirtyActions = true;
+							}
 
 							iterAction->second.down = false;
 							iterAction->second.value = 0;
@@ -594,9 +629,14 @@ void Input::update()
 							&& controls[ctrlMapping.controlName].deviceType == InputControl::DeviceType::GamepadButton
 							&& ev.cbutton.button == controls[ctrlMapping.controlName].code)
 						{
+							if (!iterAction->second.down)
+							{
+								iterAction->second.downNow = true;
+								dirtyActions = true;
+							}
+
 							iterAction->second.down = true;
 							iterAction->second.value = 1;
-							LOG_INFO("Btn down {}", ctrlMapping.controlName);
 						}
 					}
 				}
@@ -621,7 +661,10 @@ void Input::update()
 							&& ev.cbutton.button == controls[ctrlMapping.controlName].code)
 						{
 							if (iterAction->second.down)
+							{
 								iterAction->second.pressed = true;
+								dirtyActions = true;
+							}
 
 							iterAction->second.down = false;
 							iterAction->second.value = 0;

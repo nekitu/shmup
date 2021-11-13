@@ -143,6 +143,8 @@ void main()\
 
 Graphics::Graphics(Game* game)
 {
+	videoWidth = game->videoWidth;
+	videoHeight = game->videoHeight;
 	this->game = game;
 	createScreenRenderTarget();
 	createGpuPrograms();

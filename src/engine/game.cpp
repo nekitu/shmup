@@ -75,12 +75,18 @@ void Game::loadConfig()
 
 	windowWidth = json.get("windowWidth", windowWidth).asInt();
 	windowHeight = json.get("windowHeight", windowHeight).asInt();
+	videoWidth = json.get("videoWidth", videoWidth).asInt();
+	videoHeight = json.get("videoHeight", videoHeight).asInt();
 	windowTitle = json.get("windowTitle", windowTitle).asString();
 	fullscreen = json.get("fullscreen", fullscreen).asBool();
 	vSync = json.get("vSync", vSync).asBool();
 	prebakedAtlas = json.get("prebakedAtlas", prebakedAtlas).asBool();
 	pauseOnAppDeactivate = json.get("pauseOnAppDeactivate", pauseOnAppDeactivate).asBool();
 	cameraState.speed = json.get("cameraSpeed", cameraState.speed).asFloat();
+	auto parallaxPixelSize = json.get("cameraParallaxPixelSize", cameraState.parallaxScale * videoWidth / 2.0f).asInt();
+
+	// compute the parallax scale from pixels size 
+	cameraState.parallaxScale = (f32)parallaxPixelSize / ((f32)videoWidth / 2.0f);
 
 	auto screensJson = json.get("screens", Json::ValueType::arrayValue);
 
@@ -208,7 +214,6 @@ bool Game::initialize()
 		graphics->atlas->pack();
 	}
 
-
 	lastTime = SDL_GetTicks();
 
 	for (auto& gs : gameScreens)
@@ -221,6 +226,8 @@ bool Game::initialize()
 			CALL_LUA_FUNC2(gs->scriptClass, "onActivate");
 		}
 	}
+
+	lastTime = SDL_GetTicks();
 }
 
 void Game::shutdown()
@@ -693,11 +700,6 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 							// get the scaled pixel from the sprite image
 							f32 scaledY = frmRc.y + yFinal;
 							f32 scaledX = frmRc.x + xFinal / otherSprite->scale.x;
-
-							//u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
-							//	(u32)scaledY * otherSprite->spriteResource->image->width
-							//		+ (u32)scaledX];
-
 							auto p = otherSprite->spriteResource->image->getPixelAddr((u32)scaledX, (u32)scaledY);
 
 							// if alpha is 0xFF, then we hit an opaque pixel
@@ -756,9 +758,6 @@ BeamCollisionInfo Game::checkBeamIntersection(Unit* unit, Sprite* sprite, const 
 
 						for (int x = otherSprite->spriteResource->frameWidth - 1; x >= 0; x--)
 						{
-							//u8* p = (u8*)&otherSprite->spriteResource->image->imageData[
-							//	(u32)(frmRc.y + relativeY) * otherSprite->spriteResource->image->width
-							//		+ (u32)(frmRc.x + x)];
 							auto p = otherSprite->spriteResource->image->getPixelAddr((u32)(frmRc.x + x), (u32)(frmRc.y + relativeY));
 							if (p[3] == 0xff)
 							{

@@ -4,10 +4,11 @@
   "windowTitle": "Stellar Eagle",
   "fullscreen": false,
   "vSync": false,
-  "prebakedAtlas": true,
+  "prebakedAtlas": false,
   "startupScreenScript": "scripts/screens/title",
   "pauseOnAppDeactivate": false,
   "cameraSpeed": 40,
+  "cameraParallaxPixelSize": 20,
   "screens":
   [
     { "path": "scripts/screens/play", "active": false },

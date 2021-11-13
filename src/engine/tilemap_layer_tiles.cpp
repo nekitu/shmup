@@ -96,6 +96,8 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 	{
 		Rect rc = boundingBox;
 
+		rc.x += tilemapLayer->offset.x;
+		rc.y += tilemapLayer->offset.y;
 		rc.width = tilemapLayer->image->width * imageScale.x;
 		rc.height = tilemapLayer->image->height * imageScale.y;
 		gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
@@ -137,7 +139,7 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 			rc.x = pos.x;
 			rc.y = pos.y;
 			rc.width = tilemapLayer->image->width * imageScale.x;
-			rc.height = tilemapLayer->image->height * imageScale.y;
+			rc.height = tilemapLayer->image->height * imageScale.y - 3;
 			gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
 		}
 	}
