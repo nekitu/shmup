@@ -10,12 +10,12 @@
 
 namespace engine
 {
-void TilemapLayerTiles::update(struct Game* game)
+void TilemapLayer::update(struct Game* game)
 {
 	Unit::update(game);
 }
 
-void TilemapLayerTiles::render(struct Graphics* gfx)
+void TilemapLayer::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
 
@@ -33,7 +33,7 @@ void TilemapLayerTiles::render(struct Graphics* gfx)
 	}
 }
 
-void TilemapLayerTiles::renderTiles(struct Graphics* gfx)
+void TilemapLayer::renderTiles(struct Graphics* gfx)
 {
 	auto& layer = *tilemapLayer;
 
@@ -90,7 +90,7 @@ void TilemapLayerTiles::renderTiles(struct Graphics* gfx)
 	}
 }
 
-void TilemapLayerTiles::renderImage(Graphics* gfx)
+void TilemapLayer::renderImage(Graphics* gfx)
 {
 	if (!tilemapLayer->repeatCount)
 	{
@@ -139,7 +139,7 @@ void TilemapLayerTiles::renderImage(Graphics* gfx)
 			rc.x = pos.x;
 			rc.y = pos.y;
 			rc.width = tilemapLayer->image->width * imageScale.x;
-			rc.height = tilemapLayer->image->height * imageScale.y - 3;
+			rc.height = tilemapLayer->image->height * imageScale.y;
 			gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
 		}
 	}

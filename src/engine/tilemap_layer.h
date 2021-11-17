@@ -4,9 +4,9 @@
 
 namespace engine
 {
-struct TilemapLayerTiles : Unit
+struct TilemapLayer : Unit
 {
-	struct TilemapLayer* tilemapLayer = nullptr;
+	struct TilemapLayerResource* tilemapLayerResource = nullptr;
 	Vec2 imageScale = { 1, 1 };
 
 	virtual void update(struct Game* game) override;

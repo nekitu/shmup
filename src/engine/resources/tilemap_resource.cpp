@@ -96,7 +96,7 @@ void TilemapLayer::load(Json::Value& json)
 
 	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
 
-	LOG_INFO("Properties:");
+	LOG_INFO("TilemapLayer properties:");
 	for (auto& propJson : propertiesJson)
 	{
 		if (propJson.get("name", "").asString() == "cameraParallax")
@@ -253,6 +253,20 @@ bool TilemapResource::load(Json::Value& json)
 		info.tileset = Game::instance->resourceLoader->loadTileset(srcPath);
 		info.firstGid = tilesetJson.get("firstgid", 0).asInt();
 		tilesets.push_back(info);
+	}
+
+	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
+
+	LOG_INFO("Tilemap properties:");
+	for (auto& propJson : propertiesJson)
+	{
+		if (propJson.get("name", "").asString() == "shadowsColor")
+		{
+			shadowsColor.parse(propJson.get("value", 0).asString());
+		}
+
+		auto str = jsonAsString(propJson.get("value", Json::Value()));
+		LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
 	}
 
 	return true;

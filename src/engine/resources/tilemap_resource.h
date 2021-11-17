@@ -46,7 +46,7 @@ struct TilemapObject
 	void load(Json::Value& json);
 };
 
-struct TilemapLayer
+struct TilemapLayerResource
 {
 	enum class Type
 	{
@@ -62,7 +62,7 @@ struct TilemapLayer
 	Type type = Type::Tiles;
 	std::vector<TilemapChunk> chunks;
 	std::vector<TilemapObject> objects;
-	std::vector<TilemapLayer> layers;
+	std::vector<TilemapLayerResource> layers;
 	std::unordered_map<std::string, std::string> properties;
 	std::string imagePath;
 	std::string name;
@@ -97,9 +97,9 @@ struct TilemapResource : Resource
 {
 	Vec2 tileSize;
 	Vec2 size;
-	std::vector<TilemapLayer> layers;
+	std::vector<TilemapLayerResource> layers;
 	std::vector<TilesetInfo> tilesets;
-	Color backgroundColor;
+	Color backgroundColor, shadowsColor;
 	bool infinite = false;
 
 	bool load(Json::Value& json) override;

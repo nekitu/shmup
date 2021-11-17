@@ -77,6 +77,7 @@ enum class UnitType
 	Item,
 	PlayerProjectile,
 	EnemyProjectile,
+	TilemapLayer,
 
 	Count
 };

@@ -359,13 +359,19 @@
          "starty":0,
          "type":"tilelayer",
          "visible":true,
-         "width":48,
+         "width":16,
          "x":0,
          "y":0
         }],
  "nextlayerid":16,
  "nextobjectid":54,
  "orientation":"orthogonal",
+ "properties":[
+        {
+         "name":"shadowsColor",
+         "type":"string",
+         "value":"1 0 0 1"
+        }],
  "renderorder":"right-down",
  "tiledversion":"2020.10.30",
  "tileheight":8,

@@ -1175,7 +1175,7 @@ bool Game::changeMap(i32 index)
 
 	for (auto& layer : map->layers)
 	{
-		TilemapLayerTiles* layerTiles = new TilemapLayerTiles();
+		TilemapLayer* layerTiles = new TilemapLayer();
 
 		layerTiles->name = layer.name;
 		layerTiles->tilemapLayer = &layer;
@@ -1195,6 +1195,7 @@ bool Game::changeMap(i32 index)
 				if (unitClass == "")
 				{
 					auto unitPath = obj.properties["unit"];
+					//TODO: use fs lexical
 					replaceAll(unitPath, "\/", "/");
 					replaceAll(unitPath, "\"", "");
 					Unit* unit = createUnit(resourceLoader->loadUnit(unitPath));
