@@ -1,4 +1,4 @@
-#include "tilemap_layer_tiles.h"
+#include "tilemap_layer.h"
 #include "game.h"
 #include "resources/tilemap_resource.h"
 #include "resources/tileset_resource.h"
@@ -19,15 +19,15 @@ void TilemapLayer::render(struct Graphics* gfx)
 {
 	Unit::render(gfx);
 
-	if (!tilemapLayer->visible)
+	if (!tilemapLayerResource->visible)
 		return;
 
-	switch (tilemapLayer->type)
+	switch (tilemapLayerResource->type)
 	{
-	case TilemapLayer::Type::Tiles:
+	case TilemapLayerResource::Type::Tiles:
 		renderTiles(gfx);
 		break;
-	case TilemapLayer::Type::Image:
+	case TilemapLayerResource::Type::Image:
 		renderImage(gfx);
 		break;
 	}
@@ -35,7 +35,7 @@ void TilemapLayer::render(struct Graphics* gfx)
 
 void TilemapLayer::renderTiles(struct Graphics* gfx)
 {
-	auto& layer = *tilemapLayer;
+	auto& layer = *tilemapLayerResource;
 
 	for (auto& chunk : layer.chunks)
 	{
@@ -92,41 +92,41 @@ void TilemapLayer::renderTiles(struct Graphics* gfx)
 
 void TilemapLayer::renderImage(Graphics* gfx)
 {
-	if (!tilemapLayer->repeatCount)
+	if (!tilemapLayerResource->repeatCount)
 	{
 		Rect rc = boundingBox;
 
-		rc.x += tilemapLayer->offset.x;
-		rc.y += tilemapLayer->offset.y;
-		rc.width = tilemapLayer->image->width * imageScale.x;
-		rc.height = tilemapLayer->image->height * imageScale.y;
-		gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
+		rc.x += tilemapLayerResource->offset.x;
+		rc.y += tilemapLayerResource->offset.y;
+		rc.width = tilemapLayerResource->image->width * imageScale.x;
+		rc.height = tilemapLayerResource->image->height * imageScale.y;
+		gfx->drawQuad(rc, tilemapLayerResource->image->uvRect, tilemapLayerResource->image->rotated);
 
 		return;
 	}
 
-	for (u32 i = 0; i < tilemapLayer->repeatCount; i++)
+	for (u32 i = 0; i < tilemapLayerResource->repeatCount; i++)
 	{
 		Vec2 pos;
 		bool imgVisible = false;
 
-		pos.x = boundingBox.x + tilemapLayer->offset.x;
-		pos.y = boundingBox.y + tilemapLayer->offset.y;
+		pos.x = boundingBox.x + tilemapLayerResource->offset.x;
+		pos.y = boundingBox.y + tilemapLayerResource->offset.y;
 
 		if (Game::instance->screenMode == ScreenMode::Vertical)
 		{
-			pos.y -= i * tilemapLayer->image->height * imageScale.y;
+			pos.y -= i * tilemapLayerResource->image->height * imageScale.y;
 
-			if (pos.y + tilemapLayer->image->height * imageScale.y < 0)
+			if (pos.y + tilemapLayerResource->image->height * imageScale.y < 0)
 				break;
 
 			imgVisible = pos.y < gfx->videoHeight;
 		}
 		else if (Game::instance->screenMode == ScreenMode::Horizontal)
 		{
-			pos.x -= i * tilemapLayer->image->width * imageScale.x;
+			pos.x -= i * tilemapLayerResource->image->width * imageScale.x;
 
-			if (pos.x + tilemapLayer->image->width * imageScale.x < 0)
+			if (pos.x + tilemapLayerResource->image->width * imageScale.x < 0)
 				break;
 
 			imgVisible = pos.x < gfx->videoWidth;
@@ -138,9 +138,9 @@ void TilemapLayer::renderImage(Graphics* gfx)
 
 			rc.x = pos.x;
 			rc.y = pos.y;
-			rc.width = tilemapLayer->image->width * imageScale.x;
-			rc.height = tilemapLayer->image->height * imageScale.y;
-			gfx->drawQuad(rc, tilemapLayer->image->uvRect, tilemapLayer->image->rotated);
+			rc.width = tilemapLayerResource->image->width * imageScale.x;
+			rc.height = tilemapLayerResource->image->height * imageScale.y;
+			gfx->drawQuad(rc, tilemapLayerResource->image->uvRect, tilemapLayerResource->image->rotated);
 		}
 	}
 }

@@ -186,7 +186,7 @@ void ResourceLoader::reloadSprites()
 
 			for (auto& layer : tr->layers)
 			{
-				if (layer.type == TilemapLayer::Type::Image)
+				if (layer.type == TilemapLayerResource::Type::Image)
 				{
 					layer.loadImage();
 				}

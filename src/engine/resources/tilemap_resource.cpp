@@ -63,7 +63,7 @@ void TilemapObject::load(Json::Value& json)
 	}
 }
 
-void TilemapLayer::loadImage()
+void TilemapLayerResource::loadImage()
 {
 	int imgWidth = 0;
 	int imgHeight = 0;
@@ -79,7 +79,7 @@ void TilemapLayer::loadImage()
 	image = Game::instance->graphics->atlas->addImage(imagePath, (Rgba32*)imgData, imgWidth, imgHeight);
 }
 
-void TilemapLayer::load(Json::Value& json)
+void TilemapLayerResource::load(Json::Value& json)
 {
 	id = json.get("id", 0).asUInt();
 	name = json.get("name", "").asString();
@@ -123,17 +123,17 @@ void TilemapLayer::load(Json::Value& json)
 
 	auto typeName = json.get("type", "").asString();
 
-	if (typeName == "tilelayer") type = TilemapLayer::Type::Tiles;
+	if (typeName == "tilelayer") type = TilemapLayerResource::Type::Tiles;
 
 	if (typeName == "group")
 	{
-		type = TilemapLayer::Type::Group;
+		type = TilemapLayerResource::Type::Group;
 
 		auto& layersJson = json.get("layers", Json::ValueType::arrayValue);
 
 		for (auto& layerJson : layersJson)
 		{
-			TilemapLayer layer;
+			TilemapLayerResource layer;
 
 			layer.tilemapResource = tilemapResource;
 			layer.load(layerJson);
@@ -143,7 +143,7 @@ void TilemapLayer::load(Json::Value& json)
 
 	if (typeName == "imagelayer")
 	{
-		type = TilemapLayer::Type::Image;
+		type = TilemapLayerResource::Type::Image;
 		imagePath = json.get("image", "").asString();
 		imagePath = std::filesystem::path(getParentPath(tilemapResource->path) + "/" + imagePath).lexically_normal().generic_string();
 		loadImage();
@@ -151,7 +151,7 @@ void TilemapLayer::load(Json::Value& json)
 
 	if (typeName == "objectgroup")
 	{
-		type = TilemapLayer::Type::Objects;
+		type = TilemapLayerResource::Type::Objects;
 		auto& objectsJson = json.get("objects", Json::ValueType::arrayValue);
 
 		for (auto& objJson : objectsJson)
@@ -217,7 +217,7 @@ void TilemapLayer::load(Json::Value& json)
 	}
 }
 
-void TilemapLayer::unload()
+void TilemapLayerResource::unload()
 {
 	image = nullptr;
 }
@@ -233,7 +233,7 @@ bool TilemapResource::load(Json::Value& json)
 
 	for (auto& layerJson : layersArray)
 	{
-		TilemapLayer layer;
+		TilemapLayerResource layer;
 
 		layer.tilemapResource = this;
 		layer.load(layerJson);

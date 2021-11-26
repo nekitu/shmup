@@ -25,7 +25,7 @@
 #include "sound.h"
 #include "weapon.h"
 #include "projectile.h"
-#include "tilemap_layer_tiles.h"
+#include "tilemap_layer.h"
 #include <filesystem>
 #include "stb_image.h"
 
@@ -1178,7 +1178,7 @@ bool Game::changeMap(i32 index)
 		TilemapLayer* layerTiles = new TilemapLayer();
 
 		layerTiles->name = layer.name;
-		layerTiles->tilemapLayer = &layer;
+		layerTiles->tilemapLayerResource = &layer;
 		layerTiles->layerIndex = layerIndex;
 		layerTiles->root = new Sprite();
 		layerTiles->speed = atof(layer.properties["speed"].c_str());
