@@ -72,6 +72,7 @@ struct Input
 	bool wasDown(const std::string& action);
 	f32 getValue(const std::string& action);
 	void update();
+	void searchControllers();
 	void initialize();
 
 private:

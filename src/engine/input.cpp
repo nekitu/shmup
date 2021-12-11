@@ -274,7 +274,15 @@ void Input::initialize()
 	registerGamepadButton(SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_LEFT, "buttondpadleft");
 	registerGamepadButton(SDL_GameControllerButton::SDL_CONTROLLER_BUTTON_DPAD_RIGHT, "buttondpadright");
 
+	searchControllers();
+}
+
+void Input::searchControllers()
+{
 	LOG_INFO("Searching game controllers in {} joysticks...", SDL_NumJoysticks());
+
+	gamepads.clear();
+
 	for (int i = 0; i < SDL_NumJoysticks(); i++)
 	{
 		if (SDL_IsGameController(i))
@@ -673,6 +681,14 @@ void Input::update()
 				}
 			}
 
+			break;
+		}
+
+		case SDL_CONTROLLERDEVICEADDED:
+		case SDL_CONTROLLERDEVICEREMOVED:
+		case SDL_CONTROLLERDEVICEREMAPPED:
+		{
+			searchControllers();
 			break;
 		}
 
