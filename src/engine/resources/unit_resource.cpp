@@ -15,6 +15,7 @@ namespace engine
 bool UnitResource::load(Json::Value& json)
 {
 	name = json["name"].asString();
+	className = json["className"].asString();
 	auto typeStr = json["type"].asString();
 
 	if (typeStr == "Enemy")

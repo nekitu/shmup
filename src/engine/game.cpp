@@ -28,6 +28,7 @@
 #include "tilemap_layer.h"
 #include <filesystem>
 #include "stb_image.h"
+#include "particle_system.h"
 
 namespace engine
 {
@@ -1262,6 +1263,13 @@ Unit* Game::createUnit(UnitResource* unitResource)
 	{
 		unit = new Unit();
 	}
+	else
+	{
+		if (unitResource->className == "ParticleSystem")
+		{
+			unit = new ParticleSystem();
+		}
+	}
 
 	unit->initializeFrom(unitResource);
 	newUnits.push_back(unit);
@@ -1320,6 +1328,16 @@ Unit* Game::findUnitById(u32 id)
 	for (auto& unit : units)
 	{
 		if (unit->id == id) return unit;
+	}
+
+	return nullptr;
+}
+
+Unit* Game::findUnitByName(const std::string& name)
+{
+	for (auto& unit : units)
+	{
+		if (unit->name == name) return unit;
 	}
 
 	return nullptr;

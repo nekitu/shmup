@@ -1,0 +1,10 @@
+{
+  "name": "psys",
+  "type": "Item",
+  "className": "ParticleSystem",
+  "speed": 0.0,
+  "autoDeleteType": "None",
+  "parallaxScale": 0.0,
+  "healthPoints": 1000,
+  "collide": false
+}

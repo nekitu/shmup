@@ -182,6 +182,7 @@ bool initializeLua()
 		.addFunction("getUnitCount", [](Game* game) { return Game::instance->units.size(); })
 		.addFunction("getUnit", [](Game* game, int idx) { return Game::instance->units[idx]; })
 		.addFunction("findUnitById", &Game::findUnitById)
+		.addFunction("findUnitByName", &Game::findUnitByName)
 		.addFunction("findGameScreenById", &Game::findGameScreenById)
 		.addVariable("gameState", &Game::gameState)
 		.addFunction("player1", [](Game* g) { return g->playerState[0].unit; })
@@ -208,6 +209,10 @@ bool initializeLua()
 		.addFunction("worldToScreen", [](Game* game, const Vec2& v, int layerIndex)
 			{
 				return game->worldToScreen(v, layerIndex);
+			})
+		.addFunction("screenToWorld", [](Game* game, const Vec2& v, int layerIndex)
+			{
+				return game->screenToWorld(v, layerIndex);
 			})
 		.addFunction("fadeOutMusic", [](Game* game, i32 msec) { game->music->fadeOutMusic(msec); })
 		.addFunction("changeMusic",

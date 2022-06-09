@@ -212,6 +212,7 @@ struct Game
 	struct Projectile* newProjectile();
 	std::vector<Projectile*>::iterator releaseProjectile(Projectile* proj);
 	Unit* findUnitById(u32 id);
+	Unit* findUnitByName(const std::string& name);
 	GameScreen* findGameScreenById(u32 id);
 };
 
