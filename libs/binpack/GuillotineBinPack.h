@@ -8,7 +8,7 @@
 #pragma once
 
 #include <vector>
-
+#include <limits>
 #include "Rect.h"
 
 /** GuillotineBinPack implements different variants of bin packer algorithms that use the GUILLOTINE data structure

@@ -13,19 +13,31 @@
 #include "graphics.h"
 #include "image_atlas.h"
 #include "weapon.h"
-#include "game.h"
 #include "sprite.h"
 #include <json/json.h>
 #include "utils.h"
 
+#ifndef _WIN32
+#include <signal.h>
+#endif
+
 namespace engine
 {
+void debugBreak()
+{
+	#ifdef _WIN32
+	_CrtDbgBreak();
+	#else
+	raise(SIGTRAP);
+	#endif
+}
+
 #define checkForEmptyPath(where, path)\
 {\
 	if (path.size() == 0)\
 	{\
 		LOG_ERROR("{0}: Empty path", where);\
-		_CrtDbgBreak();\
+		debugBreak();\
 	}\
 }
 

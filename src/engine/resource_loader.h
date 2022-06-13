@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include "resource.h"
+#include "game.h"
 
 namespace engine
 {

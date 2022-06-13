@@ -14,7 +14,7 @@ namespace engine
 			{\
 				try\
 				{\
-					func.call(scriptClass->classInstance, __VA_ARGS__);\
+					func.call(scriptClass->classInstance, ##__VA_ARGS__);\
 				}\
 				catch (LuaIntf::LuaException e)\
 				{\
@@ -25,7 +25,7 @@ namespace engine
 			}\
 		}
 
-#define CALL_LUA_FUNC(name, ...) CALL_LUA_FUNC2(scriptClass, name, __VA_ARGS__)
+#define CALL_LUA_FUNC(name, ...) CALL_LUA_FUNC2(scriptClass, name, ##__VA_ARGS__)
 
 extern bool initializeLua();
 extern void shutdownLua();

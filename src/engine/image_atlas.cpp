@@ -664,7 +664,7 @@ bool ImageAtlas::save(const std::string& path)
 	Json::StyledWriter writer;
 
 	doc["version"] = 1;
-	doc["textureCount"] = atlasTextures.size();
+	doc["textureCount"] = (u32)atlasTextures.size();
 	doc["textureWidth"] = width;
 	doc["textureHeight"] = height;
 

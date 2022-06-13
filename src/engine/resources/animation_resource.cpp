@@ -20,7 +20,7 @@ bool AnimationResource::load(Json::Value& json)
 	{
 		auto track = new AnimationTrack();
 		auto keyType = tracksJson.getMemberNames()[i];
-		auto& trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
+		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
 		auto trackType = AnimationTrackType::Unknown;
 
 		if (keyType == "PositionX") trackType = AnimationTrackType::PositionX;
@@ -52,7 +52,7 @@ bool AnimationResource::load(Json::Value& json)
 
 		track->repeat = trackJson.get("repeat", 0).asInt();
 
-		auto& keysJson = trackJson.get("keys", Json::Value(Json::ValueType::arrayValue));
+		auto keysJson = trackJson.get("keys", Json::Value(Json::ValueType::arrayValue));
 
 		for (auto& keyJson : keysJson)
 		{

@@ -9,7 +9,7 @@
 
 #include "GuillotineBinPack.h"
 #include "Rect.h"
-
+#include <limits>
 #include <vector>
 
 /** ShelfBinPack implements different bin packing algorithms that use the SHELF data structure. ShelfBinPack

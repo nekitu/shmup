@@ -8,7 +8,7 @@ bool FontResource::load(Json::Value& json)
 {
 	charsSprite = loader->loadSprite(json.get("sprite", "").asString());
 	startGlyphFrame = json.get("startGlyphFrame", 0).asInt();
-	auto& glyphCodesJson = json.get("glyphs", Json::Value(Json::ValueType::arrayValue));
+	auto glyphCodesJson = json.get("glyphs", Json::Value(Json::ValueType::arrayValue));
 	int crtFrame = startGlyphFrame;
 
 	for (auto& glyphCodeJson : glyphCodesJson)
@@ -17,7 +17,7 @@ bool FontResource::load(Json::Value& json)
 		glyphCodes.insert(std::make_pair(singleUtf8ToUtf32(str.c_str()), crtFrame++));
 	}
 
-	auto& kerningsJson = json.get("kernings", Json::Value(Json::ValueType::arrayValue));
+	auto kerningsJson = json.get("kernings", Json::Value(Json::ValueType::arrayValue));
 
 	for (auto& kerningJson : kerningsJson)
 	{

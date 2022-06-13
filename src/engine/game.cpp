@@ -1,4 +1,5 @@
 #include "game.h"
+#include <cfloat>
 #include "graphics.h"
 #define GLEW_STATIC
 #include <GL/glew.h>

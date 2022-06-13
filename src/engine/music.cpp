@@ -1,8 +1,8 @@
 #include "music.h"
 #include <SDL_mixer.h>
+#include "game.h"
 #include "resources/music_resource.h"
 #include "resource_loader.h"
-#include "game.h"
 
 namespace engine
 {
