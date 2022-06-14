@@ -43,7 +43,7 @@ void TilemapLayer::renderTiles(struct Graphics* gfx)
 
 		for (auto& tile : chunk.tiles)
 		{
-			auto& tilesetInfo = layer.tilemapResource->getTilesetInfoByTileId(tile);
+			auto tilesetInfo = layer.tilemapResource->getTilesetInfoByTileId(tile);
 			auto tileData = tilesetInfo.tileset->findTileData(tile - tilesetInfo.firstGid);
 
 			if (tileData)

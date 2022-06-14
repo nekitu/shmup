@@ -489,14 +489,10 @@ void Sprite::setFrameAnimationFromAngle(f32 angle)
 	angle -= 180;
 	angle = fmod(fabs(angle), 360);
 
-	int idx = (f32)(spriteResource->rotationAnimCount - 1) * angle / 360.0f;
-	char buf[10] = { 0 };
-
-	itoa(idx, buf, 10);
-
+	i32 idx = (f32)(spriteResource->rotationAnimCount - 1) * angle / 360.0f;
 	f32 relFrame = frameAnimation ? animationFrame - frameAnimation->startFrame : 0;
 
-	setFrameAnimation(spriteResource->rotationAnimPrefix + buf);
+	setFrameAnimation(spriteResource->rotationAnimPrefix + std::to_string(idx));
 
 	if (frameAnimation)
 	{

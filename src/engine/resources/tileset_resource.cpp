@@ -16,7 +16,7 @@ bool TilesetResource::load(Json::Value& json)
 	tileWidth = json.get("tilewidth", 0).asInt();
 	tileHeight = json.get("tileheight", 0).asInt();
 
-	auto& tilesJson = json.get("tiles", Json::ValueType::arrayValue);
+	auto tilesJson = json.get("tiles", Json::ValueType::arrayValue);
 
 	for (auto& tileJson : tilesJson)
 	{
@@ -26,7 +26,7 @@ bool TilesetResource::load(Json::Value& json)
 		tileData.probability = tileJson.get("probability", 0).asUInt();
 		tileData.type = tileJson.get("type", "").asString();
 
-		auto& animJson = tileJson.get("animation", Json::ValueType::arrayValue);
+		auto animJson = tileJson.get("animation", Json::ValueType::arrayValue);
 
 		for (auto& frameJson : animJson)
 		{
@@ -41,6 +41,7 @@ bool TilesetResource::load(Json::Value& json)
 	}
 
 	imagePath = json.get("image", "").asString();
+	//TODO: ?
 	//imagePath = "tilesets/" + imagePath;
 	//imagePath = Game::instance->makeFullDataPath(imagePath);
 	imagePath = std::filesystem::path(getParentPath(path) + "/" + imagePath).lexically_normal().generic_string();

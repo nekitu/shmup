@@ -314,11 +314,11 @@ bool initializeLua()
 
 	LUA.beginClass<Resource>("Resource")
 		.addVariable("type", &Resource::type)
+		.addVariable("path", &Resource::path)
 		.endClass();
 
 	LUA.beginExtendClass<UnitResource, Resource>("UnitResource")
 		.addVariable("name", &UnitResource::name)
-		.addVariable("path", &UnitResource::path)
 		.addVariable("unitType", &UnitResource::unitType)
 		.addVariableRef("parameters", &UnitResource::parameters)
 		.endClass();

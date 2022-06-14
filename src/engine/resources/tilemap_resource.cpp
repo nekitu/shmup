@@ -34,7 +34,7 @@ void TilemapObject::load(Json::Value& json)
 
 	if (type == Type::Polygon || type == Type::Polyline)
 	{
-		auto& ptsJson = json.get("points", Json::ValueType::arrayValue);
+		auto ptsJson = json.get("points", Json::ValueType::arrayValue);
 
 		for (auto& ptJson : ptsJson)
 		{
@@ -47,12 +47,12 @@ void TilemapObject::load(Json::Value& json)
 	}
 	else if (type == Type::Text)
 	{
-		auto& textJson = json.get("text", Json::ValueType::objectValue);
+		auto textJson = json.get("text", Json::ValueType::objectValue);
 		text = textJson.get("text", text).asString();
 		wrap = textJson.get("wrap", wrap).asBool();
 	}
 
-	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
+	auto propertiesJson = json.get("properties", Json::ValueType::arrayValue);
 
 	LOG_INFO("Properties:");
 	for (auto& propJson : propertiesJson)
@@ -94,7 +94,7 @@ void TilemapLayerResource::load(Json::Value& json)
 	offset.y = json.get("offsety", 0).asFloat();
 	opacity = json.get("opacity", 1).asFloat();
 
-	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
+	auto propertiesJson = json.get("properties", Json::ValueType::arrayValue);
 
 	LOG_INFO("TilemapLayer properties:");
 	for (auto& propJson : propertiesJson)
@@ -129,7 +129,7 @@ void TilemapLayerResource::load(Json::Value& json)
 	{
 		type = TilemapLayerResource::Type::Group;
 
-		auto& layersJson = json.get("layers", Json::ValueType::arrayValue);
+		auto layersJson = json.get("layers", Json::ValueType::arrayValue);
 
 		for (auto& layerJson : layersJson)
 		{
@@ -152,7 +152,7 @@ void TilemapLayerResource::load(Json::Value& json)
 	if (typeName == "objectgroup")
 	{
 		type = TilemapLayerResource::Type::Objects;
-		auto& objectsJson = json.get("objects", Json::ValueType::arrayValue);
+		auto objectsJson = json.get("objects", Json::ValueType::arrayValue);
 
 		for (auto& objJson : objectsJson)
 		{
@@ -174,8 +174,8 @@ void TilemapLayerResource::load(Json::Value& json)
 		}
 	}
 
-	auto& chunksJson = json.get("chunks", Json::ValueType::arrayValue);
-	auto& dataJson = json.get("data", Json::ValueType::arrayValue);
+	auto chunksJson = json.get("chunks", Json::ValueType::arrayValue);
+	auto dataJson = json.get("data", Json::ValueType::arrayValue);
 
 	bool infinite = dataJson.size() == 0;
 
@@ -190,7 +190,7 @@ void TilemapLayerResource::load(Json::Value& json)
 			chunk.position.x = chunkJson.get("x", 0).asInt();
 			chunk.position.y = chunkJson.get("y", 0).asInt();
 
-			auto& tiles = chunkJson.get("data", Json::ValueType::arrayValue);
+			auto tiles = chunkJson.get("data", Json::ValueType::arrayValue);
 
 			for (auto& tileIndex : tiles)
 			{
@@ -229,7 +229,7 @@ bool TilemapResource::load(Json::Value& json)
 	tileSize.y = json.get("tileheight", 0).asInt();
 	infinite = json.get("infinite", true).asBool();
 
-	auto& layersArray = json.get("layers", Json::ValueType::arrayValue);
+	auto layersArray = json.get("layers", Json::ValueType::arrayValue);
 
 	for (auto& layerJson : layersArray)
 	{
@@ -240,7 +240,7 @@ bool TilemapResource::load(Json::Value& json)
 		layers.push_back(layer);
 	}
 
-	auto& tilesetsArray = json.get("tilesets", Json::ValueType::arrayValue);
+	auto tilesetsArray = json.get("tilesets", Json::ValueType::arrayValue);
 
 	for (auto& tilesetJson : tilesetsArray)
 	{
@@ -255,7 +255,7 @@ bool TilemapResource::load(Json::Value& json)
 		tilesets.push_back(info);
 	}
 
-	auto& propertiesJson = json.get("properties", Json::ValueType::arrayValue);
+	auto propertiesJson = json.get("properties", Json::ValueType::arrayValue);
 
 	LOG_INFO("Tilemap properties:");
 	for (auto& propJson : propertiesJson)

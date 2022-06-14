@@ -49,7 +49,8 @@ bool UnitResource::load(Json::Value& json)
 	if (autoDeleteTypeStr == "OffscreenBoundary") autoDeleteType = AutoDeleteType::OffscreenBoundary;
 
 	// load general unit parameters
-	parameters.load(json.get("parameters", Json::Value(Json::ValueType::objectValue)));
+	auto paramsJson = json.get("parameters", Json::Value(Json::ValueType::objectValue));
+	parameters.load(paramsJson);
 
 	// load controllers
 	auto controllersJson = json.get("controllers", Json::Value(Json::ValueType::arrayValue));
@@ -58,7 +59,8 @@ bool UnitResource::load(Json::Value& json)
 		ControllerInstanceResource ctrl;
 
 		ctrl.name = controllersJson[i].get("name", "unnamed").asString();
-		ctrl.parameters.load(controllersJson[i].get("parameters", Json::Value(Json::ValueType::objectValue)));
+		auto ctrlParamsJson = controllersJson[i].get("parameters", Json::Value(Json::ValueType::objectValue));
+		ctrl.parameters.load(ctrlParamsJson);
 		ctrl.script = Game::instance->resourceLoader->loadScript(controllersJson[i].get("script", "").asString());
 		controllers[ctrl.name] = ctrl;
 	}

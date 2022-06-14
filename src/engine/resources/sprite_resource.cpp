@@ -179,9 +179,7 @@ bool SpriteResource::load(Json::Value& json)
 
 			anim->frameCount = frmCount ? frmCount : frameCount;
 			anim->framesPerSecond = fps;
-			char buf[10] = { 0 };
-			itoa(i, buf, 10);
-			anim->name = rotationAnimPrefix + buf;
+			anim->name = rotationAnimPrefix + std::to_string(i);
 			anim->repeatCount = repeatCount;
 			anim->startFrame = i * frmCount;
 			anim->type = animType;
