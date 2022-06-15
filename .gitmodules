@@ -1,0 +1,27 @@
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "libs/glew"]
+	path = libs/glew
+	url = https://github.com/edoren/glew
+[submodule "libs/jsoncpp"]
+	path = libs/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp
+[submodule "libs/stb"]
+	path = libs/stb
+	url = https://github.com/nothings/stb
+[submodule "libs/utfcpp"]
+	path = libs/utfcpp
+	url = https://github.com/nemtrif/utfcpp
+[submodule "libs/sdl"]
+	path = libs/sdl
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "libs/lua"]
+	path = libs/lua
+	url = https://github.com/lua/lua.git
+[submodule "libs/tga"]
+	path = libs/tga
+	url = https://github.com/ColumbusUtrigas/TGA.git
+[submodule "libs/sdlmixer"]
+	path = libs/sdlmixer
+	url = https://github.com/libsdl-org/SDL_mixer.git
