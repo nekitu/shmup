@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd build_gmake
-make config=release
+cd build
+make config=Release
 cd ..

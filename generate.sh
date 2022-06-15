@@ -1,9 +1,6 @@
 #!/bin/bash
 
-unamestr=`uname`
+mkdir build
 
-if [ "$unamestr" = 'Linux' ]; then
-    ./premake5 gmake
-elif [ "$unamestr" = 'Darwin' ]; then
-    ./premake5_macos gmake macos
-fi
+cd ./build
+cmake -G "Unix Makefiles" -DOpenGL_GL_PREFERENCE=GLVND ../
