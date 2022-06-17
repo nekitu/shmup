@@ -1,2 +1,6 @@
 add_subdirectory(glew/build/cmake)
 add_subdirectory(jsoncpp)
+add_subdirectory(sdl)
+add_subdirectory(sdl_mixer)
+add_subdirectory(spdlog)
+add_subdirectory(utfcpp)

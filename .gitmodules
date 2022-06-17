@@ -25,3 +25,6 @@
 [submodule "libs/sdlmixer"]
 	path = libs/sdlmixer
 	url = https://github.com/libsdl-org/SDL_mixer.git
+[submodule "libs/luaintf"]
+	path = libs/luaintf
+	url = https://github.com/SteveKChiu/lua-intf.git
