@@ -19,12 +19,12 @@
 [submodule "libs/lua"]
 	path = libs/lua
 	url = https://github.com/lua/lua.git
-[submodule "libs/tga"]
-	path = libs/tga
-	url = https://github.com/ColumbusUtrigas/TGA.git
 [submodule "libs/sdlmixer"]
 	path = libs/sdlmixer
 	url = https://github.com/libsdl-org/SDL_mixer.git
 [submodule "libs/luaintf"]
 	path = libs/luaintf
 	url = https://github.com/SteveKChiu/lua-intf.git
+[submodule "libs/binpack"]
+	path = libs/binpack
+	url = https://github.com/nekitu/binpack.git

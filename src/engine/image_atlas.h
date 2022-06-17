@@ -5,11 +5,11 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include <libs/binpack/Rect.h>
-#include <libs/binpack/GuillotineBinPack.h>
-#include <libs/binpack/ShelfBinPack.h>
-#include <libs/binpack/SkylineBinPack.h>
-#include <libs/binpack/MaxRectsBinPack.h>
+#include <binpack/Rect.h>
+#include <binpack/GuillotineBinPack.h>
+#include <binpack/ShelfBinPack.h>
+#include <binpack/SkylineBinPack.h>
+#include <binpack/MaxRectsBinPack.h>
 
 namespace engine
 {

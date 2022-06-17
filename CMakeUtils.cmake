@@ -17,11 +17,6 @@ if(APPLE)
 	add_definitions(-DPLATFORM_APPLE)
 endif(APPLE)
 
-set(BIN_FOLDER bin)
-set(PROJECTS_DIR $ENV{PROJECTS_FOLDER})
-set(FULL_PROJECTS_PATH $ENV{FULL_PROJECTS_PATH})
-option(BUILD_SHARED_LIBS "Build a shared library form of zlib" OFF)
-
 if(WIN32)
 	add_definitions(-DPLATFORM_WIN)
 	add_definitions(/W0)
@@ -29,11 +24,9 @@ if(WIN32)
 endif(WIN32)
 
 if(LINUX)
-	add_definitions(-std=c++11)
+	add_definitions(-std=c++17)
 	add_definitions(-w)
 endif(LINUX)
-
-link_directories(${FULL_PROJECTS_PATH}/lib)
 
 macro(add_source_group FILTER_NAME SOURCE_PATH TARGET_LIST)
    file(TO_NATIVE_PATH ${FILTER_NAME} NEW_FILTER_NAME)

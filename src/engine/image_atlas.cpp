@@ -2,10 +2,10 @@
 #include "image_atlas.h"
 #include "utils.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "libs/stb_image/stb_image_write.c"
+#include "stb/stb_image_write.h"
 #include "texture_array.h"
-#include <stb_image.h>
-#include <tga.hpp>
+#include <stb/stb_image.h>
+#include <tga.h>
 #include <json/writer.h>
 #include "game.h"
 #include <filesystem>

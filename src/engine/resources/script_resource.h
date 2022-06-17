@@ -126,7 +126,7 @@ struct ScriptResource : Resource
 	template<typename T>
 	ScriptClassInstanceBase* createClassInstance(T* obj)
 	{
-		ScriptClassInstanceBase* classInst = new ScriptClassInstance(obj);
+		ScriptClassInstanceBase* classInst = new ScriptClassInstance<T>(obj);
 
 		classInst->script = this;
 		classInst->createInstance();

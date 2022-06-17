@@ -7,5 +7,5 @@ extern "C"
 #include "lauxlib.h"
 }
 
-#include "luaintf/LuaIntf.h"
-#include "luaintf/LuaRef.h"
+#include "LuaIntf/LuaIntf.h"
+#include "LuaIntf/LuaRef.h"
