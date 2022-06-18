@@ -4,12 +4,19 @@ include(../CMakeUtils.cmake)
 
 add_source_group(src ./ SRCS)
 add_source_group(engine ./engine ENGINE_SRCS)
-add_source_group(lua ../libs/lua LUA_SRCS)
 add_source_group(luaintf ../libs/luaintf/luaintf/src LUAINTF_SRCS)
-add_source_group(tga ../libs/tga TGA_SRCS)
 add_source_group(binpack ../libs/binpack BINPACK_SRCS)
+add_source_group(lua ../libs/lua LUA_SRCS)
 
-add_executable(shmup ${SRCS} ${BINPACK_SRCS} ${ENGINE_SRCS} ${LUA_SRCS} ${LUAINTF_SRCS} ${TGA_SRCS})
+get_filename_component(full_path ${CMAKE_CURRENT_SOURCE_DIR}/../libs/lua/onelua.c ABSOLUTE)
+message("${full_path}")
+
+list(REMOVE_ITEM LUA_SRCS "${full_path}")
+list(REMOVE_ITEM LUA_SRCS "/home/nekitu/work/shmup/src/../libs/lua/onelua.c")
+list(REMOVE_ITEM LUA_SRCS "/home/nekitu/work/shmup/src/../libs/lua/lua.c")
+message(${LUA_SRCS})
+
+add_executable(shmup ${SRCS} ${BINPACK_SRCS} ${ENGINE_SRCS} ${LUAINTF_SRCS} ${LUA_SRCS})
 
 target_include_directories(shmup PUBLIC
 	./engine
@@ -22,17 +29,13 @@ target_include_directories(shmup PUBLIC
 	../libs/lua
 	../libs/luaintf
 	../libs/spdlog/include
-	../libs
-	../libs/tga)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fPIC" )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -fPIC" )
+	../libs)
 
 find_package(GTK REQUIRED)
 find_package(PkgConfig)
 pkg_check_modules(GTK "gtk+-3.0")
 target_link_libraries(shmup ${GTK_LIBRARIES})
-add_definitions(${GTK_CFLAGS} ${GTK_CFLAGS_OTHER})
+add_definitions(${GTK_CFLAGS} ${GTK_CFLAGS_OTHER} -DMAKE_LIB)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -lstdc++fs")
 target_link_directories(shmup PUBLIC ${CMAKE_BINARY_DIR}/bin)
-target_link_libraries(shmup libSDL2-2.0.so libSDL2_mixer-2.0.so libfreetype.so libGLEW.so libjsoncpp.so libGL.so libspdlog libstb_image liblua)
+target_link_libraries(shmup libSDL2-2.0.so libSDL2_mixer-2.0.so libfreetype.so libGLEW.so libjsoncpp.so libGL.so libspdlog.so)

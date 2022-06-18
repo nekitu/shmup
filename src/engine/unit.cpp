@@ -743,7 +743,7 @@ void Unit::playSound(const std::string& sndName)
 
 	sounds[iter->second.channel]->soundResource = iter->second.soundResource;
 	sounds[iter->second.channel]->play();
-	LOG_INFO("Playing {0} on {1}", sounds[iter->second.channel]->soundResource->path, iter->second.channel);
+	LOG_INFO("Playing {0} on {1}", sounds[iter->second.channel]->soundResource->path, (u32)iter->second.channel);
 }
 
 bool Unit::isSoundPlaying(const std::string& name)
