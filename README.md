@@ -23,6 +23,9 @@ g++
 
 GLU/GLUT dev, needed by GLEW, use:
 		```sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev```
+
+For SDL to be built with audio:
+		```sudo apt-get install libasound2-dev libpulse-dev```
 	
 ## BUILDING
 **Windows:**

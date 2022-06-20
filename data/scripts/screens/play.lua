@@ -57,9 +57,9 @@ end
 
 function C:onActivate()
   game:showMousePointer(false)
-  game:setMusicVolume(0.0)
-  game:setChannelVolume(SoundChannel_Enemy, 0.0)
-  game:setChannelVolume(SoundChannel_Player, 0.0)
+  --game:setMusicVolume(0.0)
+  --game:setChannelVolume(SoundChannel_Enemy, 0.0)
+  --game:setChannelVolume(SoundChannel_Player, 0.0)
 end
 
 function C:onDeactivate()
