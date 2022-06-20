@@ -28,6 +28,7 @@
 #include "projectile.h"
 #include "tilemap_layer.h"
 #include <filesystem>
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "particle_system.h"
 

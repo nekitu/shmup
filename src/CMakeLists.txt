@@ -4,6 +4,7 @@ include(../CMakeUtils.cmake)
 
 add_source_group(src ./ SRCS)
 add_source_group(engine ./engine ENGINE_SRCS)
+add_source_group(engine ./engine/resources ENGINE_RES_SRCS)
 add_source_group(luaintf ../libs/luaintf/luaintf/src LUAINTF_SRCS)
 add_source_group(binpack ../libs/binpack BINPACK_SRCS)
 add_source_group(lua ../libs/lua LUA_SRCS)
@@ -16,7 +17,7 @@ list(REMOVE_ITEM LUA_SRCS "/home/nekitu/work/shmup/src/../libs/lua/onelua.c")
 list(REMOVE_ITEM LUA_SRCS "/home/nekitu/work/shmup/src/../libs/lua/lua.c")
 message(${LUA_SRCS})
 
-add_executable(shmup ${SRCS} ${BINPACK_SRCS} ${ENGINE_SRCS} ${LUAINTF_SRCS} ${LUA_SRCS})
+add_executable(shmup ${SRCS} ${BINPACK_SRCS} ${ENGINE_SRCS} ${ENGINE_RES_SRCS} ${LUAINTF_SRCS} ${LUA_SRCS})
 
 target_include_directories(shmup PUBLIC
 	./engine
