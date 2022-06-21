@@ -1,6 +1,5 @@
 #pragma once
 #include "types.h"
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_version.h>
 #include <SDL_audio.h>
@@ -134,7 +133,7 @@ struct CollisionMatrix
 struct Game
 {
 	static const u32 maxMouseButtons = 6;
-	static const u32 maxProjectileCount = 10000;
+	static const u32 maxProjectileCount = 100000;
 	static Game* instance;
 
 	std::string windowTitle = "Game";

@@ -16,11 +16,11 @@ namespace engine
 				{\
 					func.call(scriptClass->classInstance, ##__VA_ARGS__);\
 				}\
-				catch (LuaIntf::LuaException e)\
+				catch (LuaIntf::LuaException* e)\
 				{\
-					std::string str = e.what();\
+					std::string str = e->what();\
 					replaceAll(str, "\r", " ");\
-					LOG_ERROR("Lua Error in {0}: {1}", scriptClass->script->path, str);\
+					LOG_ERROR("Lua Error in {}: {}", scriptClass->script->path, str);\
 				}\
 			}\
 		}
@@ -59,7 +59,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 
 		if (script->code.empty())
 		{
-			LOG_WARN("No code in: '{0}'", script->path);
+			LOG_WARN("No code in: '{}'", script->path);
 			return false;
 		}
 
@@ -69,7 +69,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 		{
 			std::string str = lua_tostring(getLuaState(), -1);
 			replaceAll(str, "\r", " ");
-			LOG_ERROR("createClassInstance: Lua error: {0}", str);
+			LOG_ERROR("createClassInstance: Lua error: {}", str);
 			return false;
 		}
 
@@ -79,7 +79,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 		{
 			std::string str = lua_tostring(getLuaState(), -1);
 			replaceAll(str, "\r", " ");
-			LOG_ERROR("createClassInstance: Lua error: {0}", str);
+			LOG_ERROR("createClassInstance: Lua error: {}", str);
 			return false;
 		}
 
@@ -95,16 +95,16 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 			{
 				std::string str = e.what();
 				replaceAll(str, "\r", " ");
-				LOG_ERROR("Lua Error in {0}: {1}", script->path, str);
+				LOG_ERROR("Lua Error in {}: {}", script->path, str);
 			}
 		}
 		else
 		{
-			LOG_ERROR("Lua: Please return class table in '{0}'", script->path);
+			LOG_ERROR("Lua: Please return class table in '{}'", script->path);
 			return false;
 		}
 
-		//LOG_INFO("Lua: Created class instance for {0}'", script->path);
+		//LOG_INFO("Lua: Created class instance for {}'", script->path);
 
 		return true;
 	}

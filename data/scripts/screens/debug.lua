@@ -28,7 +28,7 @@ end
 
 function C:onActivate()
   if not game.prebakedAtlas then
-    util.saveAtlas("atlas")
+    --util.saveAtlas("atlas")
   end
 end
 

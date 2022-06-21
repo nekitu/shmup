@@ -102,13 +102,13 @@ u32 singleUtf8ToUtf32(const char* glyph)
 
 bool loadJson(const std::string& absPath, Json::Value& root)
 {
-	LOG_INFO("Loading \"{0}\"", absPath);
+	LOG_INFO("Loading \"{}\"", absPath);
 	Json::Reader reader;
 	auto json = readTextFile(absPath);
 
 	if (json.empty())
 	{
-		LOG_ERROR("Empty JSON file {0}", absPath);
+		LOG_ERROR("Empty JSON file {}", absPath);
 		return false;
 	}
 
@@ -116,7 +116,7 @@ bool loadJson(const std::string& absPath, Json::Value& root)
 
 	if (!ok)
 	{
-		LOG_ERROR("JSON error in '{0}' {1}", absPath, reader.getFormatedErrorMessages());
+		LOG_ERROR("JSON error in '{}' {}", absPath, reader.getFormatedErrorMessages());
 		return false;
 	}
 

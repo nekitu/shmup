@@ -650,7 +650,7 @@ void Unit::deleteSprite(struct Sprite* spr)
 {
 	if (spr == root)
 	{
-		LOG_DEBUG("Cannot delete root sprite of unit {0}", name);
+		LOG_DEBUG("Cannot delete root sprite of unit {}", name);
 		return;
 	}
 
@@ -737,13 +737,13 @@ void Unit::playSound(const std::string& sndName)
 
 	if (iter == unitResource->sounds.end())
 	{
-		LOG_WARN("Cannot find sound to play: {0}", sndName);
+		LOG_WARN("Cannot find sound to play: {}", sndName);
 		return;
 	}
 
 	sounds[iter->second.channel]->soundResource = iter->second.soundResource;
 	sounds[iter->second.channel]->play();
-	LOG_INFO("Playing {0} on {1}", sounds[iter->second.channel]->soundResource->path, (u32)iter->second.channel);
+	LOG_INFO("Playing {} on {}", sounds[iter->second.channel]->soundResource->path, (u32)iter->second.channel);
 }
 
 bool Unit::isSoundPlaying(const std::string& name)

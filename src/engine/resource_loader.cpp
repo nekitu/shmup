@@ -36,7 +36,7 @@ void debugBreak()
 {\
 	if (path.size() == 0)\
 	{\
-		LOG_ERROR("{0}: Empty path", where);\
+		LOG_ERROR("{}: Empty path", where);\
 		debugBreak();\
 	}\
 }

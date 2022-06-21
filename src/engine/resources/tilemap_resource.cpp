@@ -59,7 +59,7 @@ void TilemapObject::load(Json::Value& json)
 	{
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
 		properties[propJson.get("name", "").asString()] = str;
-		LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
+		LOG_INFO("\t{} = {}", propJson.get("name", "").asCString(), str.c_str());
 	}
 }
 
@@ -73,7 +73,7 @@ void TilemapLayerResource::loadImage()
 	if (!Game::instance->prebakedAtlas)
 	{
 		imgData = stbi_load(Game::instance->makeFullDataPath(imagePath).c_str(), &imgWidth, &imgHeight, &comp, 4);
-		LOG_INFO("Loaded layer image: {0} {1}x{2}", imagePath, imgWidth, imgHeight);
+		LOG_INFO("Loaded layer image: {} {}x{}", imagePath, imgWidth, imgHeight);
 	}
 
 	image = Game::instance->graphics->atlas->addImage(imagePath, (Rgba32*)imgData, imgWidth, imgHeight);
@@ -118,7 +118,7 @@ void TilemapLayerResource::load(Json::Value& json)
 
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
 			properties[propJson.get("name", "").asString()] = str;
-			LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
+			LOG_INFO("\t{} = {}", propJson.get("name", "").asCString(), str.c_str());
 	}
 
 	auto typeName = json.get("type", "").asString();
@@ -266,7 +266,7 @@ bool TilemapResource::load(Json::Value& json)
 		}
 
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
-		LOG_INFO("\t{0} = {1}", propJson.get("name", "").asCString(), str.c_str());
+		LOG_INFO("\t{} = {}", propJson.get("name", "").asCString(), str.c_str());
 	}
 
 	return true;

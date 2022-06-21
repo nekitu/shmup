@@ -304,7 +304,7 @@ void Input::loadActions(const std::string& path)
 		return;
 	}
 
-	for (int i = 0; i < json.getMemberNames().size(); i++)
+	for (size_t i = 0; i < json.getMemberNames().size(); i++)
 	{
 		auto name = json.getMemberNames()[i];
 		auto jsonAction = json.get(name, Json::Value(Json::ValueType::objectValue));
@@ -329,16 +329,16 @@ void Input::loadMappings(const std::string& path)
 		return;
 	}
 
-	for (int i = 0; i < json.getMemberNames().size(); i++)
+	for (size_t i = 0; i < json.getMemberNames().size(); i++)
 	{
 		auto name = json.getMemberNames()[i];
 		auto jsonMapping = json.get(name, Json::Value(Json::ValueType::arrayValue));
 
 		InputMapping im;
 
-		for (int j = 0; j < jsonMapping.size(); j++)
+		for (size_t j = 0; j < jsonMapping.size(); j++)
 		{
-			auto str = jsonMapping[j].asString();
+			auto str = jsonMapping[(int)j].asString();
 			auto beginIndex = str.find('[');
 			auto endIndex = str.find(']');
 

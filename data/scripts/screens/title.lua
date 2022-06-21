@@ -104,15 +104,13 @@ function C:onAfterRenderUnit(unit)
 end
 
 function C:onActivate()
-  print("enter title screen")
   self.titleSpr = game:loadSprite("sprites/title")
   self.rocksSpr = game:loadSprite("sprites/rocks")
   self.lavaSpr = game:loadSprite("sprites/lava")
   self.iceSpr = game:loadSprite("sprites/ice")
   self.palette = gfx:createUserPalette()
   self.palette:copyFromSprite(self.titleSpr)
-  --game:changeMusic("music/Retribution.ogg")
-  print("OK title")
+  game:changeMusic("music/Retribution.ogg")
 end
 
 function C:onDeactivate()
@@ -126,7 +124,6 @@ function C:onSerialize(data)
   data.loffs = loffs
   data.step = step
   data.y = y
-  print("serialize title")
 end
 
 function C:onDeserialize(data)

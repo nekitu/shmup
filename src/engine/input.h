@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <string>
 #include "vec2.h"
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_version.h>
 

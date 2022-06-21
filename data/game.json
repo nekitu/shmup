@@ -5,14 +5,14 @@
   "fullscreen": false,
   "vSync": false,
   "prebakedAtlas": false,
-  "startupScreenScript": "scripts/screens/title",
+  "startupScreenScript": "scripts/screens/play",
   "pauseOnAppDeactivate": false,
   "cameraSpeed": 40,
   "cameraParallaxPixelSize": 20,
   "screens":
   [
     { "path": "scripts/screens/play", "active": false },
-    { "path": "scripts/screens/copyright", "active": false },
+    { "path": "scripts/screens/copyright", "active": true },
     { "path": "scripts/screens/title", "active": false },
     { "path": "scripts/screens/settings" },
     { "path": "scripts/screens/choose_ship" },

@@ -47,7 +47,7 @@ void checkErrorGL(const char* where)
 
 	if (err != GL_NO_ERROR)
 	{
-		LOG_ERROR("[{0}] OpenGL: code#{1}: {2}", where, err, str);
+		LOG_ERROR("[{}] OpenGL: code#{}: {}", where, err, str);
 	}
 }
 
@@ -179,7 +179,7 @@ void Graphics::createScreenRenderTarget()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
 	{
-		LOG_INFO("Framebuffer is complete!");
+		LOG_INFO("Framebuffer created");
 	}
 }
 
@@ -928,7 +928,7 @@ Vec2 Graphics::getTextSize(struct FontResource* font, const std::string& text)
 
 		if (i < ustr.size() - 1)
 		{
-			auto kern = font->kernings[std::make_pair(chr, ustr[i + 1])];
+			kern = font->kernings[std::make_pair(chr, ustr[i + 1])];
 		}
 
 		textSize.x += framePixRect.width + kern;
