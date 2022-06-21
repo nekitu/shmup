@@ -12,8 +12,8 @@
   "screens":
   [
     { "path": "scripts/screens/play", "active": false },
-    { "path": "scripts/screens/copyright", "active": true },
-    { "path": "scripts/screens/title", "active": true },
+    { "path": "scripts/screens/copyright", "active": false },
+    { "path": "scripts/screens/title", "active": false },
     { "path": "scripts/screens/settings" },
     { "path": "scripts/screens/choose_ship" },
     { "path": "scripts/screens/begin_map" },

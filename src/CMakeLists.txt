@@ -39,4 +39,11 @@ target_link_libraries(shmup ${GTK_LIBRARIES})
 add_definitions(${GTK_CFLAGS} ${GTK_CFLAGS_OTHER} -DMAKE_LIB)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -lstdc++fs")
 target_link_directories(shmup PUBLIC ${CMAKE_BINARY_DIR}/bin)
-target_link_libraries(shmup libSDL2-2.0.so libSDL2_mixer-2.0.so libfreetype.so libGLEW.so libjsoncpp.so libGL.so libspdlog.so)
+
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+	message("debug mode")
+	target_link_libraries(shmup libSDL2-2.0d.so libSDL2_mixer-2.0d.so libGLEWd libjsoncpp libGL.so libspdlogd.so)
+else(CMAKE_BUILD_TYPE MATCHES DEBUG)
+	target_link_libraries(shmup libSDL2-2.0.so libSDL2_mixer-2.0.so libGLEW.so libjsoncpp.so libGL.so libspdlog.so)
+endif(CMAKE_BUILD_TYPE MATCHES DEBUG)
+

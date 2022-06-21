@@ -8,7 +8,7 @@ int main(int argc, char** args)
 
 	game.loadConfig();
 	game.initialize();
-	game.mainLoop();
+	//game.mainLoop();
 
 	return 0;
 }

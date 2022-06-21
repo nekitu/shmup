@@ -185,12 +185,16 @@ bool Game::initialize()
 	}
 
 	int result = 0;
-	int flags = MIX_INIT_MP3;
+	int flags = MIX_INIT_OGG | MIX_INIT_MP3;
 
 	if (flags != (result = Mix_Init(flags))) {
-		LOG_ERROR("Could not initialize mixer (result: {0})", result);
-		LOG_ERROR("Mix_Init: {0}", Mix_GetError());
+		LOG_ERROR("Could not initialize mixer (result: {} flags {})", result, flags);
+		LOG_ERROR("Mix_Init: {}", Mix_GetError());
 		exit(1);
+	}
+	else
+	{
+		LOG_INFO("SDL Mixer initialization done");
 	}
 
 	initializeAudio();
@@ -219,18 +223,22 @@ bool Game::initialize()
 
 	lastTime = SDL_GetTicks();
 
-	for (auto& gs : gameScreens)
-	{
-		gs->script = resourceLoader->loadScript(gs->path);
-		gs->scriptClass = gs->script->createClassInstance(gs);
+	LOG_INFO("Initializing active game screens...");
 
-		if (gs->active)
-		{
-			CALL_LUA_FUNC2(gs->scriptClass, "onActivate");
-		}
-	}
+	// for (auto& gs : gameScreens)
+	// {
+	// 	gs->script = resourceLoader->loadScript(gs->path);
+	// 	gs->scriptClass = gs->script->createClassInstance(gs);
+
+	// 	if (gs->active)
+	// 	{
+	// 		CALL_LUA_FUNC2(gs->scriptClass, "onActivate");
+	// 	}
+	// }
 
 	lastTime = SDL_GetTicks();
+
+	LOG_INFO("Game initialization done");
 }
 
 void Game::shutdown()
@@ -333,7 +341,6 @@ void Game::mainLoop()
 			deltaTime = 0;
 		}
 #endif
-
 		for (auto& scr : gameScreens)
 		{
 			if (scr->active)

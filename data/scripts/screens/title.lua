@@ -111,7 +111,8 @@ function C:onActivate()
   self.iceSpr = game:loadSprite("sprites/ice")
   self.palette = gfx:createUserPalette()
   self.palette:copyFromSprite(self.titleSpr)
-  game:changeMusic("music/Retribution.ogg")
+  --game:changeMusic("music/Retribution.ogg")
+  print("OK title")
 end
 
 function C:onDeactivate()
