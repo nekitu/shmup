@@ -8,7 +8,7 @@ namespace engine
 ParticleSystem::ParticleSystem()
 {
 	root = new Sprite();
-	//forces.push_back(new ParticleGravity);
+	forces.push_back(new ParticleGravity);
 }
 
 ParticleSystem::~ParticleSystem()
@@ -28,14 +28,13 @@ void ParticleSystem::update(struct Game* game)
 {
 	Unit::update(game);
 
-	f32 slice = 1.0f / (f32)params.particlesPerSecond;
+	f32 slice = 1.0f / params.particlesPerSecond;
 
 	if (spawnTimer >= slice)
 	{
 		u32 particlesToSpawn = spawnTimer / slice;
+		spawnTimer -= (f32)particlesToSpawn * slice;
 		
-		//LOG_INFO("particles {} slice {} timer {} dt {}", particlesToSpawn, slice, spawnTimer, game->deltaTime);
-		spawnTimer = 0;
 		for (auto i = 0; i < particlesToSpawn; ++i)
 		{
 			auto pos = getNewSpawnPosition();
@@ -98,7 +97,7 @@ void ParticleSystem::render(struct Graphics* gfx)
 			particle->size.x,
 			particle->size.y);
 
-		rc = Game::instance->worldToScreen(rc, layerIndex);
+		rc = Game::instance->worldToScreen(rc, (u32)~0 - 1);
 		gfx->setupColor(particle->color.getRgba(), ColorMode::Mul);
 		gfx->drawQuad(rc, gfx->atlas->whiteImage->uvRect);
 	}

@@ -54,14 +54,14 @@ enum class ParticleSpawnVelocity
 struct ParticleSystemParams
 {
 	ParticleParamRange<f32> age{5, 5};
-	ParticleParamRange<f32> acceleration{0, 50};
-	ParticleParamRange<f32> speed{77, 77};
-	ParticleParamRange<Color> color{Color::white, Color::red};
-	ParticleParamRange<Vec2> size{Vec2(1, 1), Vec2(1, 1)};
+	ParticleParamRange<f32> acceleration{5, 5};
+	ParticleParamRange<f32> speed{27, 27};
+	ParticleParamRange<Color> color{Color::white, Color::blue};
+	ParticleParamRange<Vec2> size{Vec2(3, 3), Vec2(1, 1)};
 	ParticleSpawnPosition spawnPosition = ParticleSpawnPosition::Point;
 	ParticleSpawnVelocity spawnVelocity = ParticleSpawnVelocity::Random;
 	ParticleParamRange<f32> coneSpawnAngle{-10, 10};
-	u32 particlesPerSecond = 1000;
+	f32 particlesPerSecond = 1000;
 	f32 life = 0; // 0 infinite
 };
 

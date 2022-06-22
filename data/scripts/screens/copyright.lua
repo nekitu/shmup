@@ -13,7 +13,7 @@ function C:onUpdate(deltaTime)
     game:setScreenActive(self.gameScreen.name, false)
     game:changeMap(0)
     game:setScreenActive("play", true)
-    --game:setScreenActive("title", true)
+    game:setScreenActive("title", true)
     game:setScreenActive("credits", true)
     game:createPlayers()
   end
