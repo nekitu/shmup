@@ -28,6 +28,7 @@
 #include "projectile.h"
 #include "tilemap_layer.h"
 #include <filesystem>
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "particle_system.h"
 
@@ -99,12 +100,18 @@ void Game::loadConfig()
 
 		gs->id = i + 1;
 		auto path = screenInfoJson["path"].asString();
-		gs->name = path.substr(path.find_last_of("/") + 1);
+		auto pos = path.find_last_of("/");
+		
+		if (pos != std::string::npos)
+		{
+			gs->name = path.substr(pos + 1);
+		}
+
 		gs->path = path;
 		gs->active = screenInfoJson["active"].asBool();
 		gameScreens.push_back(gs);
 
-		LOG_INFO("Adding game screen: {0} path: {1}", gs->name, screenInfoJson["path"].asString());
+		LOG_INFO("Adding game screen: {} path: {}", gs->name, screenInfoJson["path"].asString());
 	}
 
 	auto mapsJson = json.get("tilemaps", Json::ValueType::arrayValue);
@@ -112,14 +119,14 @@ void Game::loadConfig()
 	for (u32 i = 0; i < mapsJson.size(); i++)
 	{
 		Json::Value& mapInfoJson = mapsJson[i];
-		LOG_INFO("Map: {0} in {1}", mapInfoJson["title"].asCString(), mapInfoJson["path"].asCString());
+		LOG_INFO("Map: {} in {}", mapInfoJson["title"].asCString(), mapInfoJson["path"].asCString());
 		maps.push_back(std::make_pair(mapInfoJson["title"].asCString(), mapInfoJson["path"].asString()));
 	}
 }
 
 bool Game::initialize()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_RELDEBUG)
 	spdlog::set_level(spdlog::level::debug); // Set global log level to debug
 	LOG_DEBUG("Debug mode enabled");
 #endif
@@ -129,18 +136,17 @@ bool Game::initialize()
 
 	SDL_SetMainReady();
 
-	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER);
+	int err = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER | SDL_INIT_AUDIO);
 
 	if (err != 0)
 	{
-		LOG_ERROR("SDL initialize error: {0}", SDL_GetError());
+		LOG_ERROR("SDL initialize error: {}", SDL_GetError());
 		return false;
 	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
 	window = SDL_CreateWindow(
 		windowTitle.c_str(),
 		SDL_WINDOWPOS_CENTERED,
@@ -160,7 +166,7 @@ bool Game::initialize()
 
 	if (!glContext)
 	{
-		LOG_ERROR("Cannot create GL context for SDL: {0}", SDL_GetError());
+		LOG_ERROR("Cannot create GL context for SDL: {}", SDL_GetError());
 		return false;
 	}
 
@@ -175,21 +181,25 @@ bool Game::initialize()
 
 	errGlew = glewInit();
 
-	LOG_INFO("Initializing game...");
-
 	if (errGlew != GLEW_OK)
 	{
-		LOG_ERROR("Cannot initialize GLEW. Error: {0}", glewGetErrorString(errGlew));
+		LOG_ERROR("Cannot initialize GLEW. Error: {}", glewGetErrorString(errGlew));
 		return false;
 	}
 
+	LOG_INFO("Initializing audio mixer...");
+
 	int result = 0;
-	int flags = MIX_INIT_MP3;
+	int flags = MIX_INIT_OGG | MIX_INIT_MP3;
 
 	if (flags != (result = Mix_Init(flags))) {
-		LOG_ERROR("Could not initialize mixer (result: {0})", result);
-		LOG_ERROR("Mix_Init: {0}", Mix_GetError());
+		LOG_ERROR("Could not initialize mixer (result: {} flags {})", result, flags);
+		LOG_ERROR("Mix_Init: {}", Mix_GetError());
 		exit(1);
+	}
+	else
+	{
+		LOG_INFO("SDL Mixer initialization done");
 	}
 
 	initializeAudio();
@@ -218,6 +228,8 @@ bool Game::initialize()
 
 	lastTime = SDL_GetTicks();
 
+	LOG_INFO("Initializing active game screens...");
+
 	for (auto& gs : gameScreens)
 	{
 		gs->script = resourceLoader->loadScript(gs->path);
@@ -225,11 +237,16 @@ bool Game::initialize()
 
 		if (gs->active)
 		{
+			LOG_INFO("Activate game screen: {}", gs->name);
 			CALL_LUA_FUNC2(gs->scriptClass, "onActivate");
 		}
 	}
 
 	lastTime = SDL_GetTicks();
+
+	LOG_INFO("Game initialization done");
+
+	return true;
 }
 
 void Game::shutdown()
@@ -256,8 +273,10 @@ bool Game::initializeAudio()
 	// initialize SDL_mixer
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
 	{
-		return -1;
+		return false;
 	}
+
+	return true;
 }
 
 void Game::updateCamera()
@@ -332,7 +351,6 @@ void Game::mainLoop()
 			deltaTime = 0;
 		}
 #endif
-
 		for (auto& scr : gameScreens)
 		{
 			if (scr->active)
@@ -1126,6 +1144,8 @@ void Game::updateTimeScaleAnimation()
 		}
 		break;
 	}
+	default:
+		break;
 	}
 }
 
@@ -1167,7 +1187,7 @@ bool Game::changeMap(i32 index)
 
 	if (index >= maps.size())
 	{
-		LOG_ERROR("Map index out of range {0}", index);
+		LOG_ERROR("Map index out of range {}", index);
 		return false;
 	}
 
@@ -1190,6 +1210,18 @@ bool Game::changeMap(i32 index)
 		{
 			switch (obj.type)
 			{
+			case TilemapObject::Type::Polygon:
+				break;					
+			case TilemapObject::Type::Polyline:
+				break;					
+			case TilemapObject::Type::Rect:
+				break;					
+			case TilemapObject::Type::Ellipse:
+				break;					
+			case TilemapObject::Type::Tile:
+				break;					
+			case TilemapObject::Type::Text:
+				break;					
 			case TilemapObject::Type::Point:
 			{
 				auto& unitClass = obj.typeString;

@@ -41,7 +41,7 @@ u8* AtlasImage::getPixelAddr(u32 x, u32 y)
 void AtlasImage::setPixel(u32 x, u32 y, Rgba32 color)
 {
 	auto addr = getPixelAddr(x, y);
-	if (addr) (Rgba32&)addr = color;
+	if (addr) *((Rgba32*)addr) = color;
 }
 
 ImageAtlas::ImageAtlas(u32 textureWidth, u32 textureHeight)
@@ -195,7 +195,6 @@ bool ImageAtlas::pack(
 
 	u32 border2 = spacing * 2;
 	::Rect packedRect;
-	bool rotated = false;
 	bool allTexturesDirty = false;
 	std::vector<PackImageData> acceptedImages;
 
@@ -583,7 +582,6 @@ AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* p
 				width = tgaFile.GetWidth();
 				height = tgaFile.GetHeight();
 				data = tgaFile.GetData();
-				auto format = tgaFile.GetFormat();
 				auto imgSize = width * height;
 
 				if (paletteInfo)
@@ -641,7 +639,7 @@ AtlasImage* ImageAtlas::loadImageToAtlas(const std::string& path, PaletteInfo* p
 			data = (u8*)stbi_load(Game::instance->makeFullDataPath(path).c_str(), &width, &height, &comp, 4);
 		}
 
-		LOG_INFO("Loaded image: {0} {1}x{2}", path, width, height);
+		LOG_INFO("Loaded image: {} {}x{}", path, width, height);
 
 		if (!data)
 			return nullptr;

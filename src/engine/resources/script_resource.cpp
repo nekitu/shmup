@@ -32,12 +32,12 @@ ScriptClassInstanceBase::~ScriptClassInstanceBase()
 
 		if (iter != script->classInstances.end())
 		{
-			LOG_INFO("Destroying the script class instance for script: {0} ", script->path);
+			LOG_INFO("Destroying the script class instance for script: {} ", script->path);
 			script->classInstances.erase(iter);
 		}
 		else
 		{
-			LOG_ERROR("Cannot find the script class instance for script: {0} ", script->path);
+			LOG_ERROR("Cannot find the script class instance for script: {} ", script->path);
 		}
 	}
 }
@@ -68,7 +68,7 @@ void ScriptResource::unload()
 
 void ScriptResource::serialize()
 {
-	LOG_INFO("Serializing script {0} with {1} instances", path, classInstances.size());
+	LOG_INFO("Serializing script {} with {} instances", path, classInstances.size());
 
 	serializedInstancesTable = LuaIntf::LuaRef::createTable(getLuaState());
 	int i = 1;
@@ -94,7 +94,7 @@ void ScriptResource::serialize()
 
 void ScriptResource::deserialize()
 {
-	LOG_INFO("Deserializing script {0} with {1} instances", path, classInstances.size());
+	LOG_INFO("Deserializing script {} with {} instances", path, classInstances.size());
 
 	LuaIntf::LuaRef luaDeserialize = LuaIntf::LuaRef(getLuaState(), "unpickle");
 
@@ -141,11 +141,11 @@ bool initializeLua()
 	l.setGlobal("package.path", "../data/scripts/?.lua;?.lua");
 
 	LUA.beginModule("log")
-		.addFunction("info", [](const std::string& str) { LOG_INFO("LUA: {0}", str); })
-		.addFunction("error", [](const std::string& str) { LOG_ERROR("LUA: {0}", str); })
-		.addFunction("debug", [](const std::string& str) { LOG_DEBUG("LUA: {0}", str); })
-		.addFunction("warn", [](const std::string& str) { LOG_WARN("LUA: {0}", str); })
-		.addFunction("critical", [](const std::string& str) { LOG_CRITICAL("LUA: {0}", str); })
+		.addFunction("info", [](const std::string& str) { LOG_INFO("LUA: {}", str); })
+		.addFunction("error", [](const std::string& str) { LOG_ERROR("LUA: {}", str); })
+		.addFunction("debug", [](const std::string& str) { LOG_DEBUG("LUA: {}", str); })
+		.addFunction("warn", [](const std::string& str) { LOG_WARN("LUA: {}", str); })
+		.addFunction("critical", [](const std::string& str) { LOG_CRITICAL("LUA: {}", str); })
 		.endModule();
 
 	LUA.beginClass<GameScreen>("GameScreen")

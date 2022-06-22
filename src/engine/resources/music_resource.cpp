@@ -13,7 +13,10 @@ bool MusicResource::load(Json::Value& json)
 	music = Mix_LoadMUS(absPath.c_str());
 
 	if (music == NULL)
+	{
+		LOG_ERROR("Cannot load music: {} abspath: {}", path, absPath);
 		return false;
+	}
 
 	return true;
 }

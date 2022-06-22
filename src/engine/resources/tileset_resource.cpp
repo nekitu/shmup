@@ -51,7 +51,7 @@ bool TilesetResource::load(Json::Value& json)
 
 bool TilesetResource::loadImage()
 {
-	LOG_DEBUG("Loading tileset image: {0}", imagePath);
+	LOG_DEBUG("Loading tileset image: {}", imagePath);
 
 	int width = 0;
 	int height = 0;

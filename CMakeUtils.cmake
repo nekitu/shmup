@@ -23,11 +23,6 @@ if(WIN32)
 	add_definitions(/MP8)
 endif(WIN32)
 
-if(LINUX)
-	add_definitions(-std=c++17)
-	add_definitions(-w)
-endif(LINUX)
-
 macro(add_source_group FILTER_NAME SOURCE_PATH TARGET_LIST)
    file(TO_NATIVE_PATH ${FILTER_NAME} NEW_FILTER_NAME)
    if (WIN32 OR LINUX)

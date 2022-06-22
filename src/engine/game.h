@@ -1,6 +1,5 @@
 #pragma once
 #include "types.h"
-#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <SDL_version.h>
 #include <SDL_audio.h>

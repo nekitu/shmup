@@ -5,7 +5,7 @@
   "fullscreen": false,
   "vSync": false,
   "prebakedAtlas": false,
-  "startupScreenScript": "scripts/screens/title",
+  "startupScreenScript": "scripts/screens/play",
   "pauseOnAppDeactivate": false,
   "cameraSpeed": 40,
   "cameraParallaxPixelSize": 20,

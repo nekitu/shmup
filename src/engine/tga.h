@@ -395,7 +395,7 @@ namespace tga
 		}
 		case 2: // Uncompressed TrueColor
 		{
-			if (Head.Bits = 24 || Head.Bits == 32)
+			if (Head.Bits == 24 || Head.Bits == 32)
 			{
 				std::copy(&Buffer[0], &Buffer[ImageSize], &Data[0]);
 
