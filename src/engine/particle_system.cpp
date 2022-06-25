@@ -9,6 +9,8 @@ ParticleSystem::ParticleSystem()
 {
 	root = new Sprite();
 	forces.push_back(new ParticleGravity);
+	params.coneDirection.set(0,-1);
+	params.speed.min = 30;
 }
 
 ParticleSystem::~ParticleSystem()
@@ -42,9 +44,10 @@ void ParticleSystem::update(struct Game* game)
 
 			particle->acceleration = randomFloat(params.acceleration.min, params.acceleration.max);
 			particle->maxAge = randomFloat(params.age.min, params.age.max);
-			particle->size.x = randomFloat(params.size.min.x, params.size.max.x);
-			particle->size.y = randomFloat(params.size.min.y, params.size.max.y);
+			particle->size.x = randomFloat(params.birthSize.min.x, params.birthSize.max.x);
+			particle->size.y = randomFloat(params.birthSize.min.y, params.birthSize.max.y);
 			particle->speed = randomFloat(params.speed.min, params.speed.max);
+			particle->color = params.colors.empty() ? Color::white : params.colors[0];
 			particle->position = pos;
 			particle->velocity = getNewSpawnVelocity(pos);
 			particles.push_back(particle);
@@ -77,10 +80,14 @@ void ParticleSystem::update(struct Game* game)
 		particle->position += particle->velocity * particle->speed * game->deltaTime;
 		particle->age += game->deltaTime;
 		f32 t = particle->age / particle->maxAge;
-		particle->color.r = lerp(params.color.min.r, params.color.max.r, t);
-		particle->color.g = lerp(params.color.min.g, params.color.max.g, t);
-		particle->color.b = lerp(params.color.min.b, params.color.max.b, t);
-		particle->color.a = lerp(params.color.min.a, params.color.max.a, t);
+
+		if (params.colors.size() >= 2)
+		{
+			f32 findex = (f32)params.colors.size() * t;
+			f32 colorT = findex - (int)findex;
+
+			particle->color = params.colors[(int)findex].lerp(params.colors[(int)findex + 1], colorT);
+		}
 
 		++iter;
 	}
@@ -133,6 +140,9 @@ Vec2 ParticleSystem::getNewSpawnVelocity(const Vec2& pos)
 	}
 	case ParticleSpawnVelocity::Conical:
 	{
+		f32 angle = dir2deg(params.coneDirection) + 90;
+		angle = randomFloat(angle - params.spawnConeAngle / 2.0f, angle + params.spawnConeAngle / 2.0f);
+		return Vec2(cos(deg2rad(angle)), sin(deg2rad(angle))).getNormalized(); 
 		break;
 	}
 
