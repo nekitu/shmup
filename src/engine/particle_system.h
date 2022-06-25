@@ -56,11 +56,13 @@ struct ParticleSystemParams
 	ParticleParamRange<f32> age{5, 5};
 	ParticleParamRange<f32> acceleration{5, 5};
 	ParticleParamRange<f32> speed{27, 27};
-	ParticleParamRange<Color> color{Color::white, Color::blue};
-	ParticleParamRange<Vec2> size{Vec2(3, 3), Vec2(1, 1)};
+	std::vector<Color> colors = {Color::white, Color::red, Color::blue};
+	ParticleParamRange<Vec2> birthSize{Vec2(11, 11), Vec2(1, 1)};
+	std::vector<f32> size;
 	ParticleSpawnPosition spawnPosition = ParticleSpawnPosition::Point;
-	ParticleSpawnVelocity spawnVelocity = ParticleSpawnVelocity::Random;
-	ParticleParamRange<f32> coneSpawnAngle{-10, 10};
+	ParticleSpawnVelocity spawnVelocity = ParticleSpawnVelocity::Conical;
+	f32 spawnConeAngle = 20;
+	Vec2 coneDirection{0, 1};
 	f32 particlesPerSecond = 1000;
 	f32 life = 0; // 0 infinite
 };
@@ -72,7 +74,7 @@ struct ParticleForce
 
 struct ParticleGravity : ParticleForce
 {
-	f32 acceleration = 9.8;
+	f32 acceleration = 3.8;
 	Vec2 gravityDirection = { 0, 1 };
 
 	void affectParticle(Particle* particle) override;

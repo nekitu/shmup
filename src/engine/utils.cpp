@@ -11,6 +11,16 @@ namespace engine
 {
 static u32 mathRandomSeed = 500;
 
+f32 cos2d(f32 x1, f32 y1, f32 x2, f32 y2)
+{
+	f32 m = (x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2);
+
+	if (m <= 0.0f)
+		return 0.0f;
+
+	return (f32)(x1 * x2 + y1 * y2) / sqrtf((f32)m);
+}
+
 bool clampValue(f32& value, f32 minVal, f32 maxVal)
 {
 	if (value < minVal)

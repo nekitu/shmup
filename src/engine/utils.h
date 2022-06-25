@@ -35,6 +35,7 @@ namespace engine
 		void start() { ongoing = true; }
 	};
 
+	f32 cos2d(f32 x1, f32 y1, f32 x2, f32 y2);
 	bool clampValue(f32& value, f32 minVal, f32 maxVal);
 	void setRandomSeed(i32 seed);
 	inline f32 lerp(f32 a, f32 b, f32 t) { return a + t * (b - a); }
@@ -53,4 +54,5 @@ namespace engine
 	void replaceAll(std::string& source, const std::string& from, const std::string& to);
 	std::string getParentPath(const std::string& path);
 	std::string jsonAsString(const Json::Value& json);
+
 }

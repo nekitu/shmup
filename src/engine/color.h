@@ -34,6 +34,15 @@ struct Color
 		a = (f32)color[3] / 255.0f;
 	}
 
+	Color lerp(const Color& toColor, f32 t)
+	{
+		return Color(
+			r + t * (toColor.r - r),
+			g + t * (toColor.g - g),
+			b + t * (toColor.b - b),
+			a + t * (toColor.a - a));
+	}
+
 	Color operator * (f32 other) const
 	{
 		return { r * other, g * other, b * other, a * other };
