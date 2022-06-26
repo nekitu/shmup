@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#define GLEW_STATIC
 #include <GL/glew.h>
 #include <vector>
 #include "vertex_buffer.h"

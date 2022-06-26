@@ -86,7 +86,10 @@ void ParticleSystem::update(struct Game* game)
 			f32 findex = (f32)params.colors.size() * t;
 			f32 colorT = findex - (int)findex;
 
-			particle->color = params.colors[(int)findex].lerp(params.colors[(int)findex + 1], colorT);
+			if (findex + 1 < params.colors.size())
+			{
+				particle->color = params.colors[(int)findex].lerp(params.colors[(int)findex + 1], colorT);
+			}
 		}
 
 		++iter;

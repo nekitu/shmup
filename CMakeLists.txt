@@ -4,10 +4,10 @@ project(shmup)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}")
 add_definitions(-DSDL_MAIN_HANDLED)
 
-if(WINDOWS)
+if(WIN32)
 	link_libraries("shlwapi"  "Ws2_32" "Wininet" "dbghelp"
       "user32" "gdi32" "ole32" "oleaut32"  "uuid" "opengl32")
-endif(WINDOWS)
+endif(WIN32)
 
 if(LINUX)
 	link_libraries("X11 `pkg-config --libs gtk+-3.0`"
@@ -19,9 +19,13 @@ if(APPLE)
       "IOKit.framework" "Carbon.framework" "CoreAudio.framework" "AudioToolbox.framework" "OpenGL.framework")
 endif(APPLE)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/../bin)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}-fPIC /std:c++17" )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC" )
 

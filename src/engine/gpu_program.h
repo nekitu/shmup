@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include <string>
+#define GLEW_STATIC
 #include <GL/glew.h>
 
 namespace engine
