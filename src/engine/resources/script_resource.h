@@ -31,6 +31,8 @@ extern bool initializeLua();
 extern void shutdownLua();
 extern lua_State* getLuaState();
 
+struct ScriptResource;
+
 struct ScriptClassInstanceBase
 {
 	struct ScriptResource* script = nullptr;
@@ -53,7 +55,7 @@ struct ScriptClassInstance : ScriptClassInstanceBase
 	{
 		if (!script)
 		{
-			LOG_ERROR("No script associated with class instance");
+			LOG_ERROR("No script associated with this class instance");
 			return false;
 		}
 
