@@ -4,8 +4,7 @@ include(../CMakeUtils.cmake)
 
 add_source_group(src ./ SRCS)
 add_source_group(engine ./engine ENGINE_SRCS)
-add_source_group(engine ./engine/resources ENGINE_RES_SRCS)
-#add_source_group(luaintf ../libs/luaintf/luaintf/src LUAINTF_SRCS)
+add_source_group(engine/resources ./engine/resources ENGINE_RES_SRCS)
 add_source_group(binpack ../libs/binpack BINPACK_SRCS)
 add_source_group(lua ../libs/lua LUA_SRCS)
 
