@@ -6,7 +6,7 @@ end
 
 function C:onAppeared()
   self.unit.persistentOnChangeMap = true
-  game:changeMap(1)
+  game:changeMapByIndex(1)
 end
 
 return newInstance(C)

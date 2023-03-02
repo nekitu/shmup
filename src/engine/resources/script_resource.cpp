@@ -191,10 +191,11 @@ bool initializeLua()
 		.addFunction("animateCameraSpeed", &Game::animateCameraSpeed)
 		.addFunction("shakeCamera", &Game::shakeCamera)
 		.addFunction("fadeScreen", &Game::fadeScreen)
-		.addFunction("changeMap", &Game::changeMap)
+		.addFunction("changeMapByIndex", &Game::changeMapByIndex)
+		.addFunction("changeMapByName", &Game::changeMapByName)
 		.addFunction("renderUnits", &Game::renderUnits)
 		.addFunction("setScreenActive", &Game::setScreenActive)
-		.addFunction("loadNextMap", [](Game* g) { g->changeMap(~0); })
+		.addFunction("loadNextMap", [](Game* g) { g->changeMapByIndex(~0); })
 		.addFunction("spawn", [](Game* g, const std::string& unitResource, const std::string& name, const Vec2& position)
 			{
 				auto u = g->createUnit(Game::instance->resourceLoader->loadUnit(unitResource));

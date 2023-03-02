@@ -1173,7 +1173,7 @@ void Game::deleteNonPersistentUnits()
 	}
 }
 
-bool Game::changeMap(i32 index)
+bool Game::changeMapByIndex(i32 index)
 {
 	deleteNonPersistentUnits();
 	projectilePool.clear();
@@ -1262,6 +1262,21 @@ bool Game::changeMap(i32 index)
 	cameraState.position.clear();
 
 	return true;
+}
+
+bool Game::changeMapByName(const std::string& name)
+{
+	for (size_t i = 0; i < maps.size(); ++i)
+	{
+		if (maps[i].first == name)
+		{
+			return changeMapByIndex(i);
+		}
+	}
+
+	LOG_ERROR("Map named `{}` not found", name);
+
+	return false;
 }
 
 void Game::setScreenActive(const std::string& name, bool activate)

@@ -42,7 +42,7 @@ struct ColorPalette
 
 struct Graphics
 {
-	static const u32 maxVertexCount = 6 * 3000;
+	static const u32 maxVertexCount = 50 * 3000;
 	static const u32 textureAtlasWidth = 4096;
 	static const u32 maxPaletteCount = 256;
 	static const u32 maxPaletteColorCount = 256;

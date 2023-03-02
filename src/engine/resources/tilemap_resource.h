@@ -99,7 +99,7 @@ struct TilemapResource : Resource
 	Vec2 size;
 	std::vector<TilemapLayerResource> layers;
 	std::vector<TilesetInfo> tilesets;
-	Color backgroundColor, shadowsColor;
+	Color backgroundColor, shadowColor;
 	bool infinite = false;
 
 	bool load(Json::Value& json) override;

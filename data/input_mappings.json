@@ -1,6 +1,6 @@
 {
   "exit": ["escape"],
-  "pause": [ "pause" ],
+  "pause": [ "pause", "f1" ],
   "coin": ["1", "2"],
   "axisleftx": ["axisleftx[0]"],
   "axislefty": ["axislefty[0]"],

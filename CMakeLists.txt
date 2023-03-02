@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(shmup)
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS}")
-add_definitions(-DSDL_MAIN_HANDLED)
+add_definitions(-DSDL_MAIN_HANDLED -DOpenGL_GL_PREFERENCE=GLVND)
 
 if(WIN32)
       link_libraries("shlwapi"  "Ws2_32" "Wininet" "dbghelp"

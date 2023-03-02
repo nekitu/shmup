@@ -13,7 +13,7 @@
 
 namespace engine
 {
-class ImageAtlas;
+struct ImageAtlas;
 typedef u32 AtlasImageId;
 
 struct PaletteInfo

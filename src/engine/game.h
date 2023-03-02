@@ -203,7 +203,8 @@ struct Game
 	void updateTimeScaleAnimation();
 	void showMousePointer(bool hide);
 	void deleteNonPersistentUnits();
-	bool changeMap(i32 index);
+	bool changeMapByIndex(i32 index);
+	bool changeMapByName(const std::string& name);
 	void setScreenActive(const std::string& name, bool activate = true);
 	static std::string makeFullDataPath(const std::string relativeDataPath);
 	struct Unit* createUnit(struct UnitResource* unitRes);

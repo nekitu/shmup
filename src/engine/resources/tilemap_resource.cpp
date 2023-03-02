@@ -260,9 +260,9 @@ bool TilemapResource::load(Json::Value& json)
 	LOG_INFO("Tilemap properties:");
 	for (auto& propJson : propertiesJson)
 	{
-		if (propJson.get("name", "").asString() == "shadowsColor")
+		if (propJson.get("name", "").asString() == "shadowColor")
 		{
-			shadowsColor.parse(propJson.get("value", 0).asString());
+			shadowColor.parse(propJson.get("value", 0).asString());
 		}
 
 		auto str = jsonAsString(propJson.get("value", Json::Value()));
