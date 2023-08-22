@@ -121,6 +121,8 @@ void main()\
 		finalCOLOR = texelColor - outCOLOR;\
 	else if (outColorMode == 2U)\
 		finalCOLOR = texelColor * outCOLOR;\
+	else if (outColorMode == 3U)\
+		finalCOLOR = outCOLOR;\
 }\
 ";
 
@@ -1020,7 +1022,13 @@ void Graphics::popAlphaMode()
 	alphaModeStack.pop_back();
 }
 
-void Graphics::setupColor(u32 newColor, ColorMode newColorMode)
+void Graphics::setupColor(const Color& newColor, ColorMode newColorMode)
+{
+	color = newColor.getRgba();
+	colorMode = (u32)newColorMode;
+}
+
+void Graphics::setupColorU32(u32 newColor, ColorMode newColorMode)
 {
 	color = newColor;
 	colorMode = (u32)newColorMode;

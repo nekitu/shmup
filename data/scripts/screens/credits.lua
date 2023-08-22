@@ -31,8 +31,7 @@ function C:onUpdate(dt)
 end
 
 function C:onRender()
-  gfx.colorMode = ColorMode_Add
-  gfx.color = 0
+  gfx:setupColor(Color.transparent, ColorMode_Add)
   local y = self.offset
   for _, v in ipairs(credits) do
     local tsize = gfx:getTextSize(self.fntTitle, v.department)

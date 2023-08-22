@@ -156,6 +156,7 @@ bool SpriteResource::load(Json::Value& json)
 	if (colMode == "Add") colorMode = ColorMode::Add;
 	if (colMode == "Sub") colorMode = ColorMode::Sub;
 	if (colMode == "Mul") colorMode = ColorMode::Mul;
+	if (colMode == "Set") colorMode = ColorMode::Set;
 
 	Json::Value rotAnimsJson = json.get("rotationAnims", Json::Value());
 

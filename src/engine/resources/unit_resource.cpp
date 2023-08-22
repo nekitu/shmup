@@ -108,6 +108,7 @@ bool UnitResource::load(Json::Value& json)
 		if (colMode == "Add") spr->colorMode = ColorMode::Add;
 		if (colMode == "Sub") spr->colorMode = ColorMode::Sub;
 		if (colMode == "Mul") spr->colorMode = ColorMode::Mul;
+		if (colMode == "Set") spr->colorMode = ColorMode::Set;
 
 		spr->hitColor.parse(sprJson.get("hitColor", spr->hitColor.toString()).asString());
 

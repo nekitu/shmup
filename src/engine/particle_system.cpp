@@ -108,7 +108,7 @@ void ParticleSystem::render(struct Graphics* gfx)
 			particle->size.y);
 
 		rc = Game::instance->worldToScreen(rc, (u32)~0 - 1);
-		gfx->setupColor(particle->color.getRgba(), ColorMode::Mul);
+		gfx->setupColor(particle->color, ColorMode::Mul);
 		gfx->drawQuad(rc, gfx->atlas->whiteImage->uvRect);
 	}
 }

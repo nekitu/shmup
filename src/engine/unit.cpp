@@ -599,7 +599,14 @@ void Unit::render(Graphics* gfx)
 	for (auto& spr : sprites)
 	{
 		spr->renderShadow(gfx);
+		spr->renderContour(gfx);
 	}
+
+	//TODO
+	//for (auto& spr : sprites)
+	//{
+	//	spr->renderContour(gfx);
+	//}
 
 	// draw color sprites
 	for (auto& spr : sprites)

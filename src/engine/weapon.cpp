@@ -283,7 +283,7 @@ void Weapon::render(Graphics* gfx)
 		auto sprEnd = weaponResource->beamEndSprite;
 		auto frames = 2;
 
-		gfx->setupColor(0);
+		gfx->setupColorU32(0);
 
 		if (Game::instance->screenMode == ScreenMode::Vertical)
 		{

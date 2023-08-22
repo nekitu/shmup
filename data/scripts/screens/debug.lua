@@ -12,8 +12,7 @@ end
 
 function C:onRender()
   if not self.active then return end
-  gfx.colorMode = ColorMode_Add
-  gfx.color = 0
+  gfx:setupColor(Color.transparent, ColorMode_Add)
   local count = game:getUnitCount()
   for i = 0, count - 1 do
     local unit = game:getUnit(i)

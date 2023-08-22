@@ -60,6 +60,7 @@ struct Sprite
 	void initializeFrom(struct SpriteInstanceResource* res);
 	void initializeFromSpriteResource(struct SpriteResource* res);
 	void update(struct Game* game);
+	void renderContour(struct Graphics* gfx);
 	void renderShadow(struct Graphics* gfx);
 	void render(struct Graphics* gfx);
 	void setFrameAnimation(const std::string& name);

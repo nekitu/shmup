@@ -267,6 +267,25 @@ void Sprite::update(struct Game* game)
 	}
 }
 
+void Sprite::renderContour(Graphics* gfx)
+{
+	if (!visible) return;
+	Rect contourRect = rect.getExpanded(3);
+
+	gfx->atlasTextureIndex = spriteResource->image->atlasTexture->textureIndex;
+	gfx->color = Color(1, 0.7, 0, 1).getRgba();
+	gfx->colorMode = (u32)ColorMode::Set;
+
+	if (rotation > 0)
+	{
+		gfx->drawRotatedQuad(contourRect, uvRect, spriteResource->image->rotated, rotation);
+	}
+	else
+	{
+		gfx->drawQuad(contourRect, uvRect, spriteResource->image->rotated);
+	}
+}
+
 void Sprite::renderShadow(Graphics* gfx)
 {
 	if (!visible) return;

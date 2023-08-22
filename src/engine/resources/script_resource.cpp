@@ -260,6 +260,7 @@ bool initializeLua()
 		.addVariable("color", &Graphics::color)
 		.addVariable("colorMode", &Graphics::colorMode)
 		.addVariable("alphaMode", &Graphics::alphaMode)
+		.addFunction("setupColor", &Graphics::setupColor)
 		.addFunction("drawText", &Graphics::drawText)
 		.addFunction("getTextSize", &Graphics::getTextSize)
 		.addFunction("createUserPalette", &Graphics::createUserPalette)
@@ -473,6 +474,7 @@ bool initializeLua()
 		.addStaticVariableRef("green", &Color::green)
 		.addStaticVariableRef("black", &Color::black)
 		.addStaticVariableRef("sky", &Color::sky)
+		.addStaticVariableRef("transparent", &Color::transparent)
 		.addFunction("getRgba", &Color::getRgba)
 		.endClass();
 
@@ -577,6 +579,7 @@ bool initializeLua()
 	l.setGlobal("ColorMode_Add", ColorMode::Add);
 	l.setGlobal("ColorMode_Sub", ColorMode::Sub);
 	l.setGlobal("ColorMode_Mul", ColorMode::Mul);
+	l.setGlobal("ColorMode_Set", ColorMode::Set);
 
 	l.setGlobal("AlphaMode_Blend", AlphaMode::Blend);
 	l.setGlobal("AlphaMode_Mask", AlphaMode::Mask);

@@ -84,7 +84,8 @@ enum class ColorMode
 {
 	Add = 0,
 	Sub,
-	Mul
+	Mul,
+	Set
 };
 
 enum class AlphaMode
