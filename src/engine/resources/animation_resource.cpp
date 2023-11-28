@@ -19,7 +19,7 @@ bool AnimationResource::load(Json::Value& json)
 	for (u32 i = 0, iCount = tracksJson.getMemberNames().size(); i < iCount; i++)
 	{
 		auto track = new AnimationTrack();
-		auto keyType = tracksJson.getMemberNames()[i];
+		auto& keyType = tracksJson.getMemberNames()[i];
 		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
 		auto trackType = AnimationTrackType::Unknown;
 
@@ -43,8 +43,14 @@ bool AnimationResource::load(Json::Value& json)
 		if (keyType == "ColorB") trackType = AnimationTrackType::ColorB;
 		if (keyType == "ColorA") trackType = AnimationTrackType::ColorA;
 		if (keyType == "ColorMode") trackType = AnimationTrackType::ColorMode;
+		if (keyType == "AnimationFrame") trackType = AnimationTrackType::AnimationFrame;
+		if (keyType == "AnimationPlay") trackType = AnimationTrackType::AnimationPlay;
+		if (keyType == "AnimationPause") trackType = AnimationTrackType::AnimationPause;
+		if (keyType == "AnimationChange") trackType = AnimationTrackType::AnimationChange;
 
+		track->type = trackType;
 		modeStr = trackJson.get("loopMode", "None");
+
 		if (modeStr == "None") track->loopMode = AnimationLoopMode::None;
 		if (modeStr == "Normal") track->loopMode = AnimationLoopMode::Normal;
 		if (modeStr == "Reversed") track->loopMode = AnimationLoopMode::Reversed;
@@ -59,10 +65,16 @@ bool AnimationResource::load(Json::Value& json)
 			AnimationKey key;
 
 			key.time = keyJson.get("time", 0.0f).asFloat();
+			key.type = (AnimationKey::Type)keyJson.get("type", 0).asInt();
 			key.value = keyJson.get("value", 0.0f).asFloat();
+			key.tangentA = keyJson.get("tangentA", 0.0f).asFloat();
+			key.tangentB = keyJson.get("tangentB", 0.0f).asFloat();
+			key.strValue = keyJson.get("strValue", "").asString();
 			key.easeType = Easing::getTypeFromString(keyJson.get("easeType", "inOutLinear").asString());
 			key.triggerEvent = keyJson.get("triggerEvent", false).asBool();
 			key.eventName = keyJson.get("eventName", "").asString();
+
+			
 
 			// if we dont specify trigger event bool, then we know we want to trigger it by default
 			if (!key.eventName.empty() && !keyJson.isMember("triggerEvent"))

@@ -147,6 +147,7 @@ void Animation::update(f32 deltaTime)
 				state.timeWasHigherThanTotalTime = true;
 				state.currentTime = track->endTime;
 				state.triggeredKeyEvents.clear();
+				state.animChangeExecutedKeys.clear();
 			}
 
 			break;
@@ -161,6 +162,7 @@ void Animation::update(f32 deltaTime)
 				state.timeWasHigherThanTotalTime = true;
 				state.previousKeyIndex = 0;
 				state.triggeredKeyEvents.clear();
+				state.animChangeExecutedKeys.clear();
 				updateTrackRepeatCount(track, state);
 			}
 
@@ -177,6 +179,7 @@ void Animation::update(f32 deltaTime)
 				state.timeWasLowerThanZero = true;
 				state.previousKeyIndex = track->keys.size() - 1;
 				state.triggeredKeyEvents.clear();
+				state.animChangeExecutedKeys.clear();
 				updateTrackRepeatCount(track, state);
 			}
 
@@ -198,6 +201,7 @@ void Animation::update(f32 deltaTime)
 				state.playDirection = -1.0f;
 				state.previousKeyIndex = track->keys.size() - 1;
 				state.triggeredKeyEvents.clear();
+				state.animChangeExecutedKeys.clear();
 				state.currentTime = track->endTime - fmod(currentTime, track->endTime);
 				updateTrackRepeatCount(track, state);
 			}
@@ -207,6 +211,7 @@ void Animation::update(f32 deltaTime)
 				state.playDirection = 1.0f;
 				state.previousKeyIndex = 0;
 				state.triggeredKeyEvents.clear();
+				state.animChangeExecutedKeys.clear();
 				state.currentTime = fmod(currentTime, track->endTime);
 				updateTrackRepeatCount(track, state);
 			}
@@ -239,7 +244,16 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	if (keys.size() == 1)
 	{
-		//TODO event trigger
+		if (keys[0].triggerEvent)
+		{
+			triggerKeyEvent(tstate, &keys[0], sprite);
+		}
+
+		if (track->type == AnimationTrackType::AnimationChange && !keys[0].strValue.empty())
+		{
+			sprite->setFrameAnimation(keys[0].strValue);
+		}
+
 		return keys[0].value;
 	}
 
@@ -266,7 +280,7 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 		tstate.previousKeyIndex = keys.size() - 1;
 	}
 
-	u32 key1Index = tstate.previousKeyIndex;
+	i32 key1Index = tstate.previousKeyIndex;
 	AnimationKey* key1 = &keys[key1Index];
 	AnimationKey* key2 = nullptr;
 
@@ -312,13 +326,22 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 
 	if (isForwardDir)
 	{
-		for (i32 i = key1Index, iCount = keys.size(); i < iCount - 1; i++)
+		for (i32 i = key1Index, iCount = (i32)keys.size(); i < iCount - 1; i++)
 		{
 			if (atTime >= keys[i].time && atTime <= keys[i + 1].time)
 			{
 				key1Index = i;
 				key1 = &keys[i];
 				key2 = &keys[i + 1];
+
+				if (track->type == AnimationTrackType::AnimationChange
+					&& std::find(
+						tstate.animChangeExecutedKeys.begin(),
+						tstate.animChangeExecutedKeys.end(), key1) == tstate.animChangeExecutedKeys.end())
+				{
+					tstate.animChangeExecutedKeys.push_back(key1);
+					sprite->setFrameAnimation(key1->strValue);
+				}
 
 				if (key1->triggerEvent
 					&& std::find(
@@ -340,6 +363,15 @@ f32 Animation::animateTrack(AnimationTrack* track, f32 atTime, struct Sprite* sp
 				key1Index = i;
 				key1 = &keys[i];
 				key2 = &keys[i - 1];
+
+				if (track->type == AnimationTrackType::AnimationChange
+					&& std::find(
+						tstate.animChangeExecutedKeys.begin(),
+						tstate.animChangeExecutedKeys.end(), key1) == tstate.animChangeExecutedKeys.end())
+				{
+					tstate.animChangeExecutedKeys.push_back(key1);
+					sprite->setFrameAnimation(key1->strValue);
+				}
 
 				if (key1->triggerEvent
 					&& std::find(
@@ -389,6 +421,22 @@ void Animation::animateSprite(Sprite* spr)
 	spr->color.b = animate(AnimationTrackType::ColorB, spr->color.b, spr);
 	spr->color.a = animate(AnimationTrackType::ColorA, spr->color.a, spr);
 	spr->colorMode = (ColorMode)(u32)animate(AnimationTrackType::ColorMode, (f32)spr->colorMode, spr);
+	spr->animationFrame = animate(AnimationTrackType::AnimationFrame, spr->animationFrame, spr);
+
+	f32 animVal = 0;
+	animVal = animate(AnimationTrackType::AnimationPlay, animVal, spr);
+
+	if (animVal >= 1)
+		spr->play();
+
+	animVal = 0;
+	animVal = animate(AnimationTrackType::AnimationPause, animVal, spr);
+
+	if (animVal >= 1)
+		spr->animationIsActive = false;
+
+	animVal = 0;
+	animVal = animate(AnimationTrackType::AnimationChange, animVal, spr);
 }
 
 }

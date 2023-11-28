@@ -149,6 +149,9 @@ bool SpriteResource::load(Json::Value& json)
 
 	assert(image);
 
+	if (!image)
+		return false;
+
 	columns = image->width / frameWidth;
 	rows = image->height / frameHeight;
 	frameCount = rows * columns;

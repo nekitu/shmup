@@ -18,6 +18,7 @@ struct Animation
 		bool active = true;
 		f32 currentTime = 0.0f;
 		std::vector<AnimationKey*> triggeredKeyEvents;
+		std::vector<AnimationKey*> animChangeExecutedKeys; // used to record when AnimationChange keys were reached, so they execute once
 	};
 
 	AnimationResource* animationResource = nullptr;

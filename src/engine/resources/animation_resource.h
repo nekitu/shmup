@@ -42,6 +42,10 @@ enum class AnimationTrackType
 	ColorB,
 	ColorA,
 	ColorMode,
+	AnimationFrame,
+	AnimationPlay,
+	AnimationPause,
+	AnimationChange,
 
 	Count
 };
@@ -57,7 +61,19 @@ enum class AnimationCoordSys
 
 struct AnimationKey
 {
+	enum class Type
+	{
+		Auto,
+		Linear,
+		Spline,
+
+		Count
+	};
+
+	Type type = Type::Auto;
 	f32 value = 0;
+	f32 tangentA = 0, tangentB = 0;
+	std::string strValue; // used in AnimationChange key type
 	f32 time; /// time is seconds
 	bool triggerEvent = false;
 	std::string eventName;
@@ -66,6 +82,7 @@ struct AnimationKey
 
 struct AnimationTrack
 {
+	AnimationTrackType type = AnimationTrackType::Unknown;
 	u32 repeat = 0;
 	f32 totalTime = 0;
 	f32 startTime = 0;
