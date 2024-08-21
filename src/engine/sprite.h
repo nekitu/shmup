@@ -25,6 +25,7 @@ struct Sprite
 	bool visible = true;
 	bool collide = true;
 	bool shadow = false;
+	bool selected = false;
 	f32 health = 100;
 	f32 maxHealth = 100;
 	f32 damage = 1.0f;
@@ -60,7 +61,7 @@ struct Sprite
 	void initializeFrom(struct SpriteInstanceResource* res);
 	void initializeFromSpriteResource(struct SpriteResource* res);
 	void update(struct Game* game);
-	void renderContour(struct Graphics* gfx);
+	void renderBox(struct Graphics* gfx);
 	void renderShadow(struct Graphics* gfx);
 	void render(struct Graphics* gfx);
 	void setFrameAnimation(const std::string& name);

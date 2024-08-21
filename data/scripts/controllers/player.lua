@@ -11,6 +11,7 @@ function C:setup(params)
   log.info("Setup player " .. tostring(self.playerIndex))
   self.unit:setAnimation("player_intro")
   self.actionPrefix = "player" .. tostring(self.playerIndex + 1) .. "_"
+  self.unit.selected = true
 end
 
 function C:onAnimationEvent(sprite, eventName)

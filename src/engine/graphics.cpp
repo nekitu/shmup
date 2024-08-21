@@ -665,6 +665,7 @@ void Graphics::drawLine(const Vec2& a, const Vec2& b, f32 thickness)
 
 void Graphics::drawRect(const Rect& rc, f32 thickness)
 {
+	// this draws the corners at half, making it look like rounded corners
 	drawLine(rc.topLeft(), rc.topRight(), thickness);
 	drawLine(rc.topLeft(), rc.bottomLeft(), thickness);
 	drawLine(rc.topRight(), rc.bottomRight(), thickness);

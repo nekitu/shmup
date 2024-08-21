@@ -599,14 +599,7 @@ void Unit::render(Graphics* gfx)
 	for (auto& spr : sprites)
 	{
 		spr->renderShadow(gfx);
-		spr->renderContour(gfx);
 	}
-
-	//TODO
-	//for (auto& spr : sprites)
-	//{
-	//	spr->renderContour(gfx);
-	//}
 
 	// draw color sprites
 	for (auto& spr : sprites)
@@ -617,6 +610,21 @@ void Unit::render(Graphics* gfx)
 	for (auto& weapon : weapons)
 	{
 		weapon.second->render(gfx);
+	}
+
+	for (auto& spr : sprites)
+	{
+		if (spr->selected)
+		{
+			spr->renderBox(gfx);
+		}
+	}
+
+	if (selected)
+	{
+		gfx->color = Color(0, 1, 0, 1).getRgba();
+		gfx->colorMode = (u32)ColorMode::Set;
+		gfx->drawRect(root->rect, 3);
 	}
 
 	CALL_LUA_FUNC("onAfterRender");

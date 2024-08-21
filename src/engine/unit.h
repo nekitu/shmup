@@ -32,6 +32,7 @@ struct Unit
 	Rect boundingBox;
 	bool visible = true;
 	bool appeared = false;
+	bool selected = false;
 	f32 speed = 0.0f;
 	f32 health = 100.0f; // auto computed, always a percentage
 	f32 maxHealth = 100.0f; // auto computed from sprites health
