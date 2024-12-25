@@ -36,7 +36,7 @@ function C:onUpdate()
 
   if self.playerControl then
     -- fire if the button is pressed, the repeat fire logic is done in the engine
-    if input:isDown(self.actionPrefix .. "fire1") then
+    if input:isDown(self.actionPrefix .. "fire1") or input:getValue(self.actionPrefix .. "fire1") > 0.5 then
       local wpns = self.unit:getGroupWeapons(0)
       for _, wpn in ipairs(wpns) do
         wpn:fire()
@@ -48,7 +48,7 @@ function C:onUpdate()
       end
     end
 
-    if input:isDown(self.actionPrefix .. "fire2") then
+    if input:isDown(self.actionPrefix .. "fire2") or input:getValue(self.actionPrefix .. "fire2") > 0.5 then
       local wpns = self.unit:getGroupWeapons(1)
       for _, wpn in ipairs(wpns) do
         wpn:fire()
@@ -67,18 +67,18 @@ function C:onUpdate()
         bomb:setFrameAnimation("explode")
       end
     end
-    if input:isDown(self.actionPrefix .. "moveLeft") then
+    if input:isDown(self.actionPrefix .. "moveLeft") or input:getValue(self.actionPrefix .. "moveLeft") < -0.3 then
       moveDir.x = -1
       self.unit.root:setFrameAnimation("left")
     end
-    if input:isDown(self.actionPrefix .. "moveRight") then
+    if input:isDown(self.actionPrefix .. "moveRight") or input:getValue(self.actionPrefix .. "moveRight") > 0.3  then
       moveDir.x = 1
       self.unit.root:setFrameAnimation("right")
     end
-    if input:isDown(self.actionPrefix .. "moveUp") then
+    if input:isDown(self.actionPrefix .. "moveUp") or input:getValue(self.actionPrefix .. "moveUp") < -0.3 then
       moveDir.y = -1
     end
-    if input:isDown(self.actionPrefix .. "moveDown") then
+    if input:isDown(self.actionPrefix .. "moveDown") or input:getValue(self.actionPrefix .. "moveDown") > 0.3 then
       moveDir.y = 1
     end
   end

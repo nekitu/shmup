@@ -7,8 +7,8 @@ namespace engine
 bool AnimationResource::load(Json::Value& json)
 {
 	speed = json.get("speed", speed).asFloat();
-	auto tracksJson = json.get("tracks", Json::Value(Json::ValueType::arrayValue));
-	auto modeStr = json.get("loopMode", "None");
+	auto tracksJson = json.get("tracks", Json::Value());
+	auto modeStr = json.get("loopMode", "None").asString();
 	repeat = json.get("repeat", repeat).asInt();
 
 	if (modeStr == "None") loopMode = AnimationLoopMode::None;
@@ -19,7 +19,7 @@ bool AnimationResource::load(Json::Value& json)
 	for (u32 i = 0, iCount = tracksJson.getMemberNames().size(); i < iCount; i++)
 	{
 		auto track = new AnimationTrack();
-		auto& keyType = tracksJson.getMemberNames()[i];
+		auto keyType = tracksJson.getMemberNames()[i];
 		auto trackJson = tracksJson.get(keyType, Json::Value(Json::ValueType::objectValue));
 		auto trackType = AnimationTrackType::Unknown;
 
@@ -49,7 +49,7 @@ bool AnimationResource::load(Json::Value& json)
 		if (keyType == "AnimationChange") trackType = AnimationTrackType::AnimationChange;
 
 		track->type = trackType;
-		modeStr = trackJson.get("loopMode", "None");
+		modeStr = trackJson.get("loopMode", "None").asString();
 
 		if (modeStr == "None") track->loopMode = AnimationLoopMode::None;
 		if (modeStr == "Normal") track->loopMode = AnimationLoopMode::Normal;
@@ -73,8 +73,6 @@ bool AnimationResource::load(Json::Value& json)
 			key.easeType = Easing::getTypeFromString(keyJson.get("easeType", "inOutLinear").asString());
 			key.triggerEvent = keyJson.get("triggerEvent", false).asBool();
 			key.eventName = keyJson.get("eventName", "").asString();
-
-			
 
 			// if we dont specify trigger event bool, then we know we want to trigger it by default
 			if (!key.eventName.empty() && !keyJson.isMember("triggerEvent"))
