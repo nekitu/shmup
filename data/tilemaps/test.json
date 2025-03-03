@@ -577,7 +577,7 @@
                         {
                          "name":"unit",
                          "type":"string",
-                         "value":"units\/turret"
+                         "value":"units\/boss"
                         }],
                  "rotation":0,
                  "type":"",
@@ -677,7 +677,7 @@
                         {
                          "name":"unit",
                          "type":"string",
-                         "value":"units\/turret"
+                         "value":"units\/boss"
                         }],
                  "rotation":0,
                  "type":"",
