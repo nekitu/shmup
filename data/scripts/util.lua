@@ -27,28 +27,28 @@ function newInstance(C)
   end
 end
 
-local zoom = 1
-local center = Vec2(120, 150)
-local pan = Vec2(0, 0)
+local projectionZoom = 1
+local projectionCenter = Vec2(120, 150)
+local projectionPan = Vec2(0, 0)
 
 function setProjectionZoom(newZoom)
-  zoom = newZoom
+  projectionZoom = newZoom
 end
 
 function setProjectionCenter(newCenter)
-  center = newCenter
+  projectionCenter = newCenter
 end
 
 function setProjectionPan(newPan)
-  pan = newPan
+  projectionPan = newPan
 end
 
 function projectPoint(x, y, z, roundCoords)
   local screen = Vec2()
 
   if z > 0 then
-      screen.x = (x + pan.x) / z * zoom + center.x
-      screen.y = (y + pan.y) / z * zoom + center.y
+      screen.x = (x + projectionPan.x) / z * projectionZoom + projectionCenter.x
+      screen.y = (y + projectionPan.y) / z * projectionZoom + projectionCenter.y
   end
 
   if roundCoords then
